@@ -19,8 +19,8 @@ bucket = struct;
 bucket.datasetRoot = fullfile(pwd, 'dataFloatingIWear');
 
 % Subject and task to be processed
-subjectID = 3;
-taskID = 2;
+subjectID = 1;
+taskID = 6;
 
 %% Options
 opts.analysis_48dofURDF = true;

@@ -18,8 +18,8 @@ endIndex = size(y_sim,2);
 
 
 %% task05
-% % startIndex = 610;
-% % endIndex = 780;
+% startIndex = 610;
+% endIndex = 780;
 
 len = size(estimation.mu_dgiveny(:,startIndex:endIndex),2);
 specific_vector_sigma = zeros(1,len);
@@ -31,6 +31,278 @@ if ~exist(bucket.pathToPlots)
 end
 saveON = true;
 
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% -----------------------------------------------------------------------%
+%  Rate of Change of Linear Momentum
+% -----------------------------------------------------------------------%
+
+fig = figure('Name', 'Rate of Change of Linear Momentum Vs Hands Force Estimate','NumberTitle','off','units','normalized','outerposition',[0 0 1 1]);
+axes1 = axes('Parent',fig,'FontSize',16,'Units', 'normalized');
+box(axes1,'on');
+hold(axes1,'on');
+grid on;
+
+subplot (3,3,1) % dotL_x
+plot1 = plot(y1_sim(295,:),'b','lineWidth',1.5);
+hold on
+title('Rate of Change of Linear Momentum','HorizontalAlignment','center',...
+    'FontWeight','bold',...
+    'FontSize',18,...
+    'Interpreter','latex');
+ylabel ('$\dot{L}_x$','FontSize',18,'Interpreter','latex');
+grid on;
+axis tight;
+xlim([0 len])
+
+subplot (3,3,4) % dotL_y
+plot1 = plot(y1_sim(296,:),'b','lineWidth',1.5);
+ylabel ('$\dot{L}_y$','FontSize',18,'Interpreter','latex');
+hold on
+grid on;
+axis tight;
+xlim([0 len])
+
+subplot (3,3,7) % dotL_z
+plot1 = plot(y1_sim(297,:),'b','lineWidth',1.5);
+xlabel('samples','FontSize',18);
+ylabel ('$\dot{L}_z$','FontSize',18,'Interpreter','latex');
+hold on;
+xlabel('z');
+grid on;
+axis tight;
+xlim([0 len])
+
+
+% Right hand measurements
+range_fextMEAS_rightHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'RightHand', true);
+fext.measured.rightHand = y_sim((range_fextMEAS_rightHand:range_fextMEAS_rightHand+5),startIndex:endIndex);
+fext.measured.rightHand_sigma = diag(Sigmay((range_fextMEAS_rightHand:range_fextMEAS_rightHand+5),(range_fextMEAS_rightHand:range_fextMEAS_rightHand+5)));
+
+% % Right hand estimates
+range_fextEST_rightHand = rangeOfDynamicVariable(berdy, iDynTree.NET_EXT_WRENCH, 'RightHand',opts.stackOfTaskMAP);
+fext.estimated.rightHand = estimation.mu_dgiveny((range_fextEST_rightHand:range_fextEST_rightHand+5 ),startIndex:endIndex);
+
+subplot (3,3,2) % Right hand fx component
+plot1 = plot(fext.estimated.rightHand(1,:),'b','lineWidth',1.5);
+hold on
+specific_vector_sigma(1,:) = fext.measured.rightHand_sigma(1);
+shad1 = shadedErrorBar([],fext.measured.rightHand(1,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+title(' Right Hand Forces','HorizontalAlignment','center',...
+    'FontWeight','bold',...
+    'FontSize',18,...
+    'Interpreter','latex');
+ylabel('$f_x$','FontSize',18, 'Interpreter','latex');
+grid on;
+axis tight;
+xlim([0 len])
+
+subplot (3,3,5) % Right hand fy component
+plot1 = plot(fext.estimated.rightHand(2,:),'b','lineWidth',1.5);
+hold on
+specific_vector_sigma(1,:) = fext.measured.rightHand_sigma(2);
+shad2 = shadedErrorBar([],fext.measured.rightHand(2,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+grid on;
+axis tight;
+ylabel('$f_y$','FontSize',18, 'Interpreter','latex');
+xlim([0 len])
+
+subplot (3,3,8) % Right hand fz component
+plot1 = plot(fext.estimated.rightHand(3,:),'b','lineWidth',1.5);
+xlabel('samples','FontSize',18);
+hold on
+specific_vector_sigma(1,:) = fext.measured.rightHand_sigma(3);
+shad2 = shadedErrorBar([],fext.measured.rightHand(3,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+grid on;
+axis tight;
+ylabel('$f_z$','FontSize',18, 'Interpreter','latex');
+xlim([0 len])
+ 
+% % Left hand measurements
+range_fextMEAS_leftHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'LeftHand',true);
+fext.measured.leftHand = y_sim((range_fextMEAS_leftHand:range_fextMEAS_leftHand+5),startIndex:endIndex);
+fext.measured.leftHand_sigma = diag(Sigmay((range_fextMEAS_leftHand:range_fextMEAS_leftHand+5),(range_fextMEAS_leftHand:range_fextMEAS_leftHand+5)));
+
+% % Left hand estimates
+range_fextEST_leftHand = rangeOfDynamicVariable(berdy, iDynTree.NET_EXT_WRENCH, 'LeftHand',opts.stackOfTaskMAP);
+fext.estimated.leftHand = estimation.mu_dgiveny((range_fextEST_leftHand:range_fextEST_leftHand+5 ),startIndex:endIndex);
+
+subplot (3,3,3) % left hand fx component
+plot1 = plot(fext.estimated.leftHand(1,:),'b','lineWidth',1.5);
+hold on
+specific_vector_sigma(1,:) = fext.measured.leftHand_sigma(1);
+shad1 = shadedErrorBar([],fext.measured.leftHand(1,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+title(' Left Hand Forces','HorizontalAlignment','center',...
+    'FontWeight','bold',...
+    'FontSize',18,...
+    'Interpreter','latex');
+ylabel('$f_x$','FontSize',18, 'Interpreter','latex');
+grid on;
+axis tight;
+xlim([0 len])
+
+subplot (3,3,6) % left hand fy component
+plot1 = plot(fext.estimated.leftHand(2,:),'b','lineWidth',1.5);
+hold on
+specific_vector_sigma(1,:) = fext.measured.leftHand_sigma(2);
+shad2 = shadedErrorBar([],fext.measured.leftHand(2,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+grid on;
+axis tight;
+ylabel('$f_y$','FontSize',18, 'Interpreter','latex');
+xlim([0 len])
+
+subplot (3,3,9) % left hand fz component
+plot1 = plot(fext.estimated.leftHand(3,:),'b','lineWidth',1.5);
+xlabel('samples','FontSize',18);
+hold on
+specific_vector_sigma(1,:) = fext.measured.leftHand_sigma(3);
+shad2 = shadedErrorBar([],fext.measured.leftHand(3,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+grid on;
+axis tight;
+ylabel('$f_z$','FontSize',18, 'Interpreter','latex');
+xlim([0 len])
+
+tightfig();
+% save
+if saveON
+    save2pdf(fullfile(bucket.pathToPlots, ('HDE_rate_of_change_of_linear_momentum_vs_hands_force_estimates')),fig,600);
+end
+
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% -----------------------------------------------------------------------%
+%  Rate of Change of Angular Momentum
+% -----------------------------------------------------------------------%
+
+fig = figure('Name', 'Rate of Change of Angular Momentum Vs Hands Moments Estimate','NumberTitle','off','units','normalized','outerposition',[0 0 1 1]);
+axes1 = axes('Parent',fig,'FontSize',16,'Units', 'normalized');
+box(axes1,'on');
+hold(axes1,'on');
+grid on;
+
+subplot (3,3,1) % dotL_x
+plot1 = plot(y1_sim(298,:),'b','lineWidth',1.5);
+hold on
+title('Rate of Change of Angular Momentum','HorizontalAlignment','center',...
+    'FontWeight','bold',...
+    'FontSize',18,...
+    'Interpreter','latex');
+ylabel ('$\dot{L}_x$','FontSize',18,'Interpreter','latex');
+grid on;
+axis tight;
+xlim([0 len])
+
+subplot (3,3,4) % dotL_y
+plot1 = plot(y1_sim(299,:),'b','lineWidth',1.5);
+ylabel ('$\dot{L}_y$','FontSize',18,'Interpreter','latex');
+hold on
+grid on;
+axis tight;
+xlim([0 len])
+
+subplot (3,3,7) % dotL_z
+plot1 = plot(y1_sim(300,:),'b','lineWidth',1.5);
+xlabel('samples','FontSize',18);
+ylabel ('$\dot{L}_z$','FontSize',18,'Interpreter','latex');
+hold on;
+xlabel('z');
+grid on;
+axis tight;
+xlim([0 len])
+
+
+% Right hand measurements
+range_fextMEAS_rightHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'RightHand', true);
+fext.measured.rightHand = y_sim((range_fextMEAS_rightHand:range_fextMEAS_rightHand+5),startIndex:endIndex);
+fext.measured.rightHand_sigma = diag(Sigmay((range_fextMEAS_rightHand:range_fextMEAS_rightHand+5),(range_fextMEAS_rightHand:range_fextMEAS_rightHand+5)));
+
+% % Right hand estimates
+range_fextEST_rightHand = rangeOfDynamicVariable(berdy, iDynTree.NET_EXT_WRENCH, 'RightHand',opts.stackOfTaskMAP);
+fext.estimated.rightHand = estimation.mu_dgiveny((range_fextEST_rightHand:range_fextEST_rightHand+5 ),startIndex:endIndex);
+
+subplot (3,3,2) % Right hand fx component
+plot1 = plot(fext.estimated.rightHand(4,:),'b','lineWidth',1.5);
+hold on
+specific_vector_sigma(1,:) = fext.measured.rightHand_sigma(4);
+shad1 = shadedErrorBar([],fext.measured.rightHand(4,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+title(' Right Hand Forces','HorizontalAlignment','center',...
+    'FontWeight','bold',...
+    'FontSize',18,...
+    'Interpreter','latex');
+ylabel('$m_x$','FontSize',18, 'Interpreter','latex');
+grid on;
+axis tight;
+xlim([0 len])
+
+subplot (3,3,5) % Right hand fy component
+plot1 = plot(fext.estimated.rightHand(5,:),'b','lineWidth',1.5);
+hold on
+specific_vector_sigma(1,:) = fext.measured.rightHand_sigma(5);
+shad2 = shadedErrorBar([],fext.measured.rightHand(5,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+grid on;
+axis tight;
+ylabel('$m_y$','FontSize',18, 'Interpreter','latex');
+xlim([0 len])
+
+subplot (3,3,8) % Right hand fz component
+plot1 = plot(fext.estimated.rightHand(6,:),'b','lineWidth',1.5);
+xlabel('samples','FontSize',18);
+hold on
+specific_vector_sigma(1,:) = fext.measured.rightHand_sigma(6);
+shad2 = shadedErrorBar([],fext.measured.rightHand(6,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+grid on;
+axis tight;
+ylabel('$m_z$','FontSize',18, 'Interpreter','latex');
+xlim([0 len])
+ 
+% % Left hand measurements
+range_fextMEAS_leftHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'LeftHand',true);
+fext.measured.leftHand = y_sim((range_fextMEAS_leftHand:range_fextMEAS_leftHand+5),startIndex:endIndex);
+fext.measured.leftHand_sigma = diag(Sigmay((range_fextMEAS_leftHand:range_fextMEAS_leftHand+5),(range_fextMEAS_leftHand:range_fextMEAS_leftHand+5)));
+
+% % Left hand estimates
+range_fextEST_leftHand = rangeOfDynamicVariable(berdy, iDynTree.NET_EXT_WRENCH, 'LeftHand',opts.stackOfTaskMAP);
+fext.estimated.leftHand = estimation.mu_dgiveny((range_fextEST_leftHand:range_fextEST_leftHand+5 ),startIndex:endIndex);
+
+subplot (3,3,3) % left hand fx component
+plot1 = plot(fext.estimated.leftHand(4,:),'b','lineWidth',1.5);
+hold on
+specific_vector_sigma(1,:) = fext.measured.leftHand_sigma(4);
+shad1 = shadedErrorBar([],fext.measured.leftHand(4,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+title(' Left Hand Forces','HorizontalAlignment','center',...
+    'FontWeight','bold',...
+    'FontSize',18,...
+    'Interpreter','latex');
+ylabel('$m_x$','FontSize',18, 'Interpreter','latex');
+grid on;
+axis tight;
+xlim([0 len])
+
+subplot (3,3,6) % left hand fy component
+plot1 = plot(fext.estimated.leftHand(5,:),'b','lineWidth',1.5);
+hold on
+specific_vector_sigma(1,:) = fext.measured.leftHand_sigma(5);
+shad2 = shadedErrorBar([],fext.measured.leftHand(5,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+grid on;
+axis tight;
+ylabel('$m_y$','FontSize',18, 'Interpreter','latex');
+xlim([0 len])
+
+subplot (3,3,9) % left hand fz component
+plot1 = plot(fext.estimated.leftHand(6,:),'b','lineWidth',1.5);
+xlabel('samples','FontSize',18);
+hold on
+specific_vector_sigma(1,:) = fext.measured.leftHand_sigma(6);
+shad2 = shadedErrorBar([],fext.measured.leftHand(6,:),2.*sqrt(specific_vector_sigma(1,:)),'r',1.5);
+grid on;
+axis tight;
+ylabel('$m_x$','FontSize',18, 'Interpreter','latex');
+xlim([0 len])
+
+tightfig();
+% save
+if saveON
+    save2pdf(fullfile(bucket.pathToPlots, ('HDE_rate_of_change_of_angular_momentum_vs_hands_force_estimates')),fig,600);
+end
+
 
 %% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % -----------------------------------------------------------------------%
@@ -38,8 +310,8 @@ saveON = true;
 % -----------------------------------------------------------------------%
 % - other applied (exernal) forces are null
 
-fig = figure('Name', 'Foot External forces','NumberTitle','off');
-axes1 = axes('Parent',fig,'FontSize',16);
+fig = figure('Name', 'Foot External forces','NumberTitle','off','units','normalized','outerposition',[0 0 1 1]);
+axes1 = axes('Parent',fig,'FontSize',16,'Units', 'normalized');
 box(axes1,'on');
 hold(axes1,'on');
 grid on;
@@ -325,6 +597,12 @@ axis tight;
 xlim([0 len])
 xlabel('samples','FontSize',18);
 
+leg = legend([plot1,shad2.mainLine,shad2.patch],{'estim','meas','2$\sigma_{meas}$'});
+set(leg,'Interpreter','latex', ...
+       'Location','best', ...
+       'Orientation','horizontal');
+set(leg,'FontSize',13);
+
 tightfig();
 % save
 if saveON
@@ -482,7 +760,7 @@ end
 
 
 %% RIGHT ANKLE-KNEE-HIP
-fig = figure('Name', 'Right leg torques','NumberTitle','off');
+fig = figure('Name', 'Right leg torques','NumberTitle','off','units','normalized','outerposition',[0 0 1 1]);
 axes1 = axes('Parent',fig,'FontSize',16);
 box(axes1,'on');
 hold(axes1,'on');
@@ -583,7 +861,7 @@ if saveON
 end
 
 %% LEFT ANKLE-KNEE-HIP
-fig = figure('Name', 'Left leg torques','NumberTitle','off');
+fig = figure('Name', 'Left leg torques','NumberTitle','off','units','normalized','outerposition',[0 0 1 1]);
 axes1 = axes('Parent',fig,'FontSize',16);
 box(axes1,'on');
 hold(axes1,'on');
@@ -697,13 +975,13 @@ if saveON
 end
 
 %% RIGHT ARM
-fig = figure('Name', 'Right arm torques','NumberTitle','off');
+fig = figure('Name', 'Right arm torques','NumberTitle','off','units','normalized','outerposition',[0 0 1 1]);
 axes1 = axes('Parent',fig,'FontSize',16);
 box(axes1,'on');
 hold(axes1,'on');
 grid on;
 
-subplot (431) % right shoulder x component
+subplot (331) % right shoulder x component
 plot1 = plot(tau.estimated.rightShoulder.rotx,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotx,2.*sqrt(Sigma_tau.rightShoulder_rotx),'b',1.5);
 hold on
@@ -716,7 +994,7 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (432) % right shoulder y component
+subplot (332) % right shoulder y component
 plot1 = plot(tau.estimated.rightShoulder.roty,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.roty,2.*sqrt(Sigma_tau.rightShoulder_roty),'b',1.5);
 title ('y');
@@ -724,7 +1002,7 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (433) % right shoulder z component
+subplot (333) % right shoulder z component
 plot1 = plot(tau.estimated.rightShoulder.rotz,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
 title ('z');
@@ -732,7 +1010,7 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (434) % right C7shoulder x component
+subplot (334) % right C7shoulder x component
 plot1 = plot(tau.estimated.rightC7Shoulder.rotx,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightC7Shoulder.rotx,2.*sqrt(Sigma_tau.rightC7Shoulder_rotx),'b',1.5);
 hold on
@@ -744,14 +1022,14 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (435) % right C7shoulder y component
+subplot (335) % right C7shoulder y component
 plot1 = plot(tau.estimated.rightShoulder.roty,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
 grid on;
 axis tight;
 xlim([0 len])
 
-subplot (436) % right C7shoulder z component
+subplot (336) % right C7shoulder z component
 plot1 = plot(tau.estimated.rightShoulder.rotz,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
 grid on;
@@ -771,7 +1049,7 @@ xlim([0 len])
 % axis tight;
 % xlim([0 len])
 
-subplot (438) % right elbow y component
+subplot (338) % right elbow y component
 plot1 = plot(tau.estimated.rightElbow.roty,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
 ylabel({'jRightElbow','$Nm$'},'HorizontalAlignment','center',...
@@ -783,7 +1061,7 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (439) % right elbow z component
+subplot (339) % right elbow z component
 plot1 = plot(tau.estimated.rightElbow.rotz,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
 xlabel('samples','FontSize',18);
@@ -811,13 +1089,13 @@ if saveON
 end
 
 %% LEFT ARM
-fig = figure('Name', 'Left arm torques','NumberTitle','off');
+fig = figure('Name', 'Left arm torques','NumberTitle','off','units','normalized','outerposition',[0 0 1 1]);
 axes1 = axes('Parent',fig,'FontSize',16);
 box(axes1,'on');
 hold(axes1,'on');
 grid on;
 
-subplot (431) % left shoulder x component
+subplot (331) % left shoulder x component
 plot1 = plot(tau.estimated.leftShoulder.rotx,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.leftShoulder.rotx,2.*sqrt(Sigma_tau.rightShoulder_rotx),'b',1.5);
 hold on
@@ -830,7 +1108,7 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (432) % left shoulder y component
+subplot (332) % left shoulder y component
 plot1 = plot(tau.estimated.leftShoulder.roty,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.roty,2.*sqrt(Sigma_tau.rightShoulder_roty),'b',1.5);
 title ('y','FontSize',18);
@@ -838,7 +1116,7 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (433) % left shoulder z component
+subplot (333) % left shoulder z component
 plot1 = plot(tau.estimated.leftShoulder.rotz,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
 title ('z','FontSize',18);
@@ -846,7 +1124,7 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (434) % left C7shoulder x component
+subplot (334) % left C7shoulder x component
 plot1 = plot(tau.estimated.leftC7Shoulder.rotx,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightC7Shoulder.rotx,2.*sqrt(Sigma_tau.rightC7Shoulder_rotx),'b',1.5);
 hold on
@@ -858,14 +1136,14 @@ grid on;
 axis tight;
 xlim([0 len])
 
-subplot (435) % left C7shoulder y component
+subplot (335) % left C7shoulder y component
 plot1 = plot(tau.estimated.leftShoulder.roty,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5)
 grid on;
 axis tight;
 xlim([0 len])
 
-subplot (436) % left C7shoulder z component
+subplot (336) % left C7shoulder z component
 plot1 = plot(tau.estimated.leftShoulder.rotz,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
 grid on;
@@ -885,28 +1163,10 @@ xlim([0 len])
 % % axis tight;
 % % xlim([0 len])
 
-subplot (438) % left elbow y component
+subplot (338) % left elbow y component
 plot1 = plot(tau.estimated.leftElbow.roty,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
-xlabel('samples','FontSize',18);
-grid on;
-axis tight;
-xlim([0 len])
-
-subplot (439) % left elbow z component
-plot1 = plot(tau.estimated.leftElbow.rotz,'b','lineWidth',1.5);
-% shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
-xlabel('samples','FontSize',18);
-grid on;
-axis tight;
-xlim([0 len])
-
-
-subplot (4,3,10) % left wrist x component
-plot1 = plot(tau.estimated.leftWrist.rotx,'b','lineWidth',1.5);
-% shad2 = shadedErrorBar([],tau.estimated.rightC7Shoulder.rotx,2.*sqrt(Sigma_tau.rightC7Shoulder_rotx),'b',1.5);
-hold on
-ylabel({'jRightWrist','$Nm$'},'HorizontalAlignment','center',...
+ylabel({'jRightElbow','$Nm$'},'HorizontalAlignment','center',...
     'FontWeight','bold',...
     'FontSize',18,...
     'Interpreter','latex');
@@ -915,20 +1175,10 @@ grid on;
 axis tight;
 xlim([0 len])
 
-% % subplot (4,3,11) % right wrist y component
-% % plot1 = plot(tau.estimated.leftWrist.roty,'b','lineWidth',1.5);
-% % % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
-% % xlabel('N samples');
-% % title ('y');
-% % grid on;
-% % axis tight;
-% % xlim([0 len])
-
-subplot (4,3,12) % left wrist z component
-plot1 = plot(tau.estimated.leftWrist.rotz,'b','lineWidth',1.5);
+subplot (339) % left elbow z component
+plot1 = plot(tau.estimated.leftElbow.rotz,'b','lineWidth',1.5);
 % shad2 = shadedErrorBar([],tau.estimated.rightShoulder.rotz,2.*sqrt(Sigma_tau.rightShoulder_rotz),'b',1.5);
 xlabel('samples','FontSize',18);
-title ('z');
 grid on;
 axis tight;
 xlim([0 len])

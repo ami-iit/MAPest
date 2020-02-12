@@ -1,3 +1,6 @@
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 % Insert here your code
 % ....

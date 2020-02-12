@@ -7,6 +7,9 @@ function [ state, ddq, selectedJoints] = IK(filenameOsimModel, filenameTrc, setu
 % - state : (q, dq) in rad
 % - ddq   : in rad
 % - selectedJoints: order of the joints in then Osim model
+%
+% Author(s): Claudia Latella, Franxcesco Romano, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 %% Use OpenSim InverseKinematicTool
 import org.opensim.modeling.*  % import OpenSim APIs to be used in MATLAB

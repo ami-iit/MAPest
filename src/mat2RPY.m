@@ -1,6 +1,10 @@
 function [rpy] = mat2RPY(R)
 %MAT2RPY converts a rotation matrix to RPY.
 % This function maps exactly the same code of iDynTree function.
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 
 rpy = zeros(3,1);
 

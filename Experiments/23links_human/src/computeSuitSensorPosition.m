@@ -6,6 +6,9 @@ function [suit] = computeSuitSensorPosition(suit, len)
 % NOTE: Check/modify manually len value. You can decide to insert a fixed
 % number of frames useful to capture all the movements performed during
 % your own experiment.
+%
+% Author(s): Claudia Latella, Fraancesco Romano, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 for sIdx = 1: suit.properties.nrOfSensors
     sensor = suit.sensors{sIdx};

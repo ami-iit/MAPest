@@ -1,6 +1,10 @@
 function [R] = quat2Mat(q)
 %QUAT2MAT converts a quaternion into a rotation matrix.
 % This function maps exactly the same code of iDynTree function.
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 
 % Check if quaternion is normalized, otherwise normalize it
 if ~(norm(q) == 1.0)

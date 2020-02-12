@@ -9,6 +9,9 @@ function [linkStruct, found] = linksFromName(TotalLinksStruct, linkName)
 % Outputs:
 % - linkStruct      : struct related to a link;
 % - found           : true if link has been found, false otherwise.
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 for indx = 1 : size(TotalLinksStruct,1)
     if  strcmp(TotalLinksStruct{indx,1}.label,linkName)

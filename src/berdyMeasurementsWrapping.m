@@ -2,6 +2,10 @@ function [y, Sigmay] = berdyMeasurementsWrapping(berdy, data)
 % BERDYMEASUREMENTSWRAPPING orders the measurements in a format
 % compatible with the BerdyHelper class.  It returns a vector of
 % ordered measurements and its associated covariance matrix.
+%
+% Author(s): Claudia Latella, Francesco Romano, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 
 sensorOrder = berdy.getSensorsOrdering();
 

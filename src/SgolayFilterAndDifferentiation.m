@@ -11,6 +11,9 @@ function [smooth, varargout] = SgolayFilterAndDifferentiation(polynOrder,window,
 %     .
 % - ( ,polynomialOrder-1) --> coefficient for S-Golay as
 %                                (polynomialOrder) differentiator;
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 
 [~, diffCoeff] = SgolayWrapper(polynOrder, window);

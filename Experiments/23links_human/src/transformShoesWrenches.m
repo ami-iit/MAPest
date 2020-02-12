@@ -21,6 +21,9 @@ function [shoes] = transformShoesWrenches(synchroStruct, subjectParamsFromData)
 % This function computes the wrenches that the each shoe exerts on the link
 % in contact.  See the sketch footInShoe.pdf for the reference frames
 % locations.
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 %% Build the transformations
 % LEFT---------------------------------------------------------------------

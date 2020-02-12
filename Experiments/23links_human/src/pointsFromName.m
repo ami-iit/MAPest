@@ -9,6 +9,9 @@ function [points, found] = pointsFromName(pointsStruct, pointName)
 % Outputs:
 % - points    : 3x1 vector of points;
 % - found     : true if point has been found, false otherwise.
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 for indx = 1 : pointsStruct.nrOfPoints
     if  strcmp(pointsStruct.label{1,indx},pointName)

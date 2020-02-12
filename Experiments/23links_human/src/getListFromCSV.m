@@ -3,6 +3,9 @@ function data = getListFromCSV(filename, startRow, endRow, listLength)
 
 % Note: part of this function is inherited from the Matlab auto-generated code
 % of the function 'importCSVfile'.
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 %% Initialize variables
 delimiter = ',';

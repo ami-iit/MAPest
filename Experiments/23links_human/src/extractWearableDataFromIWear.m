@@ -93,6 +93,10 @@
 %                                                                                 dq_x dq_y dq_z
 %                                                                                 ddq_x ddq_y ddq_z))
 
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 %% Load and read wearable file
 bucket.pathToWearableData   = fullfile(pwd,'data');
 

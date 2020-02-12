@@ -14,6 +14,9 @@ function [subjectParams] = subjectParamsComputation(suit, M)
 % For those links which are defined with a parallelepiped bounding box, the
 % convention for the size vector is: [DIM ALONG x, DIM ALONG y, DIM ALONG z].
 % For cylinder bounding boxes x dimension is the diameter.
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 %% --LINK BASE
 %% PELVIS

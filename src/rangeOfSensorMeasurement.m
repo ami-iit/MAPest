@@ -1,6 +1,10 @@
 function [ index, len ] = rangeOfSensorMeasurement( berdy, sensType, sensID)
 %RANGEOFDYNAMICVARIABLE given a type of sensor and its label, returns its
 % index in the vector y and its range.
+%
+% Author(s): Claudia Latella, Francesco Romano, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 
 sensorOrder = berdy.getSensorsOrdering();
 index = -1;

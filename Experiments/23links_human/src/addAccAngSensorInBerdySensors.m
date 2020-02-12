@@ -1,6 +1,9 @@
 function [humanSensors] = addAccAngSensorInBerdySensors(humanSensors, name,parentLink, linkIndex, S_R_L, posSwrtL)
 %ADDACCANGSENSORINBERDYSENSORS adds the angular accelerometer sensors to
 %the iDynTree Berdy sensor
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 newAngAccSens = iDynTree.ThreeAxisAngularAccelerometerSensor;
 newAngAccSens.setName(name);

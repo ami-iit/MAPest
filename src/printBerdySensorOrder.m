@@ -5,6 +5,10 @@ function printBerdySensorOrder( berdy)
 % - the index of its location in the vector y (NOTE: it is in  0-based
 %   notation!);
 % - the range or lenght of element for that sensor.
+%
+% Author(s): Claudia Latella, Francesco Romano, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 
 sensorOrder = berdy.getSensorsOrdering();
 

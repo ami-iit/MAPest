@@ -6,6 +6,9 @@ function [ dataPacked ] = dataPackaging(model, sensors, suit, angAcc, fext, ddq,
 %    - id  : labels coming from 'model' and 'sensor';
 %    - meas: value of measurements;
 %    - var : variance of sensor.
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 data      = struct;
 data.acc  = struct;

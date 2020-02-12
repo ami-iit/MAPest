@@ -10,6 +10,10 @@ function printBerdyDynVariables_floating( berdy )
 % - the index of its location in the vector d (NOTE: it is in  0-based
 %   notation!);
 % - the range or lenght of element for that variable.
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 
 dynVariable = berdy.getDynamicVariablesOrdering();
 

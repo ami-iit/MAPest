@@ -1,6 +1,9 @@
 function tau = extractEstimatedTau_from_mu_dgiveny(berdy, mu_dgiveny, q)
 %EXTRACTEDESTIMATEDTAU_FROM_MUDGIVENY extracts via berdy the estimated
 % torque by MAP.
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 % Initialize vectors
 mu_dgiveny_berdy = iDynTree.VectorDynSize();

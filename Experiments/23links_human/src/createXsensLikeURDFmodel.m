@@ -9,6 +9,9 @@ function [urdfModelTemplate] = createXsensLikeURDFmodel(subjectParams, sensors, 
 %                     called 'Models'.
 % -  GazeboModel   : (optional) true or false. If true a model for Gazebo
 %                    is generated with masses and inertias different from 0
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 options = struct(   ...
     'FILENAME',      '',...

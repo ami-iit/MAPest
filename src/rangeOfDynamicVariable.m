@@ -1,6 +1,10 @@
 function [ index, len ] = rangeOfDynamicVariable( berdy, varType, varID)
 % RANGEOFDYNAMICVARIABLE given a type of variable and its label, returns its
 % index in the vector d and its range.
+%
+% Author(s): Claudia Latella, Francesco Romano, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 
 dynVariable = berdy.getDynamicVariablesOrdering();
 index = -1;

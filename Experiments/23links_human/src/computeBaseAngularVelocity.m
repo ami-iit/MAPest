@@ -18,6 +18,9 @@ function [ baseAngVelocity, baseKinDynModel ] = computeBaseAngularVelocity( kinD
 % Outputs: 
 %  - baseAngVelocity:   I_w_B, angular velocity of the base B w.r.t. the
 %                       inertail frame I, in [rad/s].
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 iDynTreeJacobian = iDynTree.FrameFreeFloatingJacobian(kinDynComputation.model);
 iDynTreeJacobian.zero();

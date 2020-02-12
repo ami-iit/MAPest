@@ -1,6 +1,9 @@
 function Fext = extractEstimatedFext_from_mu_dgiveny(berdy, dVectorOrder, mu_dgiveny)
 %EXTRACTEDESTIMATEDFEXT_FROM_MUDGIVENY extracts the estimated external
 % wrenches by MAP.
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 nrOfLinks = size(dVectorOrder,1);
 range = zeros(nrOfLinks,1);

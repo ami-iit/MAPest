@@ -7,6 +7,9 @@ function [osimModelTemplate] = createXsensLikeOSIMmodel(subjectParams, filename)
 % -  subjectParams  : anthropometric parameters;
 % -  filename       : (optional) allows to save the file.osim in a folder
 %                      called 'Models'.
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 osimModelTemplate = fileread('XSensModelStyle_OSIMtemplate48.osim');
 %% -- LINK BASE

@@ -6,6 +6,9 @@ function y_simulated = sim_y_floating(berdy, human_state, traversal, baseAngVel,
 % the MAP (i.e., mu_dgiveny) with the measurements in the y vector but you
 % have to pass through the sim_y_floating and only later to compare vectors
 % y and y_simulated.
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 % Set gravity
 gravity = [0 0 -9.81];

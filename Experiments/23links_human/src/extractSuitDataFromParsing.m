@@ -1,3 +1,6 @@
+%
+% Author(s): Claudia Latella, 2017
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 %% Load and read parsed file
 bucket.pathToSuitData   = fullfile(bucket.pathToRawData,'parsedFromMvnx');

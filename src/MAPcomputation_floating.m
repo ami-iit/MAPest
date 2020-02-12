@@ -42,6 +42,10 @@ function [mu_dgiveny, Sigma_dgiveny] = MAPcomputation_floating(berdy, traversal,
 % loads the full y and then remove automatically values related to that
 % sensor and the related block variance from the Sigmay.
 % -------------------------------------------------------------------------
+%
+% Author(s): Claudia Latella, 2019
+% Dynamic Interaction Control, Istituto Italiano di Tecnologia
+
 
 options = struct(   ...
     'SENSORS_TO_REMOVE', []...

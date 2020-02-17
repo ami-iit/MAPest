@@ -8,12 +8,17 @@ bucket.pathToTask    = fullfile(bucket.pathToSubject,sprintf('task%d',taskID));
 bucket.pathToRawData = fullfile(bucket.pathToTask,'data');
 bucket.pathToProcessedData   = fullfile(bucket.pathToTask,'processed');
 
-disp(' ');
-disp('===================== FLOATING-BASE ANALYSIS ======================');
-fprintf('[Start] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
+if opts.task1_SOT %Task1
+    bucket.pathToProcessedData_SOTtask1   = fullfile(bucket.pathToProcessedData,'processed_SOTtask1');
+    if ~exist(bucket.pathToProcessedData_SOTtask1)
+        mkdir (bucket.pathToProcessedData_SOTtask1)
+    end
+end
 
-% Extraction of the masterFile
-masterFile = load(fullfile(bucket.pathToRawData,sprintf(('S%02d_%02d.mat'),subjectID,taskID)));
+if opts.task1_SOT
+    disp(' ');
+    disp('===================== FLOATING-BASE ANALYSIS ======================');
+    fprintf('[Start] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 
 % Option for computing the estimated Sigma
 opts.Sigma_dgiveny = false;
@@ -308,35 +313,48 @@ for newSensIdx = 1 : length(suit.sensors)
         angAcc_sensor(newSensIdx).S_R_L, angAcc_sensor(newSensIdx).pos_SwrtL);
 end
 
-%% Initialize berdy
-% Specify berdy options
-berdyOptions = iDynTree.BerdyOptions;
+    %% Initialize berdy
+    % Specify berdy options
+    berdyOptions = iDynTree.BerdyOptions;
 
-berdyOptions.baseLink = bucket.base;
-berdyOptions.includeAllNetExternalWrenchesAsSensors          = true;
-berdyOptions.includeAllNetExternalWrenchesAsDynamicVariables = true;
-berdyOptions.includeAllJointAccelerationsAsSensors           = true;
-berdyOptions.includeAllJointTorquesAsSensors                 = false;
+    berdyOptions.baseLink = bucket.base;
+    berdyOptions.includeAllNetExternalWrenchesAsSensors          = true;
+    berdyOptions.includeAllNetExternalWrenchesAsDynamicVariables = true;
+    berdyOptions.includeAllJointAccelerationsAsSensors           = true;
+    berdyOptions.includeAllJointTorquesAsSensors                 = false;
+    berdyOptions.includeCoMAccelerometerAsSensorInTask1          = true;
+    berdyOptions.includeCoMAccelerometerAsSensorInTask2          = false;
+    berdyOptions.stackOfTasksMAP                                 = true;
 
-berdyOptions.berdyVariant = iDynTree.BERDY_FLOATING_BASE;
-berdyOptions.includeFixedBaseExternalWrench = false;
+    % Option useful for the new measurement equation
+    %      X_{COMconstrainedLinks} * fˆx_{COMconstrainedLinks} = m * ddx_COM
+    % where COMconstrainedLinks is a vector containing link names.
+    COMconstrainedLinks = iDynTree.StringVector();
+    COMconstrainedLinks.push_back('LeftFoot');
+    COMconstrainedLinks.push_back('RightFoot');
+    COMconstrainedLinks.push_back('LeftHand');
+    COMconstrainedLinks.push_back('RightHand');
+    berdyOptions.comConstraintLinkNamesVector = COMconstrainedLinks;
 
-% Load berdy
-berdy = iDynTree.BerdyHelper;
-berdy.init(humanModel, humanSensors, berdyOptions);
+    berdyOptions.berdyVariant = iDynTree.BERDY_FLOATING_BASE;
+    berdyOptions.includeFixedBaseExternalWrench = false;
 
-% Get the current traversal
-traversal = berdy.dynamicTraversal;
+    % Load berdy
+    berdy = iDynTree.BerdyHelper;
+    berdy.init(humanModel, humanSensors, berdyOptions);
 
-% Floating base settings
-currentBase = berdy.model().getLinkName(traversal.getBaseLink().getIndex());
-disp(strcat('Current base is < ', currentBase,'>.'));
-human_kinDynComp.setFloatingBase(currentBase);
-baseKinDynModel = human_kinDynComp.getFloatingBase();
-% Consistency check: berdy.model base and human_kinDynComp.model have to be consistent!
-if currentBase ~= baseKinDynModel
-    error(strcat('[ERROR] The berdy model base (',currentBerdyBase,') and the kinDyn model base (',baseKinDynModel,') do not match!'));
-end
+    % Get the current traversal
+    traversal = berdy.dynamicTraversal;
+
+    % Floating base settings
+    currentBase = berdy.model().getLinkName(traversal.getBaseLink().getIndex());
+    disp(strcat('Current base is < ', currentBase,'>.'));
+    human_kinDynComp.setFloatingBase(currentBase);
+    baseKinDynModel = human_kinDynComp.getFloatingBase();
+    % Consistency check: berdy.model base and human_kinDynComp.model have to be consistent!
+    if currentBase ~= baseKinDynModel
+        error(strcat('[ERROR] The berdy model base (',currentBerdyBase,') and the kinDyn model base (',baseKinDynModel,') do not match!'));
+    end
 
 % Get the tree is visited IS the order of variables in vector d
 dVectorOrder = cell(traversal.getNrOfVisitedLinks(), 1); %for each link in the traversal get the name
@@ -346,14 +364,91 @@ for i = 0 : traversal.getNrOfVisitedLinks() - 1
         joint  = traversal.getParentJoint(i);
         dJointOrder{i} = berdy.model().getJointName(joint.getIndex());
     end
-    link = traversal.getLink(i);
-    dVectorOrder{i + 1} = berdy.model().getLinkName(link.getIndex());
-end
+    % ---------------------------------------------------
+    % CHECK: print the order of variables in d vector
+    % printBerdyDynVariables_floating(berdy, opts.stackOfTaskMAP);
+    % ---------------------------------------------------
 
-% ---------------------------------------------------
-% CHECK: print the order of variables in d vector
-% printBerdyDynVariables_floating(berdy)
-% ---------------------------------------------------
+    %% Compute the transformation of the base w.r.t. the global suit frame G
+    disp('-------------------------------------------------------------------');
+    disp(strcat('[Start] Computing the <',currentBase,'> iDynTree transform w.r.t. the global frame G...'));
+    %--------Computation of the suit base orientation and position w.r.t. G
+    for suitLinksIdx = 1 : size(suit.links,1)
+        if suit.links{suitLinksIdx, 1}.label == currentBase
+            basePos_tot  = suit.links{suitLinksIdx, 1}.meas.position;
+            baseOrientation_tot = suit.links{suitLinksIdx, 1}.meas.orientation;
+            break
+        end
+        break
+    end
+
+    for blockIdx = 1 : block.nrOfBlocks
+        tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
+        bucket.basePosition(blockIdx).basePos_wrtG  = basePos_tot(:,tmp.cutRange{blockIdx});
+        bucket.orientation(blockIdx).baseOrientation = baseOrientation_tot(:,tmp.cutRange{blockIdx});
+    end
+    clearvars basePos_tot baseOrientation_tot;
+
+    for blockIdx = 1 : block.nrOfBlocks
+        G_T_base(blockIdx).block = block.labels(blockIdx);
+        G_T_base(blockIdx).G_T_b = computeTransformBaseToGlobalFrame(human_kinDynComp, ...
+            synchroKin(blockIdx),...
+            bucket.orientation(blockIdx).baseOrientation, ...
+            bucket.basePosition(blockIdx).basePos_wrtG);
+    end
+    disp(strcat('[End] Computing the <',currentBase,'> iDynTree transform w.r.t. the global frame G'));
+
+    %% Contact pattern definition
+    % Trials are performed with both the feet attached to the ground (i.e.,
+    % doubleSupport).  No single support is assumed for this analysis.
+    for blockIdx = 1 : block.nrOfBlocks
+        contactPattern(blockIdx).block = block.labels(blockIdx);
+        contactPattern(blockIdx).contactPattern = cell(length(synchroKin(blockIdx).masterTime),1);
+        for tmpIdx = 1 : length(synchroKin(blockIdx).masterTime)
+            contactPattern(blockIdx).contactPattern{tmpIdx} = 'doubleSupport';
+        end
+    end
+
+    %% Velocity of the currentBase
+    % Code to handle the info of the velocity of the base.
+    % This value is mandatorily required in the floating-base formalism.
+    disp('-------------------------------------------------------------------');
+    disp(strcat('[Start] Computing the <',currentBase,'> velocity...'));
+    if ~exist(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'), 'file')
+        for blockIdx = 1 : block.nrOfBlocks
+            baseVel(blockIdx).block = block.labels(blockIdx);
+            [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
+                synchroKin(blockIdx),...
+                G_T_base(blockIdx), ...
+                contactPattern(blockIdx).contactPattern);
+        end
+        save(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'),'baseVel');
+    else
+        load(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'));
+    end
+    disp(strcat('[End] Computing the <',currentBase,'> velocity'));
+    % plot_baseVelocityInPattern;
+
+    %% Compute the proper rate of change of momentum
+    % properDotL = [properDotL_lin; properDotL_ang];
+
+    % Compute the proper rate of change of the linear momentum, properDotL_lin
+    disp('-------------------------------------------------------------------');
+    disp(strcat('[Start] Computing the rate of change of momentum for the <',currentBase,'>...'));
+    for blockIdx = 1 : block.nrOfBlocks
+        properDotL(blockIdx).block = block.labels(blockIdx);
+        tmp.baseVelocity6D = [baseVel(blockIdx).baseLinVelocity ; baseVel(blockIdx).baseAngVelocity];
+        tmp.properDotL_lin = computeProperRateOfChangeOfLinearMomentum(human_kinDynComp, humanModel, ...
+            synchroKin(blockIdx), ...
+            tmp.baseVelocity6D, ...
+            G_T_base(blockIdx).G_T_b);
+        % Set the proper rate of change of the angular momentum (properDotL_ang) to zero
+        tmp.properDotL_ang = zeros(size(tmp.properDotL_lin));
+        % Build properDotL
+        properDotL(blockIdx).properDotL = [tmp.properDotL_lin; tmp.properDotL_ang];
+    end
+    disp(strcat('[End] Computing the rate of change of momentum for the <',currentBase,'>'));
+end
 
 %% Measurements wrapping
 disp('-------------------------------------------------------------------');
@@ -365,28 +460,54 @@ for blockIdx = 1 : block.nrOfBlocks
     data(blockIdx).block = block.labels(blockIdx);
     data(blockIdx).data  = dataPackaging(blockIdx, ...
         humanModel,...
+        currentBase, ...
         humanSensors,...
         suit_runtime,...
         angAcc_sensor, ...
         fext,...
+        properDotL(blockIdx).properDotL, ...
         synchroKin(blockIdx).ddq,...
         bucket.contactLink, ...
-        priors);
+        priors, ...
+        opts.stackOfTaskMAP);
+
+    if ~opts.task1_SOT
+        estimatedFextFromSOTtask1 = load(fullfile(bucket.pathToProcessedData_SOTtask1,'estimatedVariables.mat'));
+        for linkIdx = 1 : size(estimatedFextFromSOTtask1.estimatedVariables.Fext.label,1)
+            for dataIdx = 1 : length(data)
+                if strcmp(data(dataIdx).id, estimatedFextFromSOTtask1.estimatedVariables.Fext.label{linkIdx})
+                    data(dataIdx).meas = estimatedFextFromSOTtask1.estimatedVariables.Fext.values(6*(linkIdx-1)+1:6*linkIdx,:);
+                    break;
+                end
+            end
+        end
+    end
+
     % y vector as input for MAP
     [data(blockIdx).y, data(blockIdx).Sigmay] = berdyMeasurementsWrapping(berdy, ...
-        data(blockIdx).data);
+        data(blockIdx).data, ...
+        opts.stackOfTaskMAP);
+
+    if opts.task1_SOT
+        % modify variances for the external forces at the hands
+        range_leftHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'LeftHand',opts.stackOfTaskMAP);
+        data(blockIdx).Sigmay(range_leftHand:range_leftHand+5,range_leftHand:range_leftHand+5) = priors.fext_hands;
+
+        range_rightHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'RightHand',opts.stackOfTaskMAP);
+        data(blockIdx).Sigmay(range_rightHand:range_rightHand+5,range_rightHand:range_rightHand+5) = priors.fext_hands;
+    end
 end
 disp('[End] Wrapping measurements');
 % ---------------------------------------------------
 % CHECK: print the order of measurement in y
-% printBerdySensorOrder(berdy);
+% printBerdySensorOrder(berdy, opts.stackOfTaskMAP);
 % ---------------------------------------------------
 
 %% ------------------------------- MAP ------------------------------------
 %% Set MAP priors
-priors.mud    = zeros(berdy.getNrOfDynamicVariables(), 1);
-priors.Sigmad = bucket.Sigmad * eye(berdy.getNrOfDynamicVariables());
-priors.SigmaD = bucket.SigmaD * eye(berdy.getNrOfDynamicEquations());
+priors.mud    = zeros(berdy.getNrOfDynamicVariables(opts.stackOfTaskMAP), 1);
+priors.Sigmad = bucket.Sigmad * eye(berdy.getNrOfDynamicVariables(opts.stackOfTaskMAP));
+priors.SigmaD = bucket.SigmaD * eye(berdy.getNrOfDynamicEquations(opts.stackOfTaskMAP));
 
 %% Possibility to remove a sensor from the analysis
 % excluding the accelerometers and gyroscope for whose removal already
@@ -409,67 +530,6 @@ sensorsToBeRemoved = [];
 % % bucket.temp.id = 'LeftFoot';
 % % sensorsToBeRemoved = [sensorsToBeRemoved; bucket.temp];
 
-%% Compute the transformation of the base w.r.t. the global suit frame G
-disp('-------------------------------------------------------------------');
-disp(strcat('[Start] Computing the <',currentBase,'> iDynTree transform w.r.t. the global frame G...'));
-%--------Computation of the suit base orientation and position w.r.t. G
-for suitLinksIdx = 1 : size(suit.links,1)
-    if suit.links{suitLinksIdx, 1}.label == currentBase
-        basePos_tot  = suit.links{suitLinksIdx, 1}.meas.position;
-        baseOrientation_tot = suit.links{suitLinksIdx, 1}.meas.orientation;
-        break
-    end
-    break
-end
-
-for blockIdx = 1 : block.nrOfBlocks
-    tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
-    bucket.basePosition(blockIdx).basePos_wrtG  = basePos_tot(:,tmp.cutRange{blockIdx});
-    bucket.orientation(blockIdx).baseOrientation = baseOrientation_tot(:,tmp.cutRange{blockIdx});
-end
-clearvars basePos_tot baseOrientation_tot;
-
-for blockIdx = 1 : block.nrOfBlocks
-    G_T_base(blockIdx).block = block.labels(blockIdx);
-    G_T_base(blockIdx).G_T_b = computeTransformBaseToGlobalFrame(human_kinDynComp, ...
-        synchroKin(blockIdx),...
-        bucket.orientation(blockIdx).baseOrientation, ...
-        bucket.basePosition(blockIdx).basePos_wrtG);
-end
-disp(strcat('[End] Computing the <',currentBase,'> iDynTree transform w.r.t. the global frame G'));
-
-%% Contact pattern definition
-% Trials are performed with both the feet attached to the ground (i.e.,
-% doubleSupport).  No single support is assumed for this analysis.
-for blockIdx = 1 : block.nrOfBlocks
-    contactPattern(blockIdx).block = block.labels(blockIdx);
-    contactPattern(blockIdx).contactPattern = cell(length(synchroKin(blockIdx).masterTime),1);
-    for tmpIdx = 1 : length(synchroKin(blockIdx).masterTime)
-        contactPattern(blockIdx).contactPattern{tmpIdx} = 'doubleSupport';
-    end
-end
-
-%% Velocity of the currentBase
-% Code to handle the info of the velocity of the base.
-% This value is mandatorily required in the floating-base formalism.
-
-disp('-------------------------------------------------------------------');
-disp(strcat('[Start] Computing the <',currentBase,'> velocity...'));
-if ~exist(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'), 'file')
-    for blockIdx = 1 : block.nrOfBlocks
-        baseVel(blockIdx).block = block.labels(blockIdx);
-        [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
-            synchroKin(blockIdx),...
-            G_T_base(blockIdx), ...
-            contactPattern(blockIdx).contactPattern);
-    end
-    save(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'),'baseVel');
-else
-    load(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'));
-end
-disp(strcat('[End] Computing the <',currentBase,'> velocity'));
-
-
 %% --------------------------- ID comparisons -----------------------------
 % Section to benchmark MAP with
 % - iDynTree::kinDynComputation::InverseDynamics()
@@ -479,72 +539,134 @@ if opts.MAPbenchmarking
 end
 
 %% MAP computation
-if ~exist(fullfile(bucket.pathToProcessedData,'estimation.mat'), 'file')
-    for blockIdx = 1 : block.nrOfBlocks
-        priors.Sigmay = data(blockIdx).Sigmay;
-        estimation(blockIdx).block = block.labels(blockIdx);
-        if opts.Sigma_dgiveny
-            disp('-------------------------------------------------------------------');
-            disp(strcat('[Start] Complete MAP computation for Block ',num2str(blockIdx),'...'));
-            [estimation(blockIdx).mu_dgiveny, estimation(blockIdx).Sigma_dgiveny] = MAPcomputation_floating(berdy, ...
-                traversal, ...
-                synchroKin(blockIdx),...
-                data(blockIdx).y, ...
-                priors, ...
-                baseVel(blockIdx).baseAngVelocity, ...
-                'SENSORS_TO_REMOVE', sensorsToBeRemoved);
-            disp(strcat('[End] Complete MAP computation for Block ',num2str(blockIdx)));
-            % TODO: variables extraction
-            % Sigma_tau extraction from Sigma d --> since sigma d is very big, it
-            % cannot be saved! therefore once computed it is necessary to extract data
-            % related to tau and save that one!
-            % TODO: extractSigmaOfEstimatedVariables
-        else
-            disp('-------------------------------------------------------------------');
-            disp(strcat('[Start] mu_dgiveny MAP computation for Block ',num2str(blockIdx),'...'));
-            [estimation(blockIdx).mu_dgiveny] = MAPcomputation_floating(berdy, ...
-                traversal, ...
-                synchroKin(blockIdx),...
-                data(blockIdx).y, ...
-                priors, ...
-                baseVel(blockIdx).baseAngVelocity, ...
-                'SENSORS_TO_REMOVE', sensorsToBeRemoved);
-            disp(strcat('[End] mu_dgiveny MAP computation for Block ',num2str(blockIdx)));
-        end
+% if ~exist(fullfile(bucket.pathToProcessedData,'estimation.mat'), 'file')
+for blockIdx = 1 : block.nrOfBlocks
+    priors.Sigmay = data(blockIdx).Sigmay;
+    estimation(blockIdx).block = block.labels(blockIdx);
+    if opts.Sigma_dgiveny
+        disp('-------------------------------------------------------------------');
+        disp(strcat('[Start] Complete MAP computation for Block ',num2str(blockIdx),'...'));
+        [estimation(blockIdx).mu_dgiveny, estimation(blockIdx).Sigma_dgiveny] = MAPcomputation_floating(berdy, ...
+            traversal, ...
+            synchroKin(blockIdx),...
+            data(blockIdx).y, ...
+            priors, ...
+            opts.stackOfTaskMAP, ...
+            baseVel(blockIdx).baseAngVelocity, ...
+            'SENSORS_TO_REMOVE', sensorsToBeRemoved);
+        disp(strcat('[End] Complete MAP computation for Block ',num2str(blockIdx)));
+        % TODO: variables extraction
+        % Sigma_tau extraction from Sigma d --> since sigma d is very big, it
+        % cannot be saved! therefore once computed it is necessary to extract data
+        % related to tau and save that one!
+        % TODO: extractSigmaOfEstimatedVariables
+    else
+        disp('-------------------------------------------------------------------');
+        disp(strcat('[Start] mu_dgiveny MAP computation for Block ',num2str(blockIdx),'...'));
+        [estimation(blockIdx).mu_dgiveny] = MAPcomputation_floating(berdy, ...
+            traversal, ...
+            synchroKin(blockIdx),...
+            data(blockIdx).y, ...
+            priors, ...
+            baseVel(blockIdx).baseAngVelocity, ...
+            opts.stackOfTaskMAP, ...
+            'SENSORS_TO_REMOVE', sensorsToBeRemoved);
+        disp(strcat('[End] mu_dgiveny MAP computation for Block ',num2str(blockIdx)));
     end
-    save(fullfile(bucket.pathToProcessedData,'estimation.mat'),'estimation');
-else
-    load(fullfile(bucket.pathToProcessedData,'estimation.mat'));
 end
 
+if opts.task1_SOT
+    save(fullfile(bucket.pathToProcessedData_SOTtask1,'estimation.mat'),'estimation');
+else
+    save(fullfile(bucket.pathToProcessedData,'estimation.mat'),'estimation');
+end
+%     save(fullfile(bucket.pathToProcessedData,'estimation.mat'),'estimation');
+% else
+%     load(fullfile(bucket.pathToProcessedData,'estimation.mat'));
+% end
+
 %% Variables extraction from MAP estimation
-if ~exist(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'), 'file')
-    % torque extraction via Berdy
-    for blockIdx = 1 : block.nrOfBlocks
+% if Task1 --> extract only fext
+% if Task2 --> extract all
+
+% if ~exist(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'), 'file')
+
+% fext extraction (no via Berdy)
+for blockIdx = 1  : block.nrOfBlocks
+    disp('-------------------------------------------------------------------');
+    disp(strcat('[Start] External force MAP extraction for Block ',num2str(blockIdx),'...'));
+    estimatedVariables.Fext(blockIdx).block  = block.labels(blockIdx);
+    estimatedVariables.Fext(blockIdx).label  = dVectorOrder;
+    estimatedVariables.Fext(blockIdx).values = extractEstimatedFext_from_mu_dgiveny(berdy, ...
+        dVectorOrder, ...
+        estimation(blockIdx).mu_dgiveny, ...
+        opts.stackOfTaskMAP);
+    disp(strcat('[End] External force extraction for Block ',num2str(blockIdx)));
+end
+
+if opts.task1_SOT
+    save(fullfile(bucket.pathToProcessedData_SOTtask1,'estimatedVariables.mat'),'estimatedVariables');
+end
+disp('[End] External force MAP extraction');
+
+if ~opts.task1_SOT
+    % 6D acceleration (no via Berdy)
+    for blockIdx = 1  : block.nrOfBlocks
         disp('-------------------------------------------------------------------');
-        disp(strcat('[Start] Torque extraction for Block ',num2str(blockIdx),'...'));
+        disp(strcat('[Start] Acceleration MAP extraction for Block ',num2str(blockIdx),'...'));
+        estimatedVariables.Acc(blockIdx).block  = block.labels(blockIdx);
+        estimatedVariables.Acc(blockIdx).label  = dVectorOrder;
+        estimatedVariables.Acc(blockIdx).values = extractEstimatedAcc_from_mu_dgiveny(berdy, ...
+            dVectorOrder, ...
+            estimation(blockIdx).mu_dgiveny, ...
+            opts.stackOfTaskMAP);
+        disp(strcat('[End] Acceleration MAP extraction for Block ',num2str(blockIdx)));
+    end
+    % torque extraction (via Berdy)
+    for blockIdx = 1  : block.nrOfBlocks
+        disp('-------------------------------------------------------------------');
+        disp(strcat('[Start] Torque MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.tau(blockIdx).block  = block.labels(blockIdx);
         estimatedVariables.tau(blockIdx).label  = selectedJoints;
         estimatedVariables.tau(blockIdx).values = extractEstimatedTau_from_mu_dgiveny(berdy, ...
             estimation(blockIdx).mu_dgiveny, ...
             synchroKin(blockIdx).q);
-        disp(strcat('[End] Torque extraction for Block ',num2str(blockIdx)));
+        disp(strcat('[End] Torque MAP extraction for Block ',num2str(blockIdx)));
     end
-    % fext extraction, manual (no Berdy)
-    for blockIdx = 1 : block.nrOfBlocks
+    % joint acc extraction (no via Berdy)
+    for blockIdx = 1  : block.nrOfBlocks
         disp('-------------------------------------------------------------------');
-        disp(strcat('[Start] External force extraction for Block ',num2str(blockIdx),'...'));
-        estimatedVariables.Fext(blockIdx).block  = block.labels(blockIdx);
-        estimatedVariables.Fext(blockIdx).label  = dVectorOrder;
-        estimatedVariables.Fext(blockIdx).values = extractEstimatedFext_from_mu_dgiveny(berdy, ...
-            dVectorOrder, ...
-            estimation(blockIdx).mu_dgiveny);
-        disp(strcat('[End] External force extraction for Block ',num2str(blockIdx)));
+        disp(strcat('[Start] Joint acceleration MAP extraction for Block ',num2str(blockIdx),'...'));
+        estimatedVariables.ddq(blockIdx).block  = block.labels(blockIdx);
+        estimatedVariables.ddq(blockIdx).label  = selectedJoints;
+        %     estimatedVariables.ddq(blockIdx).values = extractEstimatedDdq_from_mu_dgiveny_floating(berdy, ...
+        %         selectedJoints, ...
+        %         estimation(blockIdx).mu_dgiveny);
+        % ---------------------------
+        estimatedVariables.ddq(blockIdx).values = estimation(blockIdx).mu_dgiveny(...
+            length(estimation(blockIdx).mu_dgiveny)-(nrDofs-1) : size(estimation(blockIdx).mu_dgiveny,1) ,:);
+        % ---------------------------
+        disp(strcat('[End] Joint acceleration MAP extraction for Block ',num2str(blockIdx)));
     end
+    % fint extraction (no via Berdy)
+    for blockIdx = 1  : block.nrOfBlocks
+        disp('-------------------------------------------------------------------');
+        disp(strcat('[Start] Internal force MAP extraction for Block ',num2str(blockIdx),'...'));
+        estimatedVariables.Fint(blockIdx).block  = block.labels(blockIdx);
+        estimatedVariables.Fint(blockIdx).label  = selectedJoints;
+        estimatedVariables.Fint(blockIdx).values = extractEstimatedFint_from_mu_dgiveny(berdy, ...
+            selectedJoints, ...
+            estimation(blockIdx).mu_dgiveny, ...
+            opts.stackOfTaskMAP);
+        disp(strcat('[End] Internal force MAP extraction for Block ',num2str(blockIdx)));
+    end
+    % save extracted viariables
     save(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'),'estimatedVariables');
-else
-    load(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'));
 end
+    %     save(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'),'estimatedVariables');
+% else
+%     load(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'));
+% end
 
 % if ~opts.EXO
 %     % test (via plots) angles VS torques for the shoulders
@@ -556,32 +678,46 @@ end
 % the results of the MAP.  Note: you cannot compare directly the results of
 % the MAP (i.e., mu_dgiveny) with the measurements in the y vector but you
 % have to pass through the y_sim and only later to compare y and y_sim.
-if ~exist(fullfile(bucket.pathToProcessedData,'y_sim.mat'), 'file')
-    for blockIdx = 1 : block.nrOfBlocks
-        disp('-------------------------------------------------------------------');
-        disp(strcat('[Start] Simulated y computation for Block ',num2str(blockIdx),'...'));
-        y_sim(blockIdx).block = block.labels(blockIdx);
-        [y_sim(blockIdx).y_sim] = sim_y_floating(berdy, ...
-            synchroKin(blockIdx),...
-            traversal, ...
-            baseVel(blockIdx).baseAngVelocity, ...
-            estimation(blockIdx).mu_dgiveny);
-        disp(strcat('[End] Simulated y computation for Block ',num2str(blockIdx)));
-    end
-    save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');
-else
-    load(fullfile(bucket.pathToProcessedData,'y_sim.mat'));
+
+% if ~exist(fullfile(bucket.pathToProcessedData,'y_sim.mat'), 'file')
+
+for blockIdx = 1 : block.nrOfBlocks
+    disp('-------------------------------------------------------------------');
+    disp(strcat('[Start] Simulated y computation for Block ',num2str(blockIdx),'...'));
+    y_sim(blockIdx).block = block.labels(blockIdx);
+    [y_sim(blockIdx).y_sim] = sim_y_floating(berdy, ...
+        synchroKin(blockIdx),...
+        traversal, ...
+        baseVel(blockIdx).baseAngVelocity, ...
+        estimation(blockIdx).mu_dgiveny, ...
+    opts.stackOfTaskMAP);
+    disp(strcat('[End] Simulated y computation for Block ',num2str(blockIdx)));
 end
 
-%% Variables extraction from y_sim
-if ~isfield(y_sim,'FextSim_RightFoot')
-    for blockIdx = 1 : block.nrOfBlocks
-        extractFext_from_y_sim
-    end
-    save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');
+if opts.task1_SOT
+    save(fullfile(bucket.pathToProcessedData_SOTtask1,'y_sim.mat'),'y_sim');
 else
-    load(fullfile(bucket.pathToProcessedData,'y_sim.mat'));
+    save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');
 end
+
+% save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');
+% else
+%     load(fullfile(bucket.pathToProcessedData,'y_sim.mat'));
+% end
+
+%% Variables extraction from y_sim
+
+% if ~isfield(y_sim,'FextSim_RightFoot')
+
+for blockIdx = 1 : block.nrOfBlocks
+    % extractFext_from_y_sim
+    extractSingleVar_from_y_sim_all;
+end
+save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');
+
+% else
+%     load(fullfile(bucket.pathToProcessedData,'y_sim.mat'));
+% end
 
 %% ---------------------------- EXO ANALYSIS ------------------------------
 if opts.EXO

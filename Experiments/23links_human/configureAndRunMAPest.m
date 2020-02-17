@@ -78,23 +78,40 @@ end
 
 %% Covariances setting
 priors = struct;
-priors.acc_IMU     = 0.001111 * ones(3,1);                 %[m^2/s^2]   , from datasheet
+priors.acc_IMU     = 1e-3 * ones(3,1);                 %[m^2/s^2]   , from datasheet
 % priors.gyro_IMU    = xxxxxx * ones(3,1);                 %[rad^2/s^2] , from datasheet
-priors.angAcc      = 1e-4 * ones(3,1); %test
+priors.angAcc      = 1e-3 * ones(3,1); %test
 priors.ddq         = 6.66e-6;                              %[rad^2/s^4] , from worst case covariance
-priors.foot_fext   = [59; 59; 36; 2.25; 2.25; 0.56];       %[N^2,(Nm)^2]
+priors.foot_fext   = 1e-6 * [59; 59; 36; 2.25; 2.25; 0.56];       %[N^2,(Nm)^2]
 priors.noSens_fext = 1e-6 * ones(6,1);
 
-bucket.Sigmad = 1e4;
+bucket.Sigmad = 1e6;
 % low reliability on the estimation (i.e., no prior info on the model regularization term d)
+% bucket.Sigmad_fint = 1e-3;
 bucket.SigmaD = 1e-4;
 % high reliability on the model constraints
 
 if opts.EXO
     if opts.EXO_insideMAP
-        priors.exo_fext   = 1e1 * ones(6,1); %[N^2,(Nm)^2]
+        priors.exo_fext   = 1e0 * ones(6,1); %[N^2,(Nm)^2]
     end
 end
 
-%% Run MAPest main.m
+% for SOT in Task1
+priors.fext_hands = [1e3*eye(3) 0*eye(3); 0*eye(3) 1e3*eye(3)];
+priors.properDotL = 1e-4 * ones(6,1);
+
+%% Run MAPest stack of task (SOT)
+% =========================================================================
+%  RUN TASK1
+disp('=====================================================================');
+disp('=====================================================================');
+disp('[Start] Run SOT Task1..');
+opts.task1_SOT = true;
+opts.stackOfTaskMAP = true; % argument value for berdy functions for task1
 main;
+disp('[End] Run SOT Task1');
+
+
+% %% Run MAPest main.m
+% main;

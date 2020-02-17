@@ -1,4 +1,4 @@
-function [ dataPacked ] = dataPackaging(blockIdx,model, sensors, suit, angAcc, fext, ddq, contactLink, priors)
+function [ dataPacked ] = dataPackaging(blockIdx, model, base, sensors, suit, angAcc, fext, properDotL, ddq, contactLink, priors, stackOfTaskMAP)
 %DATAPACKAGING creates a data struct organised in the following way:
 % - data.time (a unified time for all type of sensors)
 % Each substructure is identified by:
@@ -85,6 +85,18 @@ for i = 1 : nOfSensor.angAcc
 end
 % variance
 data.angAcc.var = priors.angAcc;
+
+%% FROM properDotL
+if stackOfTaskMAP
+    data.properDotL  = struct;
+    % type
+    data.properDotL.type = iDynTree.COM_ACCELEROMETER_SENSOR;
+    % id & meas
+    data.properDotL.id   = base;
+    data.properDotL.meas = properDotL;
+    % variance
+    data.properDotL.var  = priors.properDotL;
+end
 
 %% FROM ddq
 nOfSensor.DOFacc = size(ddq,1);
@@ -186,6 +198,15 @@ for i = 1 : nOfSensor.angAcc
     dataPacked(i + (indx)).var          = data.angAcc.var;
 end
 indx = indx + nOfSensor.angAcc;
+%--
+if stackOfTaskMAP
+    % COM_sensor
+    dataPacked(indx + 1).type         = data.properDotL.type;
+    dataPacked(indx + 1).id           = data.properDotL.id;
+    dataPacked(indx + 1).meas         = data.properDotL.meas;
+    dataPacked(indx + 1).var          = data.properDotL.var;
+    indx = indx + 1;
+end
 %--
 for i = 1 : nOfSensor.DOFacc
     dataPacked(i + (indx)).type         = data.ddq.type;

@@ -1,6 +1,48 @@
-function [mu_dgiveny, Sigma_dgiveny] = MAPcomputation_floating(berdy, traversal, state, y, priors, baseAngVel, varargin)
-% MAPCOMPUTATION_FLOATING testing function for the floating-base analysis
+function [mu_dgiveny, Sigma_dgiveny] = MAPcomputation_floating(berdy, traversal, state, y, priors, baseAngVel, stackOfTaskMAP, varargin)
+% MAPCOMPUTATION_FLOATING solves the inverse dynamics problem with a
+% maximum-a-posteriori estimation by using the Newton-Euler algorithm and
+% redundant sensor measurements as originally described in the paper
+% [Whole-Body Human Inverse Dynamics with Distributed Micro-Accelerometers,
+% Gyros and Force Sensing,Latella, C.; Kuppuswamy, N.; Romano, F.;
+% Traversaro, S.; Nori, F.,Sensors 2016, 16, 727] by considering a
+% floating-base formalism.
+%
+% Considering a generic multibody model composed by n moving rigid bodies
+% (i.e. links) connected by joints and being in the Gaussian framework,
+% the output 'mu_dgiveny' coincides with the vector 'd' structured as
+% follows
+%                 d  = [d_1, d_2, ..., d_n], i = 1,...,n
+%
+% where:
+%                d_i = [a_i, f_i, fx_i, ddq_i]
+%
+% and a_i is the link-i spatial acceleration, f_i is spatial wrench
+% transmitted to link-i from its parent, fx_i is the external force on
+% link-i and ddq_i is acceleration of joint-i.
+% The relationship between d and the sensor measurements y is given by
+%
+%                      Y(q, dq) d + b_Y = y                   (1)
+%
+% where the matrix Y(q, dq), is represented as a sparse matrix. Moreover,
+% the variables in d should satisfy the Newton-Euler equations
+%
+%                    D(q,dq) d + b_D(q, dq) = 0               (2)
+%
+% again represented as a sparse matrix.
+% By stacking together the MEASUREMENTS EQUATIONS (1) and CONSTRAINTS
+% EQUATIONS (2)the system that MAP solves is obtained.
 
+% -------------------------------------------------------------------------
+% NOTE:
+% The function provides an option to remove a specified sensor from the
+% analysis.  By default,  MAP is
+% computed by using all the sensors (i.e. the full vector of y
+% measurements). If the sensor to remove is specified in the option , MAP
+% loads the full y and then remove automatically values related to that
+% sensor and the related block variance from the Sigmay.
+% -------------------------------------------------------------------------
+
+%% Argument options
 options = struct(   ...
     'SENSORS_TO_REMOVE', []...
     );
@@ -27,18 +69,18 @@ for pair = reshape(varargin,2,[]) % pair is {propName;propValue}
     end
 end
 
-%%
+%% Sensor removal options
 rangeOfRemovedSensors = [];
 for i = 1 : size(options.SENSORS_TO_REMOVE)
     ithSensor = options.SENSORS_TO_REMOVE(i);
-    [index, len] = rangeOfSensorMeasurement( berdy, ithSensor.type, ithSensor.id);
+    [index, len] = rangeOfSensorMeasurement( berdy, ithSensor.type, ithSensor.id, stackOfTaskMAP);
     rangeOfRemovedSensors = [rangeOfRemovedSensors, index : index + len - 1];
 end
 
 y(rangeOfRemovedSensors,:) = [];
 priors.Sigmay(rangeOfRemovedSensors, :) = [];
 priors.Sigmay(:, rangeOfRemovedSensors) = [];
-%%
+%% Set variables
 % % Set angularVector
 % angVect = [0 0 0];
 % omega  = iDynTree.Vector3();
@@ -54,7 +96,9 @@ berdyMatrices.b_Y   = iDynTree.VectorDynSize();
 berdy.resizeAndZeroBerdyMatrices(berdyMatrices.D,...
     berdyMatrices.b_D,...
     berdyMatrices.Y,...
-    berdyMatrices.b_Y);
+    berdyMatrices.b_Y,...
+    stackOfTaskMAP);
+
 % Set priors
 mud        = priors.mud;
 Sigmad_inv = sparse(inv(priors.Sigmad));
@@ -63,12 +107,12 @@ Sigmay_inv = sparse(inv(priors.Sigmay));
 
 % Allocate outputs
 samples = size(y, 2);
-nrOfDynVariables = berdy.getNrOfDynamicVariables();
+nrOfDynVariables = berdy.getNrOfDynamicVariables(stackOfTaskMAP);
 mu_dgiveny    = zeros(nrOfDynVariables, samples);
 % Sigma_dgiveny = sparse(nrOfDynVariables, nrOfDynVariables, samples);
 Sigma_dgiveny =  cell(samples,1);
 
-% MAP Computation
+%% MAP Computation
 q  = iDynTree.JointPosDoubleArray(berdy.model());
 dq = iDynTree.JointDOFsDoubleArray(berdy.model());
 currentBase = berdy.model().getLinkName(traversal.getBaseLink().getIndex());
@@ -85,7 +129,8 @@ for i = 1 : samples
     berdy.getBerdyMatrices(berdyMatrices.D,...
         berdyMatrices.b_D,...
         berdyMatrices.Y,...
-        berdyMatrices.b_Y);
+        berdyMatrices.b_Y,...
+        stackOfTaskMAP);
     
     D   = sparse(berdyMatrices.D.toMatlab());
     b_D = berdyMatrices.b_D.toMatlab();
@@ -115,28 +160,42 @@ for i = 1 : samples
             error('[Info] [Y; D] is a matrix with rows < columns! Check the matrix!!');
         end
     end
+    
+    if ~stackOfTaskMAP
+        SigmaBarD_inv   = D' * SigmaD_inv * D + Sigmad_inv;
 
-    SigmaBarD_inv   = D' * SigmaD_inv * D + Sigmad_inv;
-    
-    % the permutation matrix for SigmaBarD_inv is computed only for the first
-    % sample, beacuse this matrix does not change in the experiment
-    if (i==1)
-        [~,~,PBarD]= chol(SigmaBarD_inv);
+        % the permutation matrix for SigmaBarD_inv is computed only for the first
+        % sample, beacuse this matrix does not change in the experiment
+        if (i==1)
+            [~,~,PBarD]= chol(SigmaBarD_inv);
+        end
+
+        rhsBarD         = Sigmad_inv * mud - D' * (SigmaD_inv * b_D);
+        muBarD          = CholSolve(SigmaBarD_inv , rhsBarD, PBarD);
+
+        Sigma_dgiveny_inv = SigmaBarD_inv + Y' * Sigmay_inv * Y;
+
+        % the permutation matrix for Sigma_dgiveny_inv is computed only for the first
+        % sample, beacuse this matrix does not change in the experiment
+        if (i==1)
+            [~,~,P]= chol(Sigma_dgiveny_inv);
+        end
+
+        rhs             = Y' * (Sigmay_inv * (y(:,i) - b_Y)) + SigmaBarD_inv * muBarD;
+
+    else
+
+        Sigma_dgiveny_inv = Y' * Sigmay_inv * Y;
+
+        % the permutation matrix for Sigma_dgiveny_inv is computed only for the first
+        % sample, beacuse this matrix does not change in the experiment
+        if (i==1)
+            [~,~,P]= chol(Sigma_dgiveny_inv);
+        end
+
+        rhs              = Y' * Sigmay_inv * (y(:,i) - b_Y);
     end
-    
-    rhsBarD         = Sigmad_inv * mud - D' * (SigmaD_inv * b_D);
-    muBarD          = CholSolve(SigmaBarD_inv , rhsBarD, PBarD);
-    
-    Sigma_dgiveny_inv = SigmaBarD_inv + Y' * Sigmay_inv * Y;
-    
-    % the permutation matrix for Sigma_dgiveny_inv is computed only for the first
-    % sample, beacuse this matrix does not change in the experiment
-    if (i==1)
-        [~,~,P]= chol(Sigma_dgiveny_inv);
-    end
-    
-    rhs             = Y' * (Sigmay_inv * (y(:,i) - b_Y)) + SigmaBarD_inv * muBarD;
-    
+
     if nargout > 1   % Sigma_dgiveny requested as output
         Sigma_dgiveny{i}   = inv(Sigma_dgiveny_inv);
         mu_dgiveny(:,i)    = Sigma_dgiveny{i} * rhs;

@@ -20,298 +20,350 @@ if opts.task1_SOT
     disp('===================== FLOATING-BASE ANALYSIS ======================');
     fprintf('[Start] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 
-% Option for computing the estimated Sigma
-opts.Sigma_dgiveny = false;
+    % Extraction of the masterFile
+    masterFile = load(fullfile(bucket.pathToRawData,sprintf(('S%02d_%02d.mat'),subjectID,taskID)));
 
-% Define the template to be used
-if opts.noC7joints
-    addpath(genpath('templatesNoC7'));
-    rmpath('templates'); %if exists
-    disp('[Warning]: The following analysis will be done with C7joints locked/fixed in the models!');
-else
-    addpath(genpath('templates'));
-    rmpath('templatesNoC7'); %if exists
-end
+    % Option for computing the estimated Sigma
+    opts.Sigma_dgiveny = false;
 
-%% ---------------------UNA TANTUM PROCEDURE-------------------------------
-%% SUIT struct creation
-if ~exist(fullfile(bucket.pathToProcessedData,'suit.mat'), 'file')
-    disp('-------------------------------------------------------------------');
-    disp(strcat('[Start] Suit extraction ...'));
-    % 1) extract data from C++ parsed files
-    extractSuitDataFromParsing;
-    % 2) compute sensor position
-    suit = computeSuitSensorPosition(suit);
-    save(fullfile(bucket.pathToProcessedData,'suit.mat'),'suit');
-    disp(strcat('[End] Suit extraction'));
-else
-    load(fullfile(bucket.pathToProcessedData,'suit.mat'));
-end
-
-%% IMPORTANT NOTE:
-% The subjects performed the experimental tasks with the drill on the right
-% hand. This code will be modified for taking into account the presence of
-% the drill. URDF/OSIM models and IK computation will be affected
-% by this change.
-
-%% Extract subject parameters from SUIT
-if ~exist(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'), 'file')
-    subjectParamsFromData = subjectParamsComputation(suit, masterFile.Subject.Info.Weight);
-    save(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'),'subjectParamsFromData');
-else
-    load(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'),'subjectParamsFromData');
-end
-
-if opts.EXO && opts.EXO_torqueLevelAnalysis
-    % Add manually the mass of the exo (1.8 kg) on the pelvis:
-    if ~exist(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'), 'file')
-        subjectParamsFromDataEXO = subjectParamsFromData;
-        subjectParamsFromDataEXO.pelvisMass = subjectParamsFromData.pelvisMass + 1.8;
-        subjectParamsFromDataEXO.pelvisIxx  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
-            ((subjectParamsFromData.pelvisBox(2))^2 + (subjectParamsFromData.pelvisBox(3))^2);
-        subjectParamsFromDataEXO.pelvisIyy  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
-            ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(1))^2);
-        subjectParamsFromDataEXO.pelvisIzz  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
-            ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(2))^2);
-        
-        save(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'),'subjectParamsFromDataEXO');
+    % Define the template to be used
+    if opts.noC7joints
+        addpath(genpath('templatesNoC7'));
+        rmpath('templates'); %if exists
+        disp('[Warning]: The following analysis will be done with C7joints locked/fixed in the models!');
     else
-        load(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'),'subjectParamsFromDataEXO');
+        addpath(genpath('templates'));
+        rmpath('templatesNoC7'); %if exists
     end
-end
 
-%% Create URDF model
-if opts.noC7joints
-    % model NO exo, with C7 joints FIXED
-    bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj%02d_48dof_noC7.urdf', subjectID));
-    if ~exist(bucket.filenameURDF, 'file')
-        bucket.URDFmodel = createXsensLikeURDFmodel(subjectParamsFromData, ...
-            suit.sensors,...
-            'filename',bucket.filenameURDF,...
-            'GazeboModel',false);
+    %% SUIT struct creation
+    if ~exist(fullfile(bucket.pathToProcessedData,'suit.mat'), 'file')
+        disp('-------------------------------------------------------------------');
+        disp(strcat('[Start] Suit extraction ...'));
+        % 1) extract data from C++ parsed files
+        extractSuitDataFromParsing;
+        % 2) compute sensor position
+        suit = computeSuitSensorPosition(suit);
+        save(fullfile(bucket.pathToProcessedData,'suit.mat'),'suit');
+        disp(strcat('[End] Suit extraction'));
+    else
+        load(fullfile(bucket.pathToProcessedData,'suit.mat'));
     end
-    % model WITH exo, with C7 joints FIXED
+
+    %% IMPORTANT NOTE:
+    % The subjects performed the experimental tasks with the drill on the right
+    % hand. This code will be modified for taking into account the presence of
+    % the drill. URDF/OSIM models and IK computation will be affected
+    % by this change.
+
+    %% Extract subject parameters from SUIT
+    if ~exist(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'), 'file')
+        subjectParamsFromData = subjectParamsComputation(suit, masterFile.Subject.Info.Weight);
+        save(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'),'subjectParamsFromData');
+    else
+        load(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'),'subjectParamsFromData');
+    end
+
     if opts.EXO && opts.EXO_torqueLevelAnalysis
-        bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj%02d_48dof_EXO_noC7.urdf', subjectID));
+        % Add manually the mass of the exo (1.8 kg) on the pelvis:
+        if ~exist(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'), 'file')
+            subjectParamsFromDataEXO = subjectParamsFromData;
+            subjectParamsFromDataEXO.pelvisMass = subjectParamsFromData.pelvisMass + 1.8;
+            subjectParamsFromDataEXO.pelvisIxx  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
+                ((subjectParamsFromData.pelvisBox(2))^2 + (subjectParamsFromData.pelvisBox(3))^2);
+            subjectParamsFromDataEXO.pelvisIyy  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
+                ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(1))^2);
+            subjectParamsFromDataEXO.pelvisIzz  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
+                ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(2))^2);
+
+            save(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'),'subjectParamsFromDataEXO');
+        else
+            load(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'),'subjectParamsFromDataEXO');
+        end
+    end
+
+    %% Create URDF model
+    if opts.noC7joints
+        % model NO exo, with C7 joints FIXED
+        bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj%02d_48dof_noC7.urdf', subjectID));
         if ~exist(bucket.filenameURDF, 'file')
-            bucket.URDFmodel = createXsensLikeURDFmodel(subjectParamsFromDataEXO, ...
+            bucket.URDFmodel = createXsensLikeURDFmodel(subjectParamsFromData, ...
                 suit.sensors,...
                 'filename',bucket.filenameURDF,...
                 'GazeboModel',false);
         end
-    end
-else
-    % model NO exo  or EXO in forceLevelAnalysis, with C7 joints (complete) REVOLUTE
-    bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj%02d_48dof.urdf', subjectID));
-    if ~exist(bucket.filenameURDF, 'file')
-        bucket.URDFmodel = createXsensLikeURDFmodel(subjectParamsFromData, ...
-            suit.sensors,...
-            'filename',bucket.filenameURDF,...
-            'GazeboModel',false);
-    end
-    % model WITH exo in torqueLevelAnalysis, with C7 joints (complete) REVOLUTE
-    if opts.EXO && opts.EXO_torqueLevelAnalysis
-        bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj%02d_48dof_EXO.urdf', subjectID));
+        % model WITH exo, with C7 joints FIXED
+        if opts.EXO && opts.EXO_torqueLevelAnalysis
+            bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj%02d_48dof_EXO_noC7.urdf', subjectID));
+            if ~exist(bucket.filenameURDF, 'file')
+                bucket.URDFmodel = createXsensLikeURDFmodel(subjectParamsFromDataEXO, ...
+                    suit.sensors,...
+                    'filename',bucket.filenameURDF,...
+                    'GazeboModel',false);
+            end
+        end
+    else
+        % model NO exo  or EXO in forceLevelAnalysis, with C7 joints (complete) REVOLUTE
+        bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj%02d_48dof.urdf', subjectID));
         if ~exist(bucket.filenameURDF, 'file')
-            bucket.URDFmodel = createXsensLikeURDFmodel(subjectParamsFromDataEXO, ...
+            bucket.URDFmodel = createXsensLikeURDFmodel(subjectParamsFromData, ...
                 suit.sensors,...
                 'filename',bucket.filenameURDF,...
                 'GazeboModel',false);
         end
+        % model WITH exo in torqueLevelAnalysis, with C7 joints (complete) REVOLUTE
+        if opts.EXO && opts.EXO_torqueLevelAnalysis
+            bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj%02d_48dof_EXO.urdf', subjectID));
+            if ~exist(bucket.filenameURDF, 'file')
+                bucket.URDFmodel = createXsensLikeURDFmodel(subjectParamsFromDataEXO, ...
+                    suit.sensors,...
+                    'filename',bucket.filenameURDF,...
+                    'GazeboModel',false);
+            end
+        end
     end
-end
 
-%% Create OSIM model
-if opts.noC7joints
-    % model NO exo, with C7 joints LOCKED
-    bucket.filenameOSIM = fullfile(bucket.pathToSubject, sprintf('XSensOSIM_subj%02d_48dof_noC7.osim', subjectID));
-    if ~exist(bucket.filenameOSIM, 'file')
-        bucket.OSIMmodel = createXsensLikeOSIMmodel(subjectParamsFromData, ...
-            bucket.filenameOSIM);
-    end
-    % model WITH exo, with C7 joints LOCKED
-    if opts.EXO && opts.EXO_torqueLevelAnalysis
-        bucket.filenameOSIM = fullfile(bucket.pathToSubject, sprintf('XSensOSIM_subj%02d_48dof_EXO_noC7.osim', subjectID));
+    %% Create OSIM model
+    if opts.noC7joints
+        % model NO exo, with C7 joints LOCKED
+        bucket.filenameOSIM = fullfile(bucket.pathToSubject, sprintf('XSensOSIM_subj%02d_48dof_noC7.osim', subjectID));
         if ~exist(bucket.filenameOSIM, 'file')
-            bucket.OSIMmodel = createXsensLikeOSIMmodel(subjectParamsFromDataEXO, ...
+            bucket.OSIMmodel = createXsensLikeOSIMmodel(subjectParamsFromData, ...
                 bucket.filenameOSIM);
         end
-    end
-else
-    % model NO exo or EXO in forceLevelAnalysis, with C7 joints (complete) UNLOCKED
-    bucket.filenameOSIM = fullfile(bucket.pathToSubject, sprintf('XSensOSIM_subj%02d_48dof.osim', subjectID));
-    if ~exist(bucket.filenameOSIM, 'file')
-        bucket.OSIMmodel = createXsensLikeOSIMmodel(subjectParamsFromData, ...
-            bucket.filenameOSIM);
-    end
-    % model WITH exo in torqueLevelAnalysis, with C7 joints (complete) UNLOCKED
-    if opts.EXO && opts.EXO_torqueLevelAnalysis
-        bucket.filenameOSIM = fullfile(bucket.pathToSubject, sprintf('XSensOSIM_subj%02d_48dof_EXO.osim', subjectID));
+        % model WITH exo, with C7 joints LOCKED
+        if opts.EXO && opts.EXO_torqueLevelAnalysis
+            bucket.filenameOSIM = fullfile(bucket.pathToSubject, sprintf('XSensOSIM_subj%02d_48dof_EXO_noC7.osim', subjectID));
+            if ~exist(bucket.filenameOSIM, 'file')
+                bucket.OSIMmodel = createXsensLikeOSIMmodel(subjectParamsFromDataEXO, ...
+                    bucket.filenameOSIM);
+            end
+        end
+    else
+        % model NO exo or EXO in forceLevelAnalysis, with C7 joints (complete) UNLOCKED
+        bucket.filenameOSIM = fullfile(bucket.pathToSubject, sprintf('XSensOSIM_subj%02d_48dof.osim', subjectID));
         if ~exist(bucket.filenameOSIM, 'file')
-            bucket.OSIMmodel = createXsensLikeOSIMmodel(subjectParamsFromDataEXO, ...
+            bucket.OSIMmodel = createXsensLikeOSIMmodel(subjectParamsFromData, ...
                 bucket.filenameOSIM);
         end
+        % model WITH exo in torqueLevelAnalysis, with C7 joints (complete) UNLOCKED
+        if opts.EXO && opts.EXO_torqueLevelAnalysis
+            bucket.filenameOSIM = fullfile(bucket.pathToSubject, sprintf('XSensOSIM_subj%02d_48dof_EXO.osim', subjectID));
+            if ~exist(bucket.filenameOSIM, 'file')
+                bucket.OSIMmodel = createXsensLikeOSIMmodel(subjectParamsFromDataEXO, ...
+                    bucket.filenameOSIM);
+            end
+        end
     end
-end
-%% Inverse Kinematic computation
-if ~exist(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'), 'file')
-    disp('-------------------------------------------------------------------');
-    disp(strcat('[Start] IK computation ...'));
-    bucket.setupFile = fullfile(pwd, 'templates', 'setupOpenSimIKTool_Template.xml');
-    bucket.trcFile   = fullfile(bucket.pathToRawData,sprintf('S%02d_%02d.trc',subjectID,taskID));
-    bucket.motFile   = fullfile(bucket.pathToProcessedData,sprintf('S%02d_%02d.mot',subjectID,taskID));
-    [human_state_tmp, human_ddq_tmp, selectedJoints] = IK(bucket.filenameOSIM, ...
-        bucket.trcFile, ...
-        bucket.setupFile, ...
-        suit.properties.frameRate, ...
-        bucket.motFile);
-    % here selectedJoints is the order of the Osim computation.
-    save(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'),'human_state_tmp');
+    %% Inverse Kinematic computation
+    if ~exist(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'), 'file')
+        disp('-------------------------------------------------------------------');
+        disp(strcat('[Start] IK computation ...'));
+        bucket.setupFile = fullfile(pwd, 'templates', 'setupOpenSimIKTool_Template.xml');
+        bucket.trcFile   = fullfile(bucket.pathToRawData,sprintf('S%02d_%02d.trc',subjectID,taskID));
+        bucket.motFile   = fullfile(bucket.pathToProcessedData,sprintf('S%02d_%02d.mot',subjectID,taskID));
+        [human_state_tmp, selectedJoints] = IK(bucket.filenameOSIM, ...
+            bucket.trcFile, ...
+            bucket.setupFile, ...
+            suit.properties.frameRate, ...
+            bucket.motFile);
+        % here selectedJoints is the order of the Osim computation.
+        save(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'),'human_state_tmp');
+        %     save(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'),'human_ddq_tmp');
+        save(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'),'selectedJoints');
+        disp(strcat('[End] IK computation'));
+    else
+        load(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'));
+        %     load(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'));
+        load(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'));
+    end
+    % disp('[Warning]: The IK is expressed in current frame and not in fixed frame!');
+
+    % External ddq computation
+    Sg.samplingTime = 1/suit.properties.frameRate;
+    Sg.polinomialOrder = 3;
+    Sg.window = 57;
+    human_ddq_tmp = zeros(size(human_state_tmp.q));
+    [~,~,human_ddq_tmp] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window,human_state_tmp.q,Sg.samplingTime); % in deg
+    human_ddq_tmp = human_ddq_tmp * pi/180;      % in rad
     save(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'),'human_ddq_tmp');
-    save(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'),'selectedJoints');
-    disp(strcat('[End] IK computation'));
-else
-    load(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'));
-    load(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'));
-    load(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'));
-end
-% disp('[Warning]: The IK is expressed in current frame and not in fixed frame!');
 
-%% Raw data handling
-rawDataHandling;
+    %% q, dq, ddq signals filtering
+    Sg.samplingTime = 1/(suit.properties.frameRate);
+    % because the signal have been downsampled to align the suit signals
+    Sg.polinomialOrder = 3;
+    Sg.window = 407;
 
-%% Save synchroData with the kinematics infos
-if ~exist(fullfile(bucket.pathToProcessedData,'synchroKin.mat'), 'file')
-    fieldsToBeRemoved = {'RightShoe_SF','LeftShoe_SF','FP_SF'};
-    synchroKin = rmfield(synchroData,fieldsToBeRemoved);
-    save(fullfile(bucket.pathToProcessedData,'synchroKin.mat'),'synchroKin');
-end
-load(fullfile(bucket.pathToProcessedData,'synchroKin.mat'));
-
-%% Transform forces into human forces
-% Preliminary assumption on contact links: 2 contacts only (or both feet
-% with the shoes or both feet with two force plates)
-bucket.contactLink = cell(2,1);
-
-% Define contacts configuration
-bucket.contactLink{1} = 'RightFoot'; % human link in contact with RightShoe
-bucket.contactLink{2} = 'LeftFoot';  % human link in contact with LeftShoe
-for blockIdx = 1 : block.nrOfBlocks
-    shoes(blockIdx) = transformShoesWrenches(synchroData(blockIdx), subjectParamsFromData);
-end
-
-%% Removal of C7 joints kinematics quantities
-if opts.noC7joints
-    if ~exist(fullfile(bucket.pathToProcessedData,'selectedJointsReduced.mat'), 'file')
-        load(fullfile(bucket.pathToProcessedData,'synchroKin.mat'));
-        synchroKinReduced = synchroKin;
-        % Get the indices to be removed
-        for sjIdx = 1 : size(selectedJoints,1)
-            if (strcmp(selectedJoints{sjIdx,1},'jRightC7Shoulder_rotx'))
-                jRshoC7Rotx_idx = sjIdx;
-            end
-        end
-        selectedJoints(jRshoC7Rotx_idx,:) = [];
-        
-        for sjIdx = 1 : size(selectedJoints,1)
-            if (strcmp(selectedJoints{sjIdx,1},'jLeftC7Shoulder_rotx'))
-                jLshoC7Rotx_idx = sjIdx;
-            end
-        end
-        selectedJoints(jLshoC7Rotx_idx,:) = [];
-        
-        selectedJointsReduced = selectedJoints;
-        for blockIdx = 1 : block.nrOfBlocks
-            synchroKinReduced(blockIdx).q(jRshoC7Rotx_idx,:) = [];
-            synchroKinReduced(blockIdx).dq(jRshoC7Rotx_idx,:) = [];
-            synchroKinReduced(blockIdx).ddq(jRshoC7Rotx_idx,:) = [];
-        end
-        for blockIdx = 1 : block.nrOfBlocks
-            synchroKinReduced(blockIdx).q(jLshoC7Rotx_idx,:) = [];
-            synchroKinReduced(blockIdx).dq(jLshoC7Rotx_idx,:) = [];
-            synchroKinReduced(blockIdx).ddq(jLshoC7Rotx_idx,:) = [];
-        end
-        save(fullfile(bucket.pathToProcessedData,'selectedJointsReduced.mat'),'selectedJointsReduced');
-        save(fullfile(bucket.pathToProcessedData,'synchroKinReduced.mat'),'synchroKinReduced');
-    else
-        load(fullfile(bucket.pathToProcessedData,'selectedJointsReduced.mat'));
-        load(fullfile(bucket.pathToProcessedData,'synchroKinReduced.mat'));
+    for jntIdx = 1 : length(selectedJoints)
+        [human_state_tmp_q_2tbr(jntIdx,:),~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window, ...
+            human_state_tmp.q(jntIdx,:),Sg.samplingTime);
+        [human_state_tmp_dq_2tbr(jntIdx,:),~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window, ...
+            human_state_tmp.dq(jntIdx,:),Sg.samplingTime);
+        [human_ddq_tmp_2tbr(jntIdx,:),~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window, ...
+            human_ddq_tmp(jntIdx,:),Sg.samplingTime);
     end
-    
-    % Overwrite old variables with the new reduced variables
-    selectedJoints = selectedJointsReduced;
-    save(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'),'selectedJoints');
-    synchroKin = synchroKinReduced;
-    save(fullfile(bucket.pathToProcessedData,'synchroKin.mat'),'synchroKin');
+    human_state_tmp.q  = human_state_tmp_q_2tbr;
+    human_state_tmp.dq = human_state_tmp_dq_2tbr;
+    human_ddq_tmp = human_ddq_tmp_2tbr;
+
     % Remove useless quantities
-    clearvars selectedJointsReduced synchroKinReduced;
-end
+    clearvars human_state_tmp_q_2tbr human_state_tmp_dq_2tbr human_ddq_tmp_2tbr;
 
-%% ------------------------RUNTIME PROCEDURE-------------------------------
-%% Load URDF model with sensors
-humanModel.filename = bucket.filenameURDF;
-humanModelLoader = iDynTree.ModelLoader();
-if ~humanModelLoader.loadReducedModelFromFile(humanModel.filename, ...
-        cell2iDynTreeStringVector(selectedJoints))
-    % here the model loads the same order of selectedJoints.
-    fprintf('Something wrong with the model loading.')
-end
+    %% Raw data handling
+    rawDataHandling;
 
-humanModel = humanModelLoader.model();
-human_kinDynComp = iDynTree.KinDynComputations();
-human_kinDynComp.loadRobotModel(humanModel);
+    %% Save synchroData with the kinematics infos
+    if ~exist(fullfile(bucket.pathToProcessedData,'synchroKin.mat'), 'file')
+        fieldsToBeRemoved = {'RightShoe_SF','LeftShoe_SF','FP_SF'};
+        synchroKin = rmfield(synchroData,fieldsToBeRemoved);
+        save(fullfile(bucket.pathToProcessedData,'synchroKin.mat'),'synchroKin');
+    end
+    load(fullfile(bucket.pathToProcessedData,'synchroKin.mat'));
 
-bucket.base = 'Pelvis'; % floating base
+    %% Transform forces into human forces
+    % Preliminary assumption on contact links: 2 contacts only (or both feet
+    % with the shoes or both feet with two force plates)
+    bucket.contactLink = cell(2,1);
 
-% Sensors
-humanSensors = humanModelLoader.sensors();
-humanSensors.removeAllSensorsOfType(iDynTree.GYROSCOPE_SENSOR);
-% humanSensors.removeAllSensorsOfType(iDynTree.ACCELEROMETER_SENSOR);
+    % Define contacts configuration
+    bucket.contactLink{1} = 'RightFoot'; % human link in contact with RightShoe
+    bucket.contactLink{2} = 'LeftFoot';  % human link in contact with LeftShoe
+    for blockIdx = 1 : block.nrOfBlocks
+        shoes(blockIdx) = transformShoesWrenches(synchroData(blockIdx), subjectParamsFromData);
+    end
 
-%% Add link angular acceleration sensors
-% iDynTree.THREE_AXIS_ANGULAR_ACCELEROMETER_SENSOR is not supported by the
-% URDF model.  It requires to be added differently.
+    %% Shoes signal filtering
+    Sg.samplingTime = 1/(suit.properties.frameRate);
+    % because the signals of the shoes have been downsampled to align the suit signals
+    Sg.polinomialOrder = 3;
+    Sg.window = 407;
 
-if ~exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
-    % Angular Acceleration struct
-    angAcc_sensor = struct;
-    for angAccSensIdx = 1 : length(suit.sensors)
-        angAcc_sensor(angAccSensIdx).attachedLink = suit.sensors{angAccSensIdx, 1}.label;
-        angAcc_sensor(angAccSensIdx).iDynModelIdx = humanModel.getLinkIndex(suit.links{angAccSensIdx, 1}.label);
-        angAcc_sensor(angAccSensIdx).sensorName   = strcat(angAcc_sensor(angAccSensIdx).attachedLink, '_angAcc');
+    for blockIdx = 1 : block.nrOfBlocks
+        for elemIdx = 1 : 6
+            [shoes2tbr(blockIdx).Left_HF(elemIdx,:),~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window, ...
+                shoes(blockIdx).Left_HF(elemIdx,:),Sg.samplingTime);
+            [shoes2tbr(blockIdx).Right_HF(elemIdx,:),~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window, ...
+                shoes(blockIdx).Right_HF(elemIdx,:),Sg.samplingTime);
+        end
+        shoes(blockIdx).Left_HF = shoes2tbr(blockIdx).Left_HF;
+        shoes(blockIdx).Right_HF = shoes2tbr(blockIdx).Right_HF;
+    end
+    % Remove useless quantities
+    clearvars shoes2tbr;
 
-        angAcc_sensor(angAccSensIdx).S_R_L        = iDynTree.Rotation().RPY(suit.sensors{angAccSensIdx, 1}.RPY(1), ...
-            suit.sensors{angAccSensIdx, 1}.RPY(2), suit.sensors{angAccSensIdx, 1}.RPY(3)).toMatlab;
-        angAcc_sensor(angAccSensIdx).pos_SwrtL    = suit.sensors{angAccSensIdx, 1}.position;
-
-        for suitLinkIdx = 1 : length(suit.links)
-            if strcmp(suit.sensors{angAccSensIdx, 1}.label,suit.links{suitLinkIdx, 1}.label)
-                sampleToMatch = suitLinkIdx;
-                for lenSample = 1 : suit.properties.lenData
-                    G_R_S_mat = quat2Mat(suit.sensors{angAccSensIdx, 1}.meas.sensorOrientation(:,lenSample));
-                    for blockIdx = 1 : block.nrOfBlocks
-                        % ---Labels
-                        angAcc_sensor(angAccSensIdx).meas(blockIdx).block  = block.labels(blockIdx);
-                        % ---Cut meas
-                        tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
-                        angAcc_sensor(angAccSensIdx).meas(blockIdx).S_meas_L = G_R_S_mat' * suit.links{sampleToMatch, 1}.meas.angularAcceleration(:,tmp.cutRange{blockIdx});
-                    end
+    %% Removal of C7 joints kinematics quantities
+    if opts.noC7joints
+        if ~exist(fullfile(bucket.pathToProcessedData,'selectedJointsReduced.mat'), 'file')
+            load(fullfile(bucket.pathToProcessedData,'synchroKin.mat'));
+            synchroKinReduced = synchroKin;
+            % Get the indices to be removed
+            for sjIdx = 1 : size(selectedJoints,1)
+                if (strcmp(selectedJoints{sjIdx,1},'jRightC7Shoulder_rotx'))
+                    jRshoC7Rotx_idx = sjIdx;
                 end
-                break;
+            end
+            selectedJoints(jRshoC7Rotx_idx,:) = [];
+
+            for sjIdx = 1 : size(selectedJoints,1)
+                if (strcmp(selectedJoints{sjIdx,1},'jLeftC7Shoulder_rotx'))
+                    jLshoC7Rotx_idx = sjIdx;
+                end
+            end
+            selectedJoints(jLshoC7Rotx_idx,:) = [];
+
+            selectedJointsReduced = selectedJoints;
+            for blockIdx = 1 : block.nrOfBlocks
+                synchroKinReduced(blockIdx).q(jRshoC7Rotx_idx,:) = [];
+                synchroKinReduced(blockIdx).dq(jRshoC7Rotx_idx,:) = [];
+                synchroKinReduced(blockIdx).ddq(jRshoC7Rotx_idx,:) = [];
+            end
+            for blockIdx = 1 : block.nrOfBlocks
+                synchroKinReduced(blockIdx).q(jLshoC7Rotx_idx,:) = [];
+                synchroKinReduced(blockIdx).dq(jLshoC7Rotx_idx,:) = [];
+                synchroKinReduced(blockIdx).ddq(jLshoC7Rotx_idx,:) = [];
+            end
+            save(fullfile(bucket.pathToProcessedData,'selectedJointsReduced.mat'),'selectedJointsReduced');
+            save(fullfile(bucket.pathToProcessedData,'synchroKinReduced.mat'),'synchroKinReduced');
+        else
+            load(fullfile(bucket.pathToProcessedData,'selectedJointsReduced.mat'));
+            load(fullfile(bucket.pathToProcessedData,'synchroKinReduced.mat'));
+        end
+
+        % Overwrite old variables with the new reduced variables
+        selectedJoints = selectedJointsReduced;
+        save(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'),'selectedJoints');
+        synchroKin = synchroKinReduced;
+        save(fullfile(bucket.pathToProcessedData,'synchroKin.mat'),'synchroKin');
+        % Remove useless quantities
+        clearvars selectedJointsReduced synchroKinReduced;
+    end
+
+    %% ------------------------RUNTIME PROCEDURE-------------------------------
+    %% Load URDF model with sensors
+    humanModel.filename = bucket.filenameURDF;
+    humanModelLoader = iDynTree.ModelLoader();
+    if ~humanModelLoader.loadReducedModelFromFile(humanModel.filename, ...
+            cell2iDynTreeStringVector(selectedJoints))
+        % here the model loads the same order of selectedJoints.
+        fprintf('Something wrong with the model loading.')
+    end
+
+    humanModel = humanModelLoader.model();
+    human_kinDynComp = iDynTree.KinDynComputations();
+    human_kinDynComp.loadRobotModel(humanModel);
+
+    bucket.base = 'Pelvis'; % floating base
+
+    % Sensors
+    humanSensors = humanModelLoader.sensors();
+    humanSensors.removeAllSensorsOfType(iDynTree.GYROSCOPE_SENSOR);
+    % humanSensors.removeAllSensorsOfType(iDynTree.ACCELEROMETER_SENSOR);
+    % humanSensors.removeAllSensorsOfType(iDynTree.THREE_AXIS_ANGULAR_ACCELEROMETER_SENSOR);
+
+    %% Add link angular acceleration sensors
+    % iDynTree.THREE_AXIS_ANGULAR_ACCELEROMETER_SENSOR is not supported by the
+    % URDF model.  It requires to be added differently.
+
+    if ~exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
+        % Angular Acceleration struct
+        angAcc_sensor = struct;
+        for angAccSensIdx = 1 : length(suit.sensors)
+            angAcc_sensor(angAccSensIdx).attachedLink = suit.sensors{angAccSensIdx, 1}.label;
+            angAcc_sensor(angAccSensIdx).iDynModelIdx = humanModel.getLinkIndex(suit.links{angAccSensIdx, 1}.label);
+            angAcc_sensor(angAccSensIdx).sensorName   = strcat(angAcc_sensor(angAccSensIdx).attachedLink, '_angAcc');
+
+            angAcc_sensor(angAccSensIdx).S_R_L        = iDynTree.Rotation().RPY(suit.sensors{angAccSensIdx, 1}.RPY(1), ...
+                suit.sensors{angAccSensIdx, 1}.RPY(2), suit.sensors{angAccSensIdx, 1}.RPY(3)).toMatlab;
+            angAcc_sensor(angAccSensIdx).pos_SwrtL    = suit.sensors{angAccSensIdx, 1}.position;
+
+            for suitLinkIdx = 1 : length(suit.links)
+                if strcmp(suit.sensors{angAccSensIdx, 1}.label,suit.links{suitLinkIdx, 1}.label)
+                    sampleToMatch = suitLinkIdx;
+                    for lenSample = 1 : suit.properties.lenData
+                        G_R_S_mat = quat2Mat(suit.sensors{angAccSensIdx, 1}.meas.sensorOrientation(:,lenSample));
+                        for blockIdx = 1 : block.nrOfBlocks
+                            % ---Labels
+                            angAcc_sensor(angAccSensIdx).meas(blockIdx).block  = block.labels(blockIdx);
+                            % ---Cut meas
+                            tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
+                            angAcc_sensor(angAccSensIdx).meas(blockIdx).S_meas_L = G_R_S_mat' * suit.links{sampleToMatch, 1}.meas.angularAcceleration(:,tmp.cutRange{blockIdx});
+                        end
+                    end
+                    break;
+                end
             end
         end
+        save(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'),'angAcc_sensor');
+    else
+        load(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'));
     end
-    save(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'),'angAcc_sensor');
-else
-    load(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'));
-end
 
-% Create new angular accelerometer sensor in berdy sensor
-for newSensIdx = 1 : length(suit.sensors)
-    humanSensors = addAccAngSensorInBerdySensors(humanSensors,angAcc_sensor(newSensIdx).sensorName, ...
-        angAcc_sensor(newSensIdx).attachedLink,angAcc_sensor(newSensIdx).iDynModelIdx, ...
-        angAcc_sensor(newSensIdx).S_R_L, angAcc_sensor(newSensIdx).pos_SwrtL);
-end
+    % Create new angular accelerometer sensor in berdy sensor
+    for newSensIdx = 1 : length(suit.sensors)
+        humanSensors = addAccAngSensorInBerdySensors(humanSensors,angAcc_sensor(newSensIdx).sensorName, ...
+            angAcc_sensor(newSensIdx).attachedLink,angAcc_sensor(newSensIdx).iDynModelIdx, ...
+            angAcc_sensor(newSensIdx).S_R_L, angAcc_sensor(newSensIdx).pos_SwrtL);
+    end
 
     %% Initialize berdy
     % Specify berdy options
@@ -356,13 +408,16 @@ end
         error(strcat('[ERROR] The berdy model base (',currentBerdyBase,') and the kinDyn model base (',baseKinDynModel,') do not match!'));
     end
 
-% Get the tree is visited IS the order of variables in vector d
-dVectorOrder = cell(traversal.getNrOfVisitedLinks(), 1); %for each link in the traversal get the name
-dJointOrder = cell(traversal.getNrOfVisitedLinks()-1, 1);
-for i = 0 : traversal.getNrOfVisitedLinks() - 1
-    if i ~= 0
-        joint  = traversal.getParentJoint(i);
-        dJointOrder{i} = berdy.model().getJointName(joint.getIndex());
+    % Get the tree is visited IS the order of variables in vector d
+    dVectorOrder = cell(traversal.getNrOfVisitedLinks(), 1); %for each link in the traversal get the name
+    dJointOrder = cell(traversal.getNrOfVisitedLinks()-1, 1);
+    for i = 0 : traversal.getNrOfVisitedLinks() - 1
+        if i ~= 0
+            joint  = traversal.getParentJoint(i);
+            dJointOrder{i} = berdy.model().getJointName(joint.getIndex());
+        end
+        link = traversal.getLink(i);
+        dVectorOrder{i + 1} = berdy.model().getLinkName(link.getIndex());
     end
     % ---------------------------------------------------
     % CHECK: print the order of variables in d vector

@@ -96,12 +96,11 @@ if opts.EXO
         priors.exo_fext   = 1e0 * ones(6,1); %[N^2,(Nm)^2]
     end
 end
-
-% for SOT in Task1
-priors.fext_hands = [1e3*eye(3) 0*eye(3); 0*eye(3) 1e3*eye(3)];
+% covariances for SOT in Task1
+priors.fext_hands = 1e3 * ones(6,1);
 priors.properDotL = 1e-4 * ones(6,1);
 
-%% Run MAPest stack of task (SOT)
+%% Run MAPest stack of tasks (SOT)
 % =========================================================================
 %  RUN TASK1
 disp('=====================================================================');

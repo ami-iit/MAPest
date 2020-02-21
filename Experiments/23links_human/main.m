@@ -469,19 +469,19 @@ if opts.task1_SOT
     % This value is mandatorily required in the floating-base formalism.
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] Computing the <',currentBase,'> velocity...'));
-    if ~exist(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'), 'file')
-        for blockIdx = 1 : block.nrOfBlocks
-            baseVel(blockIdx).block = block.labels(blockIdx);
-            [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
-                synchroKin(blockIdx),...
-                G_T_base(blockIdx), ...
-                contactPattern(blockIdx).contactPattern);
-        end
-        save(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'),'baseVel');
-    else
-        load(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'));
+%     if ~exist(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'), 'file')
+    for blockIdx = 1 %: block.nrOfBlocks
+        baseVel(blockIdx).block = block.labels(blockIdx);
+        [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
+             synchroKin(blockIdx),...
+             G_T_base(blockIdx), ...
+             contactPattern(blockIdx).contactPattern);
     end
-    disp(strcat('[End] Computing the <',currentBase,'> velocity'));
+%         save(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'),'baseVel');
+%     else
+%         load(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'));
+%     end
+%     disp(strcat('[End] Computing the <',currentBase,'> velocity'));
     % plot_baseVelocityInPattern;
 
     %% Compute the proper rate of change of momentum
@@ -546,10 +546,10 @@ for blockIdx = 1 : block.nrOfBlocks
     if opts.task1_SOT
         % modify variances for the external forces at the hands
         range_leftHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'LeftHand',opts.stackOfTaskMAP);
-        data(blockIdx).Sigmay(range_leftHand:range_leftHand+5,range_leftHand:range_leftHand+5) = priors.fext_hands;
+        data(blockIdx).Sigmay(range_leftHand:range_leftHand+5,range_leftHand:range_leftHand+5) = diag(priors.fext_hands);
 
         range_rightHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'RightHand',opts.stackOfTaskMAP);
-        data(blockIdx).Sigmay(range_rightHand:range_rightHand+5,range_rightHand:range_rightHand+5) = priors.fext_hands;
+        data(blockIdx).Sigmay(range_rightHand:range_rightHand+5,range_rightHand:range_rightHand+5) = diag(priors.fext_hands);
     end
 end
 disp('[End] Wrapping measurements');

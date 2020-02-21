@@ -16,7 +16,7 @@ end
 if opts.task1_SOT
     save(fullfile(bucket.pathToProcessedData_SOTtask1,'y_sim_fext.mat'),'y_sim_fext');
 else
-    save(fullfile(bucket.pathToProcessedData,'y_sim_fext.mat'),'y_sim_fext');
+    save(fullfile(bucket.pathToProcessedData_SOTtask2,'y_sim_fext.mat'),'y_sim_fext');
 end
 
 
@@ -30,12 +30,12 @@ if ~opts.stackOfTaskMAP
     y_sim_linAcc.meas = cell(nrOfLinAccelerometer,1);
     
     for accSensIdx = 1 : nrOfLinAccelerometer
-        y_sim_linAcc.order{accSensIdx,1} = data(accSensIdx).id;
+        y_sim_linAcc.order{accSensIdx,1} = data(blockIdx).data(accSensIdx).id;
         
-        range_linAccMEAS = rangeOfSensorMeasurement(berdy, iDynTree.ACCELEROMETER_SENSOR, data(accSensIdx).id, opts.stackOfTaskMAP);
-        y_sim_linAcc.meas{accSensIdx,1} = y_sim((range_linAccMEAS:range_linAccMEAS+2),:);
+        range_linAccMEAS = rangeOfSensorMeasurement(berdy, iDynTree.ACCELEROMETER_SENSOR, data(blockIdx).data(accSensIdx).id, opts.stackOfTaskMAP);
+        y_sim_linAcc.meas{accSensIdx,1} = y_sim(blockIdx).y_sim((range_linAccMEAS:range_linAccMEAS+2),:);
     end
-    save(fullfile(bucket.pathToProcessedData,'y_sim_linAcc.mat'),'y_sim_linAcc');
+    save(fullfile(bucket.pathToProcessedData_SOTtask2,'y_sim_linAcc.mat'),'y_sim_linAcc');
     
     % -----------------------------------------------------------------------%
     %  JOINT ACCELERATION
@@ -43,12 +43,12 @@ if ~opts.stackOfTaskMAP
     y_sim_ddq = struct;
     % nrOfDdq = nrDofs;
     y_sim_ddq.order = selectedJoints;
-    y_sim_ddq.meas = cell(nrDofs,1);
+    y_sim_ddq.meas = cell(humanModel.getNrOfDOFs,1);
     
-    for ddqIdx = 1 : nrDofs
+    for ddqIdx = 1 : humanModel.getNrOfDOFs
         range_ddqMEAS = rangeOfSensorMeasurement(berdy, iDynTree.DOF_ACCELERATION_SENSOR, selectedJoints{ddqIdx}, opts.stackOfTaskMAP);
-        y_sim_ddq.meas{ddqIdx,1} = y_sim(range_ddqMEAS,:);
+        y_sim_ddq.meas{ddqIdx,1} = y_sim(blockIdx).y_sim(range_ddqMEAS,:);
     end
-    save(fullfile(bucket.pathToProcessedData,'y_sim_ddq.mat'),'y_sim_ddq');
+    save(fullfile(bucket.pathToProcessedData_SOTtask2,'y_sim_ddq.mat'),'y_sim_ddq');
 end
 

@@ -15,6 +15,13 @@ if opts.task1_SOT %Task1
     end
 end
 
+if ~opts.task1_SOT %Task2
+    bucket.pathToProcessedData_SOTtask2   = fullfile(bucket.pathToProcessedData,'processed_SOTtask2');
+    if ~exist(bucket.pathToProcessedData_SOTtask2)
+        mkdir (bucket.pathToProcessedData_SOTtask2)
+    end
+end
+
 if opts.task1_SOT
     disp(' ');
     disp('===================== FLOATING-BASE ANALYSIS ======================');
@@ -526,12 +533,12 @@ for blockIdx = 1 : block.nrOfBlocks
         priors, ...
         opts.stackOfTaskMAP);
 
-    if ~opts.task1_SOT
+    if ~opts.task1_SOT %task2
         estimatedFextFromSOTtask1 = load(fullfile(bucket.pathToProcessedData_SOTtask1,'estimatedVariables.mat'));
         for linkIdx = 1 : size(estimatedFextFromSOTtask1.estimatedVariables.Fext.label,1)
             for dataIdx = 1 : length(data)
-                if strcmp(data(dataIdx).id, estimatedFextFromSOTtask1.estimatedVariables.Fext.label{linkIdx})
-                    data(dataIdx).meas = estimatedFextFromSOTtask1.estimatedVariables.Fext.values(6*(linkIdx-1)+1:6*linkIdx,:);
+                if strcmp(data(blockIdx).data(dataIdx).id, estimatedFextFromSOTtask1.estimatedVariables.Fext.label{linkIdx})
+                    data(blockIdx).data(dataIdx).meas = estimatedFextFromSOTtask1.estimatedVariables.Fext.values(6*(linkIdx-1)+1:6*linkIdx,:);
                     break;
                 end
             end
@@ -633,7 +640,7 @@ end
 if opts.task1_SOT
     save(fullfile(bucket.pathToProcessedData_SOTtask1,'estimation.mat'),'estimation');
 else
-    save(fullfile(bucket.pathToProcessedData,'estimation.mat'),'estimation');
+    save(fullfile(bucket.pathToProcessedData_SOTtask2,'estimation.mat'),'estimation');
 end
 %     save(fullfile(bucket.pathToProcessedData,'estimation.mat'),'estimation');
 % else
@@ -699,7 +706,7 @@ if ~opts.task1_SOT
         %         estimation(blockIdx).mu_dgiveny);
         % ---------------------------
         estimatedVariables.ddq(blockIdx).values = estimation(blockIdx).mu_dgiveny(...
-            length(estimation(blockIdx).mu_dgiveny)-(nrDofs-1) : size(estimation(blockIdx).mu_dgiveny,1) ,:);
+            length(estimation(blockIdx).mu_dgiveny)-(humanModel.getNrOfDOFs-1) : size(estimation(blockIdx).mu_dgiveny,1) ,:);
         % ---------------------------
         disp(strcat('[End] Joint acceleration MAP extraction for Block ',num2str(blockIdx)));
     end
@@ -716,7 +723,7 @@ if ~opts.task1_SOT
         disp(strcat('[End] Internal force MAP extraction for Block ',num2str(blockIdx)));
     end
     % save extracted viariables
-    save(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'),'estimatedVariables');
+    save(fullfile(bucket.pathToProcessedData_SOTtask2,'estimatedVariables.mat'),'estimatedVariables');
 end
     %     save(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'),'estimatedVariables');
 % else
@@ -752,7 +759,7 @@ end
 if opts.task1_SOT
     save(fullfile(bucket.pathToProcessedData_SOTtask1,'y_sim.mat'),'y_sim');
 else
-    save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');
+    save(fullfile(bucket.pathToProcessedData_SOTtask2,'y_sim.mat'),'y_sim');
 end
 
 % save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');

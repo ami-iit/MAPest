@@ -108,9 +108,16 @@ disp('=====================================================================');
 disp('[Start] Run SOT Task1..');
 opts.task1_SOT = true;
 opts.stackOfTaskMAP = true; % argument value for berdy functions for task1
+
 main;
 disp('[End] Run SOT Task1');
-
-
-% %% Run MAPest main.m
-% main;
+%%
+% =========================================================================
+%  RUN TASK2
+disp('=====================================================================');
+disp('=====================================================================');
+disp('[Start] Run SOT Task2..');
+opts.task1_SOT = false;
+opts.stackOfTaskMAP = false; % argument value for berdy functions for task2
+main;
+disp('[End] Run SOT Task2');

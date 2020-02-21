@@ -476,7 +476,6 @@ if opts.task1_SOT
     % This value is mandatorily required in the floating-base formalism.
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] Computing the <',currentBase,'> velocity...'));
-%     if ~exist(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'), 'file')
     for blockIdx = 1 %: block.nrOfBlocks
         baseVel(blockIdx).block = block.labels(blockIdx);
         [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
@@ -484,12 +483,6 @@ if opts.task1_SOT
              G_T_base(blockIdx), ...
              contactPattern(blockIdx).contactPattern);
     end
-%         save(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'),'baseVel');
-%     else
-%         load(fullfile(bucket.pathToProcessedData,'baseVelocity.mat'));
-%     end
-%     disp(strcat('[End] Computing the <',currentBase,'> velocity'));
-    % plot_baseVelocityInPattern;
 
     %% Compute the proper rate of change of momentum
     % properDotL = [properDotL_lin; properDotL_ang];
@@ -533,7 +526,7 @@ for blockIdx = 1 : block.nrOfBlocks
         priors, ...
         opts.stackOfTaskMAP);
 
-    if ~opts.task1_SOT %task2
+    if ~opts.task1_SOT %Task2
         estimatedFextFromSOTtask1 = load(fullfile(bucket.pathToProcessedData_SOTtask1,'estimatedVariables.mat'));
         for linkIdx = 1 : size(estimatedFextFromSOTtask1.estimatedVariables.Fext.label,1)
             for dataIdx = 1 : length(data)
@@ -601,7 +594,6 @@ if opts.MAPbenchmarking
 end
 
 %% MAP computation
-% if ~exist(fullfile(bucket.pathToProcessedData,'estimation.mat'), 'file')
 for blockIdx = 1 : block.nrOfBlocks
     priors.Sigmay = data(blockIdx).Sigmay;
     estimation(blockIdx).block = block.labels(blockIdx);
@@ -642,16 +634,10 @@ if opts.task1_SOT
 else
     save(fullfile(bucket.pathToProcessedData_SOTtask2,'estimation.mat'),'estimation');
 end
-%     save(fullfile(bucket.pathToProcessedData,'estimation.mat'),'estimation');
-% else
-%     load(fullfile(bucket.pathToProcessedData,'estimation.mat'));
-% end
 
 %% Variables extraction from MAP estimation
 % if Task1 --> extract only fext
 % if Task2 --> extract all
-
-% if ~exist(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'), 'file')
 
 % fext extraction (no via Berdy)
 for blockIdx = 1  : block.nrOfBlocks
@@ -725,24 +711,12 @@ if ~opts.task1_SOT
     % save extracted viariables
     save(fullfile(bucket.pathToProcessedData_SOTtask2,'estimatedVariables.mat'),'estimatedVariables');
 end
-    %     save(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'),'estimatedVariables');
-% else
-%     load(fullfile(bucket.pathToProcessedData,'estimatedVariables.mat'));
-% end
-
-% if ~opts.EXO
-%     % test (via plots) angles VS torques for the shoulders
-%     plotShouldersAnglesVStorques;
-% end
 
 %% Simulated y
 % This section is useful to compare the measurements in the y vector and
 % the results of the MAP.  Note: you cannot compare directly the results of
 % the MAP (i.e., mu_dgiveny) with the measurements in the y vector but you
 % have to pass through the y_sim and only later to compare y and y_sim.
-
-% if ~exist(fullfile(bucket.pathToProcessedData,'y_sim.mat'), 'file')
-
 for blockIdx = 1 : block.nrOfBlocks
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] Simulated y computation for Block ',num2str(blockIdx),'...'));
@@ -762,24 +736,10 @@ else
     save(fullfile(bucket.pathToProcessedData_SOTtask2,'y_sim.mat'),'y_sim');
 end
 
-% save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');
-% else
-%     load(fullfile(bucket.pathToProcessedData,'y_sim.mat'));
-% end
-
 %% Variables extraction from y_sim
-
-% if ~isfield(y_sim,'FextSim_RightFoot')
-
 for blockIdx = 1 : block.nrOfBlocks
-    % extractFext_from_y_sim
     extractSingleVar_from_y_sim_all;
 end
-save(fullfile(bucket.pathToProcessedData,'y_sim.mat'),'y_sim');
-
-% else
-%     load(fullfile(bucket.pathToProcessedData,'y_sim.mat'));
-% end
 
 %% ---------------------------- EXO ANALYSIS ------------------------------
 if opts.EXO

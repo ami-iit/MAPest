@@ -19,8 +19,7 @@ else
     save(fullfile(bucket.pathToProcessedData_SOTtask2,'y_sim_fext.mat'),'y_sim_fext');
 end
 
-
-if ~opts.stackOfTaskMAP
+if ~opts.task1_SOT
     % -----------------------------------------------------------------------%
     %  LIN ACCELERATION
     % -----------------------------------------------------------------------%
@@ -36,6 +35,7 @@ if ~opts.stackOfTaskMAP
         y_sim_linAcc.meas{accSensIdx,1} = y_sim(blockIdx).y_sim((range_linAccMEAS:range_linAccMEAS+2),:);
     end
     save(fullfile(bucket.pathToProcessedData_SOTtask2,'y_sim_linAcc.mat'),'y_sim_linAcc');
+
     
     % -----------------------------------------------------------------------%
     %  JOINT ACCELERATION

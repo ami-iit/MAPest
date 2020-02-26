@@ -121,5 +121,6 @@ opts.task1_SOT = false;
 opts.stackOfTaskMAP = false; % argument value for berdy functions for Task2
 main;
 disp('[End] Run SOT Task2');
+%SOT_plots;
 
 fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);

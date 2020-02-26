@@ -476,13 +476,19 @@ if opts.task1_SOT
     % This value is mandatorily required in the floating-base formalism.
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] Computing the <',currentBase,'> velocity...'));
-    for blockIdx = 1 %: block.nrOfBlocks
-        baseVel(blockIdx).block = block.labels(blockIdx);
-        [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
-             synchroKin(blockIdx),...
-             G_T_base(blockIdx), ...
-             contactPattern(blockIdx).contactPattern);
+    if ~exist(fullfile(bucket.pathToProcessedData,'baseVel.mat'), 'file')
+        for blockIdx = 1 : block.nrOfBlocks
+            baseVel(blockIdx).block = block.labels(blockIdx);
+            [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
+                synchroKin(blockIdx),...
+                G_T_base(blockIdx), ...
+                contactPattern(blockIdx).contactPattern);
+        end
+        save(fullfile(bucket.pathToProcessedData,'baseVel.mat'),'baseVel');
+    else
+        load(fullfile(bucket.pathToProcessedData,'baseVel.mat'),'baseVel');
     end
+    disp(strcat('[End] Computing the <',currentBase,'> velocity'));
 
     %% Compute the proper rate of change of momentum
     % properDotL = [properDotL_lin; properDotL_ang];
@@ -490,17 +496,22 @@ if opts.task1_SOT
     % Compute the proper rate of change of the linear momentum, properDotL_lin
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] Computing the rate of change of momentum for the <',currentBase,'>...'));
-    for blockIdx = 1 : block.nrOfBlocks
-        properDotL(blockIdx).block = block.labels(blockIdx);
-        tmp.baseVelocity6D = [baseVel(blockIdx).baseLinVelocity ; baseVel(blockIdx).baseAngVelocity];
-        tmp.properDotL_lin = computeProperRateOfChangeOfLinearMomentum(human_kinDynComp, humanModel, ...
-            synchroKin(blockIdx), ...
-            tmp.baseVelocity6D, ...
-            G_T_base(blockIdx).G_T_b);
-        % Set the proper rate of change of the angular momentum (properDotL_ang) to zero
-        tmp.properDotL_ang = zeros(size(tmp.properDotL_lin));
-        % Build properDotL
-        properDotL(blockIdx).properDotL = [tmp.properDotL_lin; tmp.properDotL_ang];
+    if ~exist(fullfile(bucket.pathToProcessedData_SOTtask1,'properDotL.mat'), 'file')
+        for blockIdx = 1 : block.nrOfBlocks
+            properDotL(blockIdx).block = block.labels(blockIdx);
+            tmp.baseVelocity6D = [baseVel(blockIdx).baseLinVelocity ; baseVel(blockIdx).baseAngVelocity];
+            tmp.properDotL_lin = computeProperRateOfChangeOfLinearMomentum(human_kinDynComp, humanModel, ...
+                synchroKin(blockIdx), ...
+                tmp.baseVelocity6D, ...
+                G_T_base(blockIdx).G_T_b);
+            % Set the proper rate of change of the angular momentum (properDotL_ang) to zero
+            tmp.properDotL_ang = zeros(size(tmp.properDotL_lin));
+            % Build properDotL
+            properDotL(blockIdx).properDotL = [tmp.properDotL_lin; tmp.properDotL_ang];
+        end
+        save(fullfile(bucket.pathToProcessedData_SOTtask1,'properDotL.mat'),'properDotL');
+    else
+        load(fullfile(bucket.pathToProcessedData_SOTtask1,'properDotL.mat'),'properDotL');
     end
     disp(strcat('[End] Computing the rate of change of momentum for the <',currentBase,'>'));
 end
@@ -627,10 +638,10 @@ for blockIdx = 1 : block.nrOfBlocks
 
     if ~opts.task1_SOT %Task2
         estimatedFextFromSOTtask1 = load(fullfile(bucket.pathToProcessedData_SOTtask1,'estimatedVariables.mat'));
-        for linkIdx = 1 : size(estimatedFextFromSOTtask1.estimatedVariables.Fext.label,1)
+        for linkIdx = 1 : length(estimatedFextFromSOTtask1.estimatedVariables.Fext(blockIdx).label)
             for dataIdx = 1 : length(data)
-                if strcmp(data(blockIdx).data(dataIdx).id, estimatedFextFromSOTtask1.estimatedVariables.Fext.label{linkIdx})
-                    data(blockIdx).data(dataIdx).meas = estimatedFextFromSOTtask1.estimatedVariables.Fext.values(6*(linkIdx-1)+1:6*linkIdx,:);
+                if strcmp(data(blockIdx).data(dataIdx).id, estimatedFextFromSOTtask1.estimatedVariables.Fext(blockIdx).label{linkIdx})
+                    data(blockIdx).data(dataIdx).meas = estimatedFextFromSOTtask1.estimatedVariables.Fext(blockIdx).values(6*(linkIdx-1)+1:6*linkIdx,:);
                     break;
                 end
             end

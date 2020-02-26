@@ -40,13 +40,13 @@ if opts.task1_SOT
     %% SUIT struct creation
     if ~exist(fullfile(bucket.pathToProcessedData,'suit.mat'), 'file')
         disp('-------------------------------------------------------------------');
-        disp(strcat('[Start] Suit extraction ...'));
+        disp('[Start] Suit extraction ...');
         % 1) extract data from C++ parsed files
         extractSuitDataFromParsing;
         % 2) compute sensor position
         suit = computeSuitSensorPosition(suit);
         save(fullfile(bucket.pathToProcessedData,'suit.mat'),'suit');
-        disp(strcat('[End] Suit extraction'));
+        disp('[End] Suit extraction');
     else
         load(fullfile(bucket.pathToProcessedData,'suit.mat'));
     end
@@ -159,7 +159,7 @@ if opts.task1_SOT
     %% Inverse Kinematic computation
     if ~exist(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'), 'file')
         disp('-------------------------------------------------------------------');
-        disp(strcat('[Start] IK computation ...'));
+        disp('[Start] IK computation ...');
         bucket.setupFile = fullfile(pwd, 'templates', 'setupOpenSimIKTool_Template.xml');
         bucket.trcFile   = fullfile(bucket.pathToRawData,sprintf('S%02d_%02d.trc',subjectID,taskID));
         bucket.motFile   = fullfile(bucket.pathToProcessedData,sprintf('S%02d_%02d.mot',subjectID,taskID));
@@ -172,7 +172,7 @@ if opts.task1_SOT
         save(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'),'human_state_tmp');
         %     save(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'),'human_ddq_tmp');
         save(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'),'selectedJoints');
-        disp(strcat('[End] IK computation'));
+        disp('[End] IK computation');
     else
         load(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'));
         %     load(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'));
@@ -389,7 +389,7 @@ if opts.task1_SOT
 
     % Angular Acceleration struct
     disp('-------------------------------------------------------------------');
-    disp(strcat('[Start] Computing the link angular acceleration...'));
+    disp('[Start] Computing the link angular acceleration...');
     if ~exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
         angAcc_sensor = struct;
         for angAccSensIdx = 1 : length(suit.sensors)
@@ -429,7 +429,7 @@ if opts.task1_SOT
             angAcc_sensor(newSensIdx).attachedLink,angAcc_sensor(newSensIdx).iDynModelIdx, ...
             angAcc_sensor(newSensIdx).S_R_L, angAcc_sensor(newSensIdx).pos_SwrtL);
     end
-    disp(strcat('[End] Computing the link angular acceleration.'));
+    disp('[End] Computing the link angular acceleration.');
 
     %% Compute the transformation of the base w.r.t. the global suit frame G
     disp('-------------------------------------------------------------------');

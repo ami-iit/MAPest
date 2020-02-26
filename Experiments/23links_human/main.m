@@ -845,6 +845,4 @@ else
 end
 
 %% Variables extraction from y_sim
-for blockIdx = 1 : block.nrOfBlocks
-    extractSingleVar_from_y_sim_all;
-end
+extractSingleVar_from_y_sim_all;

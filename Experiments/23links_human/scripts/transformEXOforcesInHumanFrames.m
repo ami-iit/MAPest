@@ -124,4 +124,4 @@ for blockIdx = 1 : block.nrOfBlocks
     % hips
     EXOfext(blockIdx).PELVIS = EXO.transformedForces(blockIdx).f_LH + EXO.transformedForces(blockIdx).f_RH;
 end
-save(fullfile(bucket.pathToProcessedData,'EXOfext.mat'),'EXOfext');
+save(fullfile(bucket.pathToProcessedData_EXO,'EXOfext.mat'),'EXOfext');

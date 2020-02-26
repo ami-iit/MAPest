@@ -505,6 +505,79 @@ if opts.task1_SOT
     disp(strcat('[End] Computing the rate of change of momentum for the <',currentBase,'>'));
 end
 
+%% EXO analysis (if)
+if opts.EXO && opts.task1_SOT
+    bucket.pathToProcessedData_EXO   = fullfile(bucket.pathToProcessedData,'processed_EXO');
+    if ~exist(bucket.pathToProcessedData_EXO)
+        mkdir(bucket.pathToProcessedData_EXO)
+    end
+    % Load raw meas from EXO table
+    loadEXOtableMeas;
+    % Compute angles compatible with the EXO
+    if ~exist(fullfile(bucket.pathToProcessedData_EXO,'CoC.mat'), 'file')
+        computeAnglesFromEXO;
+        save(fullfile(bucket.pathToProcessedData_EXO,'CoC.mat'),'CoC');
+    else
+        load(fullfile(bucket.pathToProcessedData_EXO,'CoC.mat'),'CoC');
+    end
+
+    % Extraction and round of the shoulder angle vectors
+    for blockIdx = 1 : block.nrOfBlocks
+        % -------Right shoulder
+        EXO.tmp.qToCompare_right = (- CoC(blockIdx).Rsho_qFirst(1,:) + 90)'; % operation to compare the angles: change sign and then +90 deg
+        EXO.rightRoundedTable(blockIdx).block = block.labels(blockIdx);
+        EXO.rightRoundedTable(blockIdx).qToCompare_right_round = round(EXO.tmp.qToCompare_right);
+
+        % -------Left shoulder
+        EXO.tmp.qToCompare_left = (CoC(blockIdx).Lsho_qFirst(1,:) + 90)'; % operation to compare the angles: +90 deg
+        EXO.leftRoundedTable(blockIdx).block = block.labels(blockIdx);
+        EXO.leftRoundedTable(blockIdx).qToCompare_left_round = round(EXO.tmp.qToCompare_left);
+    end
+
+    % Extraction from table of values accordingly to the shoulder angle vectors (rounded_q)
+    for blockIdx = 1 : block.nrOfBlocks
+        % -------Right
+        for qIdx = 1 : size(EXO.rightRoundedTable(blockIdx).qToCompare_right_round,1)
+            for tableIdx = 1 : size(EXO.extractedTable(1).shoulder_angles,1)
+                if (EXO.rightRoundedTable(blockIdx).qToCompare_right_round(qIdx) == EXO.extractedTable(subjectID).shoulder_angles(tableIdx,1))
+                    EXO.rightRoundedTable(blockIdx).F_arm_scher(qIdx)   = EXO.extractedTable(subjectID).F_arm_scher(tableIdx,1);
+                    EXO.rightRoundedTable(blockIdx).F_arm_support(qIdx) = EXO.extractedTable(subjectID).F_arm_support(tableIdx,1);
+                    % EXO.rightRoundedTable(blockIdx).F_ASkraft_x(qIdx)   = EXO.extractedTable(subjectID).F_ASkraft_x(tableIdx,1);
+                    % EXO.rightRoundedTable(blockIdx).F_ASkraft_y(qIdx)   = EXO.extractedTable(subjectID).F_ASkraft_y(tableIdx,1);
+                    EXO.rightRoundedTable(blockIdx).F_KGkraft_x(qIdx)   = EXO.extractedTable(subjectID).F_KGkraft_x(tableIdx,1);
+                    EXO.rightRoundedTable(blockIdx).F_KGkraft_y(qIdx)   = EXO.extractedTable(subjectID).F_KGkraft_y(tableIdx,1);
+                    EXO.rightRoundedTable(blockIdx).M_support_mod(qIdx) = EXO.extractedTable(subjectID).M_support_mod(tableIdx,1);
+                end
+            end
+        end
+        % -------Left
+        for qIdx = 1 : size(EXO.leftRoundedTable(blockIdx).qToCompare_left_round,1)
+            for tableIdx = 1 : size(EXO.extractedTable(1).shoulder_angles,1)
+                if (EXO.leftRoundedTable(blockIdx).qToCompare_left_round(qIdx) == EXO.extractedTable(subjectID).shoulder_angles(tableIdx,1))
+                    EXO.leftRoundedTable(blockIdx).F_arm_scher(qIdx)   = EXO.extractedTable(subjectID).F_arm_scher(tableIdx,1);
+                    EXO.leftRoundedTable(blockIdx).F_arm_support(qIdx) = EXO.extractedTable(subjectID).F_arm_support(tableIdx,1);
+                    % EXO.leftRoundedTable(blockIdx).F_ASkraft_x(qIdx)   = EXO.extractedTable(subjectID).F_ASkraft_x(tableIdx,1);
+                    % EXO.leftRoundedTable(blockIdx).F_ASkraft_y(qIdx)   = EXO.extractedTable(subjectID).F_ASkraft_y(tableIdx,1);
+                    EXO.leftRoundedTable(blockIdx).F_KGkraft_x(qIdx)   = EXO.extractedTable(subjectID).F_KGkraft_x(tableIdx,1);
+                    EXO.leftRoundedTable(blockIdx).F_KGkraft_y(qIdx)   = EXO.extractedTable(subjectID).F_KGkraft_y(tableIdx,1);
+                    EXO.leftRoundedTable(blockIdx).M_support_mod(qIdx) = EXO.extractedTable(subjectID).M_support_mod(tableIdx,1);
+                end
+            end
+        end
+    end
+
+    % Transform forces from the EXO into human forces
+    disp('-------------------------------------------------------------------');
+    disp('[Start] Transforming EXO force in human frames...');
+    if ~exist(fullfile(bucket.pathToProcessedData_EXO,'EXOfext.mat'), 'file')
+        transformEXOforcesInHumanFrames;
+        save(fullfile(bucket.pathToProcessedData_EXO,'EXOfext.mat'),'EXOfext');
+    else
+        load(fullfile(bucket.pathToProcessedData_EXO,'EXOfext.mat'),'EXOfext');
+    end
+    disp('[End] Transforming EXO force in human frames');
+end
+
 %% Measurements wrapping
 disp('-------------------------------------------------------------------');
 disp('[Start] Wrapping measurements...');
@@ -525,6 +598,32 @@ for blockIdx = 1 : block.nrOfBlocks
         bucket.contactLink, ...
         priors, ...
         opts.stackOfTaskMAP);
+
+    if opts.EXO
+        % Find links where EXO forces are acting
+        lenCheck = length(data(blockIdx).data);
+        for idIdx = 1 : lenCheck
+            if strcmp(data(1).data(idIdx).id,'Pelvis')
+                tmp.pelvisIdx = idIdx;
+            end
+            if strcmp(data(1).data(idIdx).id,'LeftUpperArm')
+                tmp.LUAIdx = idIdx;
+            end
+            if strcmp(data(1).data(idIdx).id,'RightUpperArm')
+                tmp.RUAIdx = idIdx;
+            end
+        end
+        % Add to data struct the EXO forces
+        % PELVIS
+        data(blockIdx).data(tmp.pelvisIdx).meas = EXOfext(blockIdx).PELVIS;
+        data(blockIdx).data(tmp.pelvisIdx).var  = priors.exo_fext;
+        % LUA
+        data(blockIdx).data(tmp.LUAIdx).meas = EXOfext(blockIdx).LUA;
+        data(blockIdx).data(tmp.LUAIdx).var  = priors.exo_fext;
+        % RUA
+        data(blockIdx).data(tmp.RUAIdx).meas = EXOfext(blockIdx).RUA;
+        data(blockIdx).data(tmp.RUAIdx).var  = priors.exo_fext;
+    end
 
     if ~opts.task1_SOT %Task2
         estimatedFextFromSOTtask1 = load(fullfile(bucket.pathToProcessedData_SOTtask1,'estimatedVariables.mat'));
@@ -740,120 +839,3 @@ end
 for blockIdx = 1 : block.nrOfBlocks
     extractSingleVar_from_y_sim_all;
 end
-
-%% ---------------------------- EXO ANALYSIS ------------------------------
-if opts.EXO
-    %% Load raw meas from EXO table
-    loadEXOtableMeas;
-
-    %% Change of coordinates (CoC)
-    % Important note:
-    % ---------------
-    % This change of coordinates is related only to:
-    % q_leftShoulder  &  tau_leftShoulder
-    % q_rightShoulder &  tau_rightShoulder
-    % ---------------
-    changeOfCoordinates;
-    save(fullfile(bucket.pathToProcessedData,'CoC.mat'),'CoC');
-    
-    % Extraction and round of the shoulder angle vectors
-    for blockIdx = 1 : block.nrOfBlocks
-        % right shoulder
-        EXO.tmp.qToCompare_right = (- CoC(blockIdx).Rsho_qFirst(1,:) + 90)'; % operation to compare the angles: change sign and then +90 deg
-        EXO.rightRoundedTable(blockIdx).block = block.labels(blockIdx);
-        EXO.rightRoundedTable(blockIdx).qToCompare_right_round = round(EXO.tmp.qToCompare_right);
-        
-        % left shoulder
-        EXO.tmp.qToCompare_left = (CoC(blockIdx).Lsho_qFirst(1,:) + 90)'; % operation to compare the angles: +90 deg
-        EXO.leftRoundedTable(blockIdx).block = block.labels(blockIdx);
-        EXO.leftRoundedTable(blockIdx).qToCompare_left_round = round(EXO.tmp.qToCompare_left);
-    end
-    
-    % Extraction from table of values accordingly to the shoulder angle vectors (rounded_q)
-    for blockIdx = 1 : block.nrOfBlocks
-        % right
-        for qIdx = 1 : size(EXO.rightRoundedTable(blockIdx).qToCompare_right_round,1)
-            for tableIdx = 1 : size(EXO.extractedTable(1).shoulder_angles,1)
-                if (EXO.rightRoundedTable(blockIdx).qToCompare_right_round(qIdx) == EXO.extractedTable(subjectID).shoulder_angles(tableIdx,1))
-                    EXO.rightRoundedTable(blockIdx).F_arm_scher(qIdx)   = EXO.extractedTable(subjectID).F_arm_scher(tableIdx,1);
-                    EXO.rightRoundedTable(blockIdx).F_arm_support(qIdx) = EXO.extractedTable(subjectID).F_arm_support(tableIdx,1);
-                    % EXO.rightRoundedTable(blockIdx).F_ASkraft_x(qIdx)   = EXO.extractedTable(subjectID).F_ASkraft_x(tableIdx,1);
-                    % EXO.rightRoundedTable(blockIdx).F_ASkraft_y(qIdx)   = EXO.extractedTable(subjectID).F_ASkraft_y(tableIdx,1);
-                    EXO.rightRoundedTable(blockIdx).F_KGkraft_x(qIdx)   = EXO.extractedTable(subjectID).F_KGkraft_x(tableIdx,1);
-                    EXO.rightRoundedTable(blockIdx).F_KGkraft_y(qIdx)   = EXO.extractedTable(subjectID).F_KGkraft_y(tableIdx,1);
-                    EXO.rightRoundedTable(blockIdx).M_support_mod(qIdx) = EXO.extractedTable(subjectID).M_support_mod(tableIdx,1);
-                end
-            end
-        end
-        % left
-        for qIdx = 1 : size(EXO.leftRoundedTable(blockIdx).qToCompare_left_round,1)
-            for tableIdx = 1 : size(EXO.extractedTable(1).shoulder_angles,1)
-                if (EXO.leftRoundedTable(blockIdx).qToCompare_left_round(qIdx) == EXO.extractedTable(subjectID).shoulder_angles(tableIdx,1))
-                    EXO.leftRoundedTable(blockIdx).F_arm_scher(qIdx)   = EXO.extractedTable(subjectID).F_arm_scher(tableIdx,1);
-                    EXO.leftRoundedTable(blockIdx).F_arm_support(qIdx) = EXO.extractedTable(subjectID).F_arm_support(tableIdx,1);
-                    % EXO.leftRoundedTable(blockIdx).F_ASkraft_x(qIdx)   = EXO.extractedTable(subjectID).F_ASkraft_x(tableIdx,1);
-                    % EXO.leftRoundedTable(blockIdx).F_ASkraft_y(qIdx)   = EXO.extractedTable(subjectID).F_ASkraft_y(tableIdx,1);
-                    EXO.leftRoundedTable(blockIdx).F_KGkraft_x(qIdx)   = EXO.extractedTable(subjectID).F_KGkraft_x(tableIdx,1);
-                    EXO.leftRoundedTable(blockIdx).F_KGkraft_y(qIdx)   = EXO.extractedTable(subjectID).F_KGkraft_y(tableIdx,1);
-                    EXO.leftRoundedTable(blockIdx).M_support_mod(qIdx) = EXO.extractedTable(subjectID).M_support_mod(tableIdx,1);
-                end
-            end
-        end
-    end
-    
-    %% Torque level analysis
-    if opts.EXO_torqueLevelAnalysis
-        disp('-------------------------------------------------------------------');
-        disp('[Start] EXO Torque level analysis');
-        EXO_torqueLevelAnalysis;
-        save(fullfile(bucket.pathToProcessedData,'exo_torqueLevel.mat'),'exo_tauLevel');
-        disp('[End] EXO Torque level analysis');
-    end
-    
-    %% Force level analysis
-    if opts.EXO_forceLevelAnalysis
-        disp('-------------------------------------------------------------------');
-        disp('[Start] EXO Force level analysis');
-
-        % -----------------------------------------------------------------
-        % Compute the term for the feet implicit constraints
-        % This section computes the term which makes the dynamics of the system to
-        % satisfy the 2-feet contact constraint.
-        disp('-------------------------------------------------------------------');
-        disp(strcat('[Start] Computing the term for the feet implicit constraint...'));
-        if ~exist(fullfile(bucket.pathToProcessedData,'implicitFeetContraint.mat'), 'file')
-            for blockIdx = 1 : block.nrOfBlocks
-                implFeetConstraint(blockIdx).block = block.labels(blockIdx);
-                implFeetConstraint(blockIdx).term  = computeImplicitFeetConstraintForm(human_kinDynComp, ...
-                    G_T_base(blockIdx), ...
-                    synchroKin(blockIdx), ...
-                    baseVel(blockIdx));
-            end
-            save(fullfile(bucket.pathToProcessedData,'implicitFeetContraint.mat'),'implFeetConstraint');
-        else
-            load(fullfile(bucket.pathToProcessedData,'implicitFeetContraint.mat'));
-        end
-        disp(strcat('[End] Computing the term for the feet implicit constraint'));
-        % -----------------------------------------------------------------
-
-        EXO_forceLevelAnalysis;
-        save(fullfile(bucket.pathToProcessedData,'exo_forceLevel.mat'),'exo_forceLevel');
-        disp('[End] EXO Force level analysis');
-    end
-
-    %% EXO inside MAP analysis
-    if opts.EXO_insideMAP
-        disp('-------------------------------------------------------------------');
-        disp('[Start] EXO inside MAP analysis');
-        if ~exist(fullfile(bucket.pathToProcessedData,'exo_insideMAP.mat'), 'file')
-            % Call a parallel main to recompute the MAP estimation with the EXO
-            % forces (properly transformed in human frames) into the y
-            % measurements vector.
-            main_EXOinsideMAP;
-        else
-            load(fullfile(bucket.pathToProcessedData,'exo_insideMAP.mat'));
-        end
-        disp('[End] EXO inside MAP analysis');
-    end
-end
-disp('-------------------------------------------------------------------');

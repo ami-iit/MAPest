@@ -24,11 +24,14 @@ bucket = struct;
 %% Configure
 % Root folder of the dataset
 bucket.datasetRoot = fullfile(pwd, 'dataJSI');
-%bucket.datasetRoot = fullfile('D:\Datasets\2018_Feb_JSI');
 
 % Subject and task to be processed
 subjectID = 1;
 taskID = 1;
+
+disp(' ');
+disp('===================== FLOATING-BASE ANALYSIS ========================');
+fprintf('[Start] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 
 % EXO option
 opts.EXO = true;
@@ -118,3 +121,5 @@ opts.task1_SOT = false;
 opts.stackOfTaskMAP = false; % argument value for berdy functions for Task2
 main;
 disp('[End] Run SOT Task2');
+
+fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);

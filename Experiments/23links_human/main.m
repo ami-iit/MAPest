@@ -2,7 +2,6 @@
 %--------------------------------------------------------------------------
 % JSI_experiments main
 %--------------------------------------------------------------------------
-
 bucket.pathToSubject = fullfile(bucket.datasetRoot, sprintf('S%02d',subjectID));
 bucket.pathToTask    = fullfile(bucket.pathToSubject,sprintf('task%d',taskID));
 bucket.pathToRawData = fullfile(bucket.pathToTask,'data');
@@ -11,25 +10,20 @@ bucket.pathToProcessedData   = fullfile(bucket.pathToTask,'processed');
 if opts.task1_SOT %Task1
     bucket.pathToProcessedData_SOTtask1   = fullfile(bucket.pathToProcessedData,'processed_SOTtask1');
     if ~exist(bucket.pathToProcessedData_SOTtask1)
-        mkdir (bucket.pathToProcessedData_SOTtask1)
+        mkdir(bucket.pathToProcessedData_SOTtask1)
     end
 end
 
 if ~opts.task1_SOT %Task2
     bucket.pathToProcessedData_SOTtask2   = fullfile(bucket.pathToProcessedData,'processed_SOTtask2');
     if ~exist(bucket.pathToProcessedData_SOTtask2)
-        mkdir (bucket.pathToProcessedData_SOTtask2)
+        mkdir(bucket.pathToProcessedData_SOTtask2)
     end
 end
 
 if opts.task1_SOT
-    disp(' ');
-    disp('===================== FLOATING-BASE ANALYSIS ======================');
-    fprintf('[Start] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
-
     % Extraction of the masterFile
     masterFile = load(fullfile(bucket.pathToRawData,sprintf(('S%02d_%02d.mat'),subjectID,taskID)));
-
     % Option for computing the estimated Sigma
     opts.Sigma_dgiveny = false;
 
@@ -307,6 +301,8 @@ if opts.task1_SOT
 
     %% ------------------------RUNTIME PROCEDURE-------------------------------
     %% Load URDF model with sensors
+    disp('-------------------------------------------------------------------');
+    disp('Loading the URDF model...');
     humanModel.filename = bucket.filenameURDF;
     humanModelLoader = iDynTree.ModelLoader();
     if ~humanModelLoader.loadReducedModelFromFile(humanModel.filename, ...
@@ -327,52 +323,8 @@ if opts.task1_SOT
     % humanSensors.removeAllSensorsOfType(iDynTree.ACCELEROMETER_SENSOR);
     % humanSensors.removeAllSensorsOfType(iDynTree.THREE_AXIS_ANGULAR_ACCELEROMETER_SENSOR);
 
-    %% Add link angular acceleration sensors
-    % iDynTree.THREE_AXIS_ANGULAR_ACCELEROMETER_SENSOR is not supported by the
-    % URDF model.  It requires to be added differently.
-
-    if ~exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
-        % Angular Acceleration struct
-        angAcc_sensor = struct;
-        for angAccSensIdx = 1 : length(suit.sensors)
-            angAcc_sensor(angAccSensIdx).attachedLink = suit.sensors{angAccSensIdx, 1}.label;
-            angAcc_sensor(angAccSensIdx).iDynModelIdx = humanModel.getLinkIndex(suit.links{angAccSensIdx, 1}.label);
-            angAcc_sensor(angAccSensIdx).sensorName   = strcat(angAcc_sensor(angAccSensIdx).attachedLink, '_angAcc');
-
-            angAcc_sensor(angAccSensIdx).S_R_L        = iDynTree.Rotation().RPY(suit.sensors{angAccSensIdx, 1}.RPY(1), ...
-                suit.sensors{angAccSensIdx, 1}.RPY(2), suit.sensors{angAccSensIdx, 1}.RPY(3)).toMatlab;
-            angAcc_sensor(angAccSensIdx).pos_SwrtL    = suit.sensors{angAccSensIdx, 1}.position;
-
-            for suitLinkIdx = 1 : length(suit.links)
-                if strcmp(suit.sensors{angAccSensIdx, 1}.label,suit.links{suitLinkIdx, 1}.label)
-                    sampleToMatch = suitLinkIdx;
-                    for lenSample = 1 : suit.properties.lenData
-                        G_R_S_mat = quat2Mat(suit.sensors{angAccSensIdx, 1}.meas.sensorOrientation(:,lenSample));
-                        for blockIdx = 1 : block.nrOfBlocks
-                            % ---Labels
-                            angAcc_sensor(angAccSensIdx).meas(blockIdx).block  = block.labels(blockIdx);
-                            % ---Cut meas
-                            tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
-                            angAcc_sensor(angAccSensIdx).meas(blockIdx).S_meas_L = G_R_S_mat' * suit.links{sampleToMatch, 1}.meas.angularAcceleration(:,tmp.cutRange{blockIdx});
-                        end
-                    end
-                    break;
-                end
-            end
-        end
-        save(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'),'angAcc_sensor');
-    else
-        load(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'));
-    end
-
-    % Create new angular accelerometer sensor in berdy sensor
-    for newSensIdx = 1 : length(suit.sensors)
-        humanSensors = addAccAngSensorInBerdySensors(humanSensors,angAcc_sensor(newSensIdx).sensorName, ...
-            angAcc_sensor(newSensIdx).attachedLink,angAcc_sensor(newSensIdx).iDynModelIdx, ...
-            angAcc_sensor(newSensIdx).S_R_L, angAcc_sensor(newSensIdx).pos_SwrtL);
-    end
-
     %% Initialize berdy
+    disp('Initializing berdy for the URDF model...');
     % Specify berdy options
     berdyOptions = iDynTree.BerdyOptions;
 
@@ -430,6 +382,54 @@ if opts.task1_SOT
     % CHECK: print the order of variables in d vector
     % printBerdyDynVariables_floating(berdy, opts.stackOfTaskMAP);
     % ---------------------------------------------------
+
+    %% Add link angular acceleration sensors
+    % iDynTree.THREE_AXIS_ANGULAR_ACCELEROMETER_SENSOR is not supported by the
+    % URDF model.  It requires to be added differently.
+
+    % Angular Acceleration struct
+    disp('-------------------------------------------------------------------');
+    disp(strcat('[Start] Computing the link angular acceleration...'));
+    if ~exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
+        angAcc_sensor = struct;
+        for angAccSensIdx = 1 : length(suit.sensors)
+            angAcc_sensor(angAccSensIdx).attachedLink = suit.sensors{angAccSensIdx, 1}.label;
+            angAcc_sensor(angAccSensIdx).iDynModelIdx = humanModel.getLinkIndex(suit.links{angAccSensIdx, 1}.label);
+            angAcc_sensor(angAccSensIdx).sensorName   = strcat(angAcc_sensor(angAccSensIdx).attachedLink, '_angAcc');
+
+            angAcc_sensor(angAccSensIdx).S_R_L        = iDynTree.Rotation().RPY(suit.sensors{angAccSensIdx, 1}.RPY(1), ...
+                suit.sensors{angAccSensIdx, 1}.RPY(2), suit.sensors{angAccSensIdx, 1}.RPY(3)).toMatlab;
+            angAcc_sensor(angAccSensIdx).pos_SwrtL    = suit.sensors{angAccSensIdx, 1}.position;
+
+            for suitLinkIdx = 1 : length(suit.links)
+                if strcmp(suit.sensors{angAccSensIdx, 1}.label,suit.links{suitLinkIdx, 1}.label)
+                    sampleToMatch = suitLinkIdx;
+                    for lenSample = 1 : suit.properties.lenData
+                        G_R_S_mat = quat2Mat(suit.sensors{angAccSensIdx, 1}.meas.sensorOrientation(:,lenSample));
+                        for blockIdx = 1 : block.nrOfBlocks
+                            % ---Labels
+                            angAcc_sensor(angAccSensIdx).meas(blockIdx).block  = block.labels(blockIdx);
+                            % ---Cut meas
+                            tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
+                            angAcc_sensor(angAccSensIdx).meas(blockIdx).S_meas_L = G_R_S_mat' * suit.links{sampleToMatch, 1}.meas.angularAcceleration(:,tmp.cutRange{blockIdx});
+                        end
+                    end
+                    break;
+                end
+            end
+        end
+        save(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'),'angAcc_sensor');
+    else
+        load(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'));
+    end
+
+    % Create new angular accelerometer sensor in berdy sensor
+    for newSensIdx = 1 : length(suit.sensors)
+        humanSensors = addAccAngSensorInBerdySensors(humanSensors,angAcc_sensor(newSensIdx).sensorName, ...
+            angAcc_sensor(newSensIdx).attachedLink,angAcc_sensor(newSensIdx).iDynModelIdx, ...
+            angAcc_sensor(newSensIdx).S_R_L, angAcc_sensor(newSensIdx).pos_SwrtL);
+    end
+    disp(strcat('[End] Computing the link angular acceleration.'));
 
     %% Compute the transformation of the base w.r.t. the global suit frame G
     disp('-------------------------------------------------------------------');
@@ -738,7 +738,6 @@ for blockIdx = 1 : block.nrOfBlocks
         disp(strcat('[End] mu_dgiveny MAP computation for Block ',num2str(blockIdx)));
     end
 end
-
 if opts.task1_SOT
     save(fullfile(bucket.pathToProcessedData_SOTtask1,'estimation.mat'),'estimation');
 else
@@ -750,7 +749,7 @@ end
 % if Task2 --> extract all
 
 % fext extraction (no via Berdy)
-for blockIdx = 1  : block.nrOfBlocks
+for blockIdx = 1 : block.nrOfBlocks
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] External force MAP extraction for Block ',num2str(blockIdx),'...'));
     estimatedVariables.Fext(blockIdx).block  = block.labels(blockIdx);
@@ -761,7 +760,6 @@ for blockIdx = 1  : block.nrOfBlocks
         opts.stackOfTaskMAP);
     disp(strcat('[End] External force extraction for Block ',num2str(blockIdx)));
 end
-
 if opts.task1_SOT
     save(fullfile(bucket.pathToProcessedData_SOTtask1,'estimatedVariables.mat'),'estimatedVariables');
 end
@@ -769,7 +767,7 @@ disp('[End] External force MAP extraction');
 
 if ~opts.task1_SOT
     % 6D acceleration (no via Berdy)
-    for blockIdx = 1  : block.nrOfBlocks
+    for blockIdx = 1 : block.nrOfBlocks
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Acceleration MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.Acc(blockIdx).block  = block.labels(blockIdx);
@@ -781,7 +779,7 @@ if ~opts.task1_SOT
         disp(strcat('[End] Acceleration MAP extraction for Block ',num2str(blockIdx)));
     end
     % torque extraction (via Berdy)
-    for blockIdx = 1  : block.nrOfBlocks
+    for blockIdx = 1 : block.nrOfBlocks
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Torque MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.tau(blockIdx).block  = block.labels(blockIdx);
@@ -792,7 +790,7 @@ if ~opts.task1_SOT
         disp(strcat('[End] Torque MAP extraction for Block ',num2str(blockIdx)));
     end
     % joint acc extraction (no via Berdy)
-    for blockIdx = 1  : block.nrOfBlocks
+    for blockIdx = 1 : block.nrOfBlocks
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Joint acceleration MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.ddq(blockIdx).block  = block.labels(blockIdx);
@@ -807,7 +805,7 @@ if ~opts.task1_SOT
         disp(strcat('[End] Joint acceleration MAP extraction for Block ',num2str(blockIdx)));
     end
     % fint extraction (no via Berdy)
-    for blockIdx = 1  : block.nrOfBlocks
+    for blockIdx = 1 : block.nrOfBlocks
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Internal force MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.Fint(blockIdx).block  = block.labels(blockIdx);

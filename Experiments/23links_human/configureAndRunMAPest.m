@@ -121,6 +121,19 @@ opts.task1_SOT = false;
 opts.stackOfTaskMAP = false; % argument value for berdy functions for Task2
 main;
 disp('[End] Run SOT Task2');
+
+%% Post computation analysis and plots
+disp('-------------------------------------------------------------------');
+disp('[Start] Compute RMSE in measured Vs. estimated variables...');
+computeRMSE;
+disp('[End] Compute RMSE in measured Vs. estimated variables.');
+%
+disp('-------------------------------------------------------------------');
+disp('[Start] Compute error norm for measured Vs. estimated variables...');
+computeNorm;
+disp('[End] Compute error norm for measured Vs. estimated variables.');
+disp('-------------------------------------------------------------------');
+%
 %SOT_plots;
 
 fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);

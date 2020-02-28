@@ -157,6 +157,14 @@ for blockIdx = 1 : block.nrOfBlocks
 end
 
 %% 6D external forces
+% Define range in data (only for block 1) for forces
+tmp.fextIndex = [];
+for fextInDataIdx = 1 : length(data(1).data)
+    if data(1).data(fextInDataIdx).type == 1002
+        tmp.fextIndex = [tmp.fextIndex; fextInDataIdx];
+        continue;
+    end
+end
 % forces
 for blockIdx = 1 : block.nrOfBlocks
     fig = figure('Name', strcat('external force - MEAS vs. ESTIM - Block ',num2str(blockIdx))','NumberTitle','off');
@@ -166,7 +174,7 @@ for blockIdx = 1 : block.nrOfBlocks
     for vectOrderIdx = 1 : length(dVectorOrder)
         subplot (5,10,vectOrderIdx)
         % from the measurement
-        for dataFextIdx = 83 : 131 % manual setting
+        for dataFextIdx = tmp.fextIndex(1) : tmp.fextIndex(end)
             if strcmp(data(blockIdx).data(dataFextIdx).id,dVectorOrder{vectOrderIdx})
                 plot1 = plot(data(blockIdx).data(dataFextIdx).meas(1,:),'r','lineWidth',0.8);
                 hold on;
@@ -205,7 +213,7 @@ for blockIdx = 1 : block.nrOfBlocks
     for vectOrderIdx = 1 : length(dVectorOrder)
         subplot (5,10,vectOrderIdx)
         % from the measurement
-        for dataFextIdx = 66 : 114
+        for dataFextIdx = tmp.fextIndex(1) : tmp.fextIndex(end)
             if strcmp(data(blockIdx).data(dataFextIdx).id,dVectorOrder{vectOrderIdx})
                 plot1 = plot(data(blockIdx).data(dataFextIdx).meas(4,:),'r','lineWidth',0.8);
                 hold on;

@@ -2,6 +2,10 @@
 %% @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 %                     MEASUREMENTS vs. ESTIMATIONS
 %  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+% Preliminaries
+opts.normPlot = true;
+normColor = [0.494117647058824   0.184313725490196   0.556862745098039];
+
 %% Linear acceleration
 % Match the order between measurements and estimation (only for block 1)
 nrOfLinAccelerometer = length(y_sim_linAcc(1).order);
@@ -39,6 +43,31 @@ end
 
 % TODO: Norm only base?
 % TODO: Norm per each link?
+
+% Plot
+if opts.normPlot
+    fig = figure('Name', 'norm all samples - linAcc','NumberTitle','off');
+    axes1 = axes('Parent',fig,'FontSize',16);
+    box(axes1,'on');
+    hold(axes1,'on');
+    grid on;
+    for blockIdx = 1 : block.nrOfBlocks
+        subplot (5,1,blockIdx)
+        plot1 = plot(normAnalysis(blockIdx).linAcc_norm,'color',normColor,'lineWidth',1.5);
+        hold on;
+        title(sprintf('Error norm, S%02d,  Block %s', subjectID, num2str(blockIdx)));
+        ylabel('$a^{lin}$ [m/$s^2$]','Interpreter','latex');
+        if blockIdx == 5
+            xlabel('samples');
+        end
+        set(gca,'FontSize',15)
+        grid on;
+%         %legend
+%         leg = legend([plot1],{'norm'},'Location','northeast');
+%         set(leg,'Interpreter','latex');
+%         axis tight
+    end
+end
 
 %%  Angular acceleration acceleration
 % TODO
@@ -88,6 +117,31 @@ end
 
 % TODO: Norm per each link?
 
+% Plot
+if opts.normPlot
+    fig = figure('Name', 'norm all samples - ext force','NumberTitle','off');
+    axes1 = axes('Parent',fig,'FontSize',16);
+    box(axes1,'on');
+    hold(axes1,'on');
+    grid on;
+    for blockIdx = 1 : block.nrOfBlocks
+        subplot (5,1,blockIdx)
+        plot1 = plot(normAnalysis(blockIdx).fext_norm,'color',normColor,'lineWidth',1.5);
+        hold on;
+        title(sprintf('Error norm, S%02d,  Block %s', subjectID, num2str(blockIdx)));
+        ylabel('$f^{ext}$ [N]','Interpreter','latex');
+        if blockIdx == 5
+            xlabel('samples');
+        end
+        set(gca,'FontSize',15)
+        grid on;
+%         %legend
+%         leg = legend([plot1],{'norm'},'Location','northeast');
+%         set(leg,'Interpreter','latex');
+%         axis tight
+    end
+end
+
 %% External moment
 nrOfExtMoment = nrOfExtForce; 
 % Compute mext difference (meas - estim)
@@ -112,6 +166,31 @@ for blockIdx = 1 : block.nrOfBlocks
 end
 
 % TODO: Norm per each link?
+
+% Plot
+if opts.normPlot
+    fig = figure('Name', 'norm all samples - ext moment','NumberTitle','off');
+    axes1 = axes('Parent',fig,'FontSize',16);
+    box(axes1,'on');
+    hold(axes1,'on');
+    grid on;
+    for blockIdx = 1 : block.nrOfBlocks
+        subplot (5,1,blockIdx)
+        plot1 = plot(normAnalysis(blockIdx).mext_norm,'color',normColor,'lineWidth',1.5);
+        hold on;
+        title(sprintf('Error norm, S%02d,  Block %s', subjectID, num2str(blockIdx)));
+        ylabel('$m^{ext}$ [Nm]','Interpreter','latex');
+        if blockIdx == 5
+            xlabel('samples');
+        end
+        set(gca,'FontSize',15)
+        grid on;
+%         %legend
+%         leg = legend([plot1],{'norm'},'Location','northeast');
+%         set(leg,'Interpreter','latex');
+%         axis tight
+    end
+end
 
 %% Save norm
 save(fullfile(bucket.pathToProcessedData_SOTtask2,'normAnalysis.mat'),'normAnalysis');

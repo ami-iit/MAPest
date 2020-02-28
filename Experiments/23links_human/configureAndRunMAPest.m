@@ -106,21 +106,21 @@ priors.properDotL = 1e-4 * ones(6,1);
 %  RUN TASK1
 disp('=====================================================================');
 disp('=====================================================================');
-disp('[Start] Run SOT Task1..');
+disp('[Start] Run SOT Task1...');
 opts.task1_SOT = true;
 opts.stackOfTaskMAP = true; % argument value for berdy functions for Task1
 main;
-disp('[End] Run SOT Task1');
+disp('[End] Run SOT Task1.');
 
 % =========================================================================
 %  RUN TASK2
 disp('=====================================================================');
 disp('=====================================================================');
-disp('[Start] Run SOT Task2..');
+disp('[Start] Run SOT Task2...');
 opts.task1_SOT = false;
 opts.stackOfTaskMAP = false; % argument value for berdy functions for Task2
 main;
-disp('[End] Run SOT Task2');
+disp('[End] Run SOT Task2.');
 
 %% Post computation analysis and plots
 disp('-------------------------------------------------------------------');
@@ -137,3 +137,4 @@ disp('-------------------------------------------------------------------');
 %SOT_plots;
 
 fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
+disp('===================================================================');

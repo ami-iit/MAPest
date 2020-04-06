@@ -1,5 +1,12 @@
-function [ state, ddq, selectedJoints] = IK(filenameOsimModel, filenameTrc, setupFile, frameRate, motFilename)
-%I K function computes the Inverse Kinematics computation by using the
+
+% Copyright (C) 2018 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
+function [ state, Sg, selectedJoints] = IK(filenameOsimModel, filenameTrc, setupFile, frameRate, motFilename)
+%IK function computes the Inverse Kinematics computation by using the
 % OpenSim API.  After computing q angles, it uses  Savitzi-Golay for
 % obtaining dq and ddq.  Outputs: state and ddq are in radians.
 

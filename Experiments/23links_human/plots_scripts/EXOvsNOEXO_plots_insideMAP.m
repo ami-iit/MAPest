@@ -59,34 +59,34 @@ for subjIdx = 1 : length(subjectID)
         comparisonWEvsNE.torqueNorm = struct;
         
         % ------------------ do task 01 vs. 00 comparison -----------------
-        %         for jointsIdx = 1 : length(selectedJoints.selectedJoints)
-        %             fig = figure('Name', 'EXO vs NOEXO analysis','NumberTitle','off');
-        %             axes1 = axes('Parent',fig,'FontSize',16);
-        %             box(axes1,'on');
-        %             hold(axes1,'on');
-        %             grid on;
-        %
-        %             for blockIdx = 1 : block.nrOfBlocks
-        %                 subplot (5,1,blockIdx)
-        %                 % Task 01 --> NO EXO
-        %                 plot1 = plot(noexo01.estimatedVariables.tau(blockIdx).values(jointsIdx,:),'color',orangeAnDycolor,'lineWidth',1.5);
-        %                 hold on;
-        %                 % Task 00 --> WITH EXO
-        %                 plot2 = plot(exo00.exo_insideMAP.estimatedVariables.tau(blockIdx).values(jointsIdx,:),'color',greenAnDycolor,'lineWidth',1.5);
-        %                 title(sprintf('%s, S%02d, Block %s',selectedJoints.selectedJoints{jointsIdx,1}, ...
-        %                     subjectID(subjIdx), num2str(blockIdx)),'Interpreter','latex');
-        %                 ylabel('torque [Nm]');
-        %                 if blockIdx == 5
-        %                     xlabel('samples');
-        %                 end
-        %                 set(gca,'FontSize',15)
-        %                 grid on;
-        %                 %legend
-        %                 leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
-        %                 set(leg,'Interpreter','latex');
-        %                 axis tight
-        %             end
-        %         end
+%         for jointsIdx = 1 : length(selectedJoints.selectedJoints)
+%             fig = figure('Name', 'EXO vs NOEXO analysis','NumberTitle','off');
+%             axes1 = axes('Parent',fig,'FontSize',16);
+%             box(axes1,'on');
+%             hold(axes1,'on');
+%             grid on;
+%             
+%             for blockIdx = 1 : block.nrOfBlocks
+%                 subplot (5,1,blockIdx)
+%                 % Task 01 --> NO EXO
+%                 plot1 = plot(noexo01.estimatedVariables.tau(blockIdx).values(jointsIdx,:),'color',orangeAnDycolor,'lineWidth',1.5);
+%                 hold on;
+%                 % Task 00 --> WITH EXO
+%                 plot2 = plot(exo00.exo_insideMAP.estimatedVariables.tau(blockIdx).values(jointsIdx,:),'color',greenAnDycolor,'lineWidth',1.5);
+%                 title(sprintf('%s, S%02d, Block %s',selectedJoints.selectedJoints{jointsIdx,1}, ...
+%                     subjectID(subjIdx), num2str(blockIdx)),'Interpreter','latex');
+%                 ylabel('torque [Nm]');
+%                 if blockIdx == 5
+%                     xlabel('samples');
+%                 end
+%                 set(gca,'FontSize',15)
+%                 grid on;
+%                 %legend
+%                 leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
+%                 set(leg,'Interpreter','latex');
+%                 axis tight
+%             end
+%         end
     else
         pathToTask00 = fullfile(pathToSubject,sprintf('task%d',taskID(1)));
         pathToTask01 = fullfile(pathToSubject,sprintf('task%d',taskID(2)));

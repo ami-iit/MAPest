@@ -1,3 +1,10 @@
+
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [tau] = iDynTreeID_kinDyn_floating(kinDynComputation, currentBase, baseOrientation, basePosition, baseVel, baseAcc, jointsQty, fext)
 %IDYNTREEID_KINDYN_FLOATING computes the iDynTree Inverse Dynamics (ID) as
 % implemented in iDynTree C++ method inverseDynamics() of kinDynComputations

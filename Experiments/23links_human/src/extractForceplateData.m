@@ -1,3 +1,10 @@
+
+% Copyright (C) 2018 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [ forceplate, suitIndex ] = extractForceplateData(AMTIfilename, TSfilename, contactLink, varargin )
 % EXTRACTFORCEPLATEDATA allows to create a .mat stucture contatining all 
 % forceplate data acquired during the Xsens experiment.

@@ -1,3 +1,10 @@
+
+% Copyright (C) 2018 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [suitStruct, forceplateStruct,  suitSyncIndex] = dataSync(suitStruct, forceplateStruct, syncIndex, suitIndex)
 % DATASYNC synchronizes all the dataset of the experiment 
 % (suit, forceplate and robot).  

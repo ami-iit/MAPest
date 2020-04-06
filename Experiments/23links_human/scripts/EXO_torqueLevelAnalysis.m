@@ -1,4 +1,10 @@
 
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 %% ====================== EXO_torqueLevelAnalysis =========================
 % The goal of the torque-level joint torque analysis is to exploit
 % the torques already computed in the EXO table.

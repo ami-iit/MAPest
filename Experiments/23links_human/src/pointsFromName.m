@@ -1,3 +1,10 @@
+
+% Copyright (C) 2017 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [points, found] = pointsFromName(pointsStruct, pointName)
 % POINTSFROMNAME returns the struct related to the point string you
 % are looking for.
@@ -10,7 +17,7 @@ function [points, found] = pointsFromName(pointsStruct, pointName)
 % - points    : 3x1 vector of points;
 % - found     : true if point has been found, false otherwise.
 %
-% Author(s): Claudia Latella, 2017
+% Author(s): Claudia Latella
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 for indx = 1 : pointsStruct.nrOfPoints

@@ -1,3 +1,10 @@
+
+% Copyright (C) 2017 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function printBerdyDynVariables( berdy )
 % PRINTBERDYDYNVARIABLE prints the order of the vector d.  For each time
 % frame, d is a vector column vector [berdy.getNrOfDynamicVariables() x 1]
@@ -11,7 +18,7 @@ function printBerdyDynVariables( berdy )
 %   notation!);
 % - the range or lenght of element for that variable.
 %
-% Author(s): Claudia Latella, Francesco Romano, 2017
+% Author(s): Claudia Latella, Francesco Romano
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 

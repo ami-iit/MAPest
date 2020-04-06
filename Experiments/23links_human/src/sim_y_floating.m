@@ -1,3 +1,10 @@
+
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function y_simulated = sim_y_floating(berdy, human_state, traversal, baseAngVel, mu_dgiveny)
 %SIMYFLOATING is useful (mandatoty) to compare the measurements in the y vector
 % (i.e., the vector of the measurements) and the results of the MAP estimation in mu_dgiveny.
@@ -7,7 +14,7 @@ function y_simulated = sim_y_floating(berdy, human_state, traversal, baseAngVel,
 % have to pass through the sim_y_floating and only later to compare vectors
 % y and y_simulated.
 %
-% Author(s): Claudia Latella, 2019
+% Author(s): Claudia Latella
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 % Set gravity

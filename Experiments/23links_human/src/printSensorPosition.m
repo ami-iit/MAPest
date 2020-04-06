@@ -1,8 +1,15 @@
+
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [sensPosWRTlink] = printSensorPosition(suit)
 %PRINTSENSORPOSITION prints a structure with the estimated position of the
 % sensors w.r.t. the attached link frame.
 %
-% Author(s): Claudia Latella, 2017
+% Author(s): Claudia Latella
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 sensPosWRTlink = struct;

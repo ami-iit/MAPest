@@ -1,9 +1,16 @@
+
+% Copyright (C) 2017 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [y, Sigmay] = berdyMeasurementsWrapping(berdy, data)
 % BERDYMEASUREMENTSWRAPPING orders the measurements in a format
 % compatible with the BerdyHelper class.  It returns a vector of
 % ordered measurements and its associated covariance matrix.
 %
-% Author(s): Claudia Latella, Francesco Romano, 2017
+% Author(s): Claudia Latella, Francesco Romano
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 

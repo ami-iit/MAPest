@@ -1,3 +1,10 @@
+
+% Copyright (C) 2017 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [mu_dgiveny, Sigma_dgiveny] = MAPcomputation(berdy, state, y, priors, varargin)
 % MAPCOMPUTATION solves the inverse dynamics problem with a 
 % maximum-a-posteriori estimation by using the Newton-Euler algorithm and 
@@ -42,7 +49,7 @@ function [mu_dgiveny, Sigma_dgiveny] = MAPcomputation(berdy, state, y, priors, v
 % sensor and the related block variance from the Sigmay.
 % -------------------------------------------------------------------------
 %
-% Author(s): Claudia Latella, Francesco Romano, 2017
+% Author(s): Claudia Latella, Francesco Romano
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 

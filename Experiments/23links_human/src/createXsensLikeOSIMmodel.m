@@ -1,3 +1,10 @@
+
+% Copyright (C) 2017 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [osimModelTemplate] = createXsensLikeOSIMmodel(subjectParams, filename)
 %CREATEXSENSLIKEOSIMMODEL generates an OSIM model of the subject. Joints of
 % the OSIM model are spherical joints.  The base of the model (pelvis) is
@@ -8,7 +15,7 @@ function [osimModelTemplate] = createXsensLikeOSIMmodel(subjectParams, filename)
 % -  filename       : (optional) allows to save the file.osim in a folder
 %                      called 'Models'.
 %
-% Author(s): Claudia Latella, 2017
+% Author(s): Claudia Latella
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 osimModelTemplate = fileread('XSensModelStyle_OSIMtemplate48.osim');

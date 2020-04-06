@@ -1,3 +1,10 @@
+
+% Copyright (C) 2017 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [shoes] = transformShoesWrenches(synchroStruct, subjectParamsFromData)
 % TRANSFORMSHOESWRENCHES transforms external wrenches coming
 % from the ftShoes into human frames.
@@ -22,7 +29,7 @@ function [shoes] = transformShoesWrenches(synchroStruct, subjectParamsFromData)
 % in contact.  See the sketch footInShoe.pdf for the reference frames
 % locations.
 %
-% Author(s): Claudia Latella, 2017
+% Author(s): Claudia Latella
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 %% Build the transformations

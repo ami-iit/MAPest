@@ -1,3 +1,10 @@
+
+% Copyright (C) 2017 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [ state, ddq, selectedJoints] = IK(filenameOsimModel, filenameTrc, setupFile, frameRate, motFilename)
 %IK computes the Inverse Kinematics by using the OpenSim API.
 % After computing joint angles q, it exploits Savitzi-Golay for
@@ -8,7 +15,7 @@ function [ state, ddq, selectedJoints] = IK(filenameOsimModel, filenameTrc, setu
 % - ddq   : in rad
 % - selectedJoints: order of the joints in then Osim model
 %
-% Author(s): Claudia Latella, Franxcesco Romano, 2017
+% Author(s): Claudia Latella, Franxcesco Romano
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 %% Use OpenSim InverseKinematicTool

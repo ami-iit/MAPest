@@ -1,10 +1,17 @@
+
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function data = getListFromCSV(filename, startRow, endRow, listLength)
 %GETLISTFROMCSV extracts strings from a CSV file and returns them in an ordered list.
 
 % Note: part of this function is inherited from the Matlab auto-generated code
 % of the function 'importCSVfile'.
 %
-% Author(s): Claudia Latella, 2019
+% Author(s): Claudia Latella
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 %% Initialize variables

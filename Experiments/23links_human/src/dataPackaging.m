@@ -1,3 +1,10 @@
+
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [ dataPacked ] = dataPackaging(model, sensors, suit, angAcc, fext, ddq, contactLink, priors)
 %DATAPACKAGING creates a data struct organised in the following way:
 % - data.time (a unified time for all type of sensors)
@@ -7,7 +14,7 @@ function [ dataPacked ] = dataPackaging(model, sensors, suit, angAcc, fext, ddq,
 %    - meas: value of measurements;
 %    - var : variance of sensor.
 %
-% Author(s): Claudia Latella, 2019
+% Author(s): Claudia Latella
 % Dynamic Interaction Control, Istituto Italiano di Tecnologia
 
 data      = struct;

@@ -1,3 +1,10 @@
+
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
 function [tau, ddq] = extractEstimatedTau_from_mu_dgiveny_fixed(berdy, dJointOrder, mu_dgiveny)
 %EXTRACTEDESTIMATEDtau_FROM_MUDGIVENY_fixed extracts the estimated torque
 % and joint acceleration into the vector estimated by MAP.

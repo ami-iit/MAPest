@@ -496,30 +496,25 @@ if opts.task1_SOT
     end
     disp(strcat('[End] Computing the <',currentBase,'> velocity'));
 
-    %% Compute the proper rate of change of momentum
-    % properDotL = [properDotL_lin; properDotL_ang];
+    %% Compute the rate of change of centroidal momentum w.r.t. the base
+    % i.e., b_DotL = [b_DotL_lin; b_DotL_ang] in Rˆ6;
 
-    % Compute the proper rate of change of the linear momentum, properDotL_lin
     disp('-------------------------------------------------------------------');
-    disp(strcat('[Start] Computing the rate of change of momentum for the <',currentBase,'>...'));
-    if ~exist(fullfile(bucket.pathToProcessedData_SOTtask1,'properDotL.mat'), 'file')
+    disp(strcat('[Start] Computing the rate of change of centroidal momentum w.r.t. the <',currentBase,'>...'));
+     if ~exist(fullfile(bucket.pathToProcessedData_SOTtask1,'b_DotL.mat'), 'file')
         for blockIdx = 1 : block.nrOfBlocks
-            properDotL(blockIdx).block = block.labels(blockIdx);
+            b_DotL(blockIdx).block = block.labels(blockIdx);
             tmp.baseVelocity6D = [baseVel(blockIdx).baseLinVelocity ; baseVel(blockIdx).baseAngVelocity];
-            tmp.properDotL_lin = computeProperRateOfChangeOfLinearMomentum(human_kinDynComp, humanModel, ...
+            b_DotL(blockIdx).b_DotL = computeRateOfChangeOfCentroidalMomentumWRTbase(human_kinDynComp, humanModel, ...
                 synchroKin(blockIdx), ...
                 tmp.baseVelocity6D, ...
                 G_T_base(blockIdx).G_T_b);
-            % Set the proper rate of change of the angular momentum (properDotL_ang) to zero
-            tmp.properDotL_ang = zeros(size(tmp.properDotL_lin));
-            % Build properDotL
-            properDotL(blockIdx).properDotL = [tmp.properDotL_lin; tmp.properDotL_ang];
         end
-        save(fullfile(bucket.pathToProcessedData_SOTtask1,'properDotL.mat'),'properDotL');
+        save(fullfile(bucket.pathToProcessedData_SOTtask1,'b_DotL.mat'),'b_DotL');
     else
-        load(fullfile(bucket.pathToProcessedData_SOTtask1,'properDotL.mat'),'properDotL');
+        load(fullfile(bucket.pathToProcessedData_SOTtask1,'b_DotL.mat'),'b_DotL');
     end
-    disp(strcat('[End] Computing the rate of change of momentum for the <',currentBase,'>'));
+    disp(strcat('[End] Computing the rate of change of centroidal momentum w.r.t. the <',currentBase,'>'));
 end
 
 %% EXO analysis (if)
@@ -610,7 +605,7 @@ for blockIdx = 1 : block.nrOfBlocks
         suit_runtime,...
         angAcc_sensor, ...
         fext,...
-        properDotL(blockIdx).properDotL, ...
+        b_DotL(blockIdx).b_DotL, ...
         synchroKin(blockIdx).ddq,...
         bucket.contactLink, ...
         priors, ...

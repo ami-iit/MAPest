@@ -107,7 +107,7 @@ if opts.EXO
 end
 % covariances for SOT in Task1
 priors.fext_hands = 1e3 * ones(6,1);
-priors.b_DotL = 1e-4  * ones(6,1);
+priors.b_dh = 1e-4  * ones(6,1);
 
 %% Run MAPest stack of tasks (SOT)
 % =========================================================================

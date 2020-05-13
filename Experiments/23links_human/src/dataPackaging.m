@@ -5,7 +5,7 @@
 % This software may be modified and distributed under the terms of the
 % GNU Lesser General Public License v2.1 or any later version.
 
-function [ dataPacked ] = dataPackaging(blockIdx, model, base, sensors, suit, angAcc, fext, b_DotL, ddq, contactLink, priors, stackOfTaskMAP)
+function [ dataPacked ] = dataPackaging(blockIdx, model, base, sensors, suit, angAcc, fext, b_dh, ddq, contactLink, priors, stackOfTaskMAP)
 %DATAPACKAGING creates a data struct organised in the following way:
 % - data.time (a unified time for all type of sensors)
 % Each substructure is identified by:
@@ -93,16 +93,16 @@ end
 % variance
 data.angAcc.var = priors.angAcc;
 
-%% FROM b_DotL
+%% FROM b_dh
 if stackOfTaskMAP
-    data.b_DotL  = struct;
+    data.b_dh  = struct;
     % type
-    data.b_DotL.type = iDynTree.COM_ACCELEROMETER_SENSOR;
+    data.b_dh.type = iDynTree.COM_ACCELEROMETER_SENSOR;
     % id & meas
-    data.b_DotL.id   = base;
-    data.b_DotL.meas = b_DotL;
+    data.b_dh.id   = base;
+    data.b_dh.meas = b_dh;
     % variance
-    data.b_DotL.var  = priors.b_DotL;
+    data.b_dh.var  = priors.b_dh;
 end
 
 %% FROM ddq
@@ -208,10 +208,10 @@ indx = indx + nOfSensor.angAcc;
 %--
 if stackOfTaskMAP
     % COM_sensor
-    dataPacked(indx + 1).type         = data.b_DotL.type;
-    dataPacked(indx + 1).id           = data.b_DotL.id;
-    dataPacked(indx + 1).meas         = data.b_DotL.meas;
-    dataPacked(indx + 1).var          = data.b_DotL.var;
+    dataPacked(indx + 1).type         = data.b_dh.type;
+    dataPacked(indx + 1).id           = data.b_dh.id;
+    dataPacked(indx + 1).meas         = data.b_dh.meas;
+    dataPacked(indx + 1).var          = data.b_dh.var;
     indx = indx + 1;
 end
 %--

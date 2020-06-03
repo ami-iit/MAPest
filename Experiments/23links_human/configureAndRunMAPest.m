@@ -88,26 +88,27 @@ end
 
 %% Covariances setting
 priors = struct;
-priors.acc_IMU     = 1e-3 * ones(3,1);                      %[m^2/s^2]   , from datasheet
-% priors.gyro_IMU    = xxxxxx * ones(3,1);                  %[rad^2/s^2] , from datasheet
-priors.angAcc      = 1e-3 * ones(3,1); %test
-priors.ddq         = 6.66e-6;                               %[rad^2/s^4] , from worst case covariance
-priors.foot_fext   = 1e-6 * [59; 59; 36; 2.25; 2.25; 0.56]; %[N^2,(Nm)^2]
-priors.noSens_fext = 1e-6 * ones(6,1);
+priors.trusted     = 1e-4; %magnitude for trusted values
+priors.no_trusted  = 1e4;  %magnitude for no-trusted values
 
-bucket.Sigmad = 1e6;
-% low reliability on the estimation (i.e., no prior info on the model regularization term d)
-bucket.SigmaD = 1e-4;
-% high reliability on the model constraints
+priors.acc_IMU     = priors.trusted * ones(3,1); %[m^2/s^2]
+% priors.gyro_IMU    = xxxxxx * ones(3,1); %[rad^2/s^2]
+priors.angAcc      = priors.trusted * ones(3,1);
+priors.ddq         = priors.trusted; %[rad^2/s^4]
+priors.foot_fext   = priors.trusted * ones(6,1); %[N^2,(Nm)^2]
+priors.noSens_fext = priors.trusted * ones(6,1); %[N^2,(Nm)^2]
+
+bucket.Sigmad = priors.no_trusted; % low reliability on the estimation (i.e., no prior info on the model regularization term d)
+bucket.SigmaD = priors.trusted;    % high reliability on the model constraints
 
 if opts.EXO
     if opts.EXO_insideMAP
-        priors.exo_fext   = 1e0 * ones(6,1); %[N^2,(Nm)^2]
+        priors.exo_fext   = priors.trusted * ones(6,1); %[N^2,(Nm)^2]
     end
 end
 % covariances for SOT in Task1
-priors.fext_hands = 1e3 * ones(6,1);
-priors.b_dh = 1e-4  * ones(6,1);
+priors.fext_hands = priors.no_trusted * ones(6,1); %[N^2,(Nm)^2]
+priors.b_dh       = 1e-2 * ones(6,1); %different values, TBI
 
 %% Run MAPest stack of tasks (SOT)
 % =========================================================================

@@ -27,7 +27,7 @@ for linAccIdx_inEstimVector = 1 : nrOfLinAccelerometer
     end
 end
 % Compute linAcc difference (meas - estim)
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     tmp.linAcc_meas  = [];
     tmp.linAcc_estim = [];
     for nrOfLinAccelerometerIdx = 1 : nrOfLinAccelerometer
@@ -39,7 +39,7 @@ for blockIdx = 1 : block.nrOfBlocks
     normAnalysis(blockIdx).linAcc_diff = (tmp.linAcc_meas - tmp.linAcc_estim);
 end
 % Norm all samples
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     len = length(synchroData(blockIdx).masterTime);
     normAnalysis(blockIdx).linAcc_norm = zeros(1,len);
     for lenIdx = 1 : len
@@ -57,7 +57,7 @@ if opts.normPlot
     box(axes1,'on');
     hold(axes1,'on');
     grid on;
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         subplot (5,1,blockIdx)
         plot1 = plot(normAnalysis(blockIdx).linAcc_norm,'color',normColor,'lineWidth',1.5);
         hold on;
@@ -101,7 +101,7 @@ for fextIdx_inEstimVector = 1 : nrOfExtForce
     end
 end
 % Compute fext difference (meas - estim)
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     tmp.fext_meas  = [];
     tmp.fext_estim = [];
     for nrOfExtForceIdx = 1 : nrOfExtForce
@@ -113,7 +113,7 @@ for blockIdx = 1 : block.nrOfBlocks
     normAnalysis(blockIdx).fext_diff = (tmp.fext_meas - tmp.fext_estim);
 end
 % Norm all samples
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     len = length(synchroData(blockIdx).masterTime);
     normAnalysis(blockIdx).fext_norm = zeros(1,len);
     for lenIdx = 1 : len
@@ -130,7 +130,7 @@ if opts.normPlot
     box(axes1,'on');
     hold(axes1,'on');
     grid on;
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         subplot (5,1,blockIdx)
         plot1 = plot(normAnalysis(blockIdx).fext_norm,'color',normColor,'lineWidth',1.5);
         hold on;
@@ -151,7 +151,7 @@ end
 %% External moment
 nrOfExtMoment = nrOfExtForce; 
 % Compute mext difference (meas - estim)
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     tmp.mext_meas  = [];
     tmp.mext_estim = [];
     for nrOfExtMomentIdx = 1 : nrOfExtMoment
@@ -163,7 +163,7 @@ for blockIdx = 1 : block.nrOfBlocks
     normAnalysis(blockIdx).mext_diff = (tmp.mext_meas - tmp.mext_estim);
 end
 % Norm all samples
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     len = length(synchroData(blockIdx).masterTime);
     normAnalysis(blockIdx).mext_norm = zeros(1,len);
     for lenIdx = 1 : len
@@ -180,7 +180,7 @@ if opts.normPlot
     box(axes1,'on');
     hold(axes1,'on');
     grid on;
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         subplot (5,1,blockIdx)
         plot1 = plot(normAnalysis(blockIdx).mext_norm,'color',normColor,'lineWidth',1.5);
         hold on;

@@ -14,7 +14,7 @@
 % ---------------------
 
 %% 6D forces from the exo table
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     len = length(synchroKin(blockIdx).masterTime);
     
     EXO.exoForces(blockIdx).block  = block.labels(blockIdx);
@@ -101,7 +101,7 @@ EXO.RH_T_RHtablePos.fromMatlab(EXO.tmp.RHexoSeenFromRH);
 EXO.RH_T_RHtable = iDynTree.Transform(EXO.RH_T_RHtableRot, EXO.RH_T_RHtablePos);
 
 % Transformation of Arm and Hips forces
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     len = length(synchroKin(blockIdx).masterTime);
     for i = 1 : len
         EXO.transformedForces(blockIdx).block  = block.labels(blockIdx);
@@ -122,7 +122,7 @@ end
 % - 1x force on the LeftUpperArm
 % - 1x force on the RightUpperArm
 % - 1x force at the Pelvis (sum of the two exo forces at the hips)
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     EXO.fext(blockIdx).block  = block.labels(blockIdx);
     % arms
     EXOfext(blockIdx).LUA = EXO.transformedForces(blockIdx).f_LUA;

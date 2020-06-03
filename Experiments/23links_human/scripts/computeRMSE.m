@@ -11,7 +11,7 @@
 %% Linear acceleration
 % RMSE
 nrOfLinAccelerometer = length(y_sim_linAcc(1).order);
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     for linAccIdx = 1  : nrOfLinAccelerometer
         RMSE(blockIdx).linAcc(linAccIdx).label = y_sim_linAcc(1).order(linAccIdx);
         RMSE(blockIdx).linAcc(linAccIdx).meas  = zeros(3,1);
@@ -35,7 +35,7 @@ for fextInDataIdx = 1 : length(data(1).data)
     end
 end
 % RMSE
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     for vectOrderIdx = 1 : length(dVectorOrder)
         RMSE(blockIdx).fext(vectOrderIdx).label = dVectorOrder(vectOrderIdx);
         RMSE(blockIdx).fext(vectOrderIdx).meas  = zeros(3,1);
@@ -50,7 +50,7 @@ end
 
 %% External moment
 % RMSE
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     for vectOrderIdx = 1 : length(dVectorOrder)
         RMSE(blockIdx).mext(vectOrderIdx).label = dVectorOrder(vectOrderIdx);
         RMSE(blockIdx).mext(vectOrderIdx).meas  = zeros(3,1);

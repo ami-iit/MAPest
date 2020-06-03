@@ -219,6 +219,13 @@ if opts.task1_SOT
     %% Raw data handling
     rawDataHandling;
 
+    %% Covariance tuning test
+    if opts.tuneCovarianceTest
+        blockID = 1; %considering only one trial for covariance tuning
+    else
+        blockID = 1 : block.nrOfBlocks;
+    end
+
     %% Save synchroData with the kinematics infos
     if ~exist(fullfile(bucket.pathToProcessedData,'synchroKin.mat'), 'file')
         fieldsToBeRemoved = {'RightShoe_SF','LeftShoe_SF','FP_SF'};
@@ -235,7 +242,7 @@ if opts.task1_SOT
     % Define contacts configuration
     bucket.contactLink{1} = 'RightFoot'; % human link in contact with RightShoe
     bucket.contactLink{2} = 'LeftFoot';  % human link in contact with LeftShoe
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         shoes(blockIdx) = transformShoesWrenches(synchroData(blockIdx), subjectParamsFromData);
     end
 
@@ -245,7 +252,7 @@ if opts.task1_SOT
     Sg.polinomialOrder = 3;
     Sg.window = 407;
 
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         for elemIdx = 1 : 6
             [shoes2tbr(blockIdx).Left_HF(elemIdx,:),~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window, ...
                 shoes(blockIdx).Left_HF(elemIdx,:),Sg.samplingTime);
@@ -279,12 +286,12 @@ if opts.task1_SOT
             selectedJoints(jLshoC7Rotx_idx,:) = [];
 
             selectedJointsReduced = selectedJoints;
-            for blockIdx = 1 : block.nrOfBlocks
+            for blockIdx = blockID
                 synchroKinReduced(blockIdx).q(jRshoC7Rotx_idx,:) = [];
                 synchroKinReduced(blockIdx).dq(jRshoC7Rotx_idx,:) = [];
                 synchroKinReduced(blockIdx).ddq(jRshoC7Rotx_idx,:) = [];
             end
-            for blockIdx = 1 : block.nrOfBlocks
+            for blockIdx = blockID
                 synchroKinReduced(blockIdx).q(jLshoC7Rotx_idx,:) = [];
                 synchroKinReduced(blockIdx).dq(jLshoC7Rotx_idx,:) = [];
                 synchroKinReduced(blockIdx).ddq(jLshoC7Rotx_idx,:) = [];
@@ -412,7 +419,7 @@ if opts.task1_SOT
                     sampleToMatch = suitLinkIdx;
                     for lenSample = 1 : suit.properties.lenData
                         G_R_S_mat = quat2Mat(suit.sensors{angAccSensIdx, 1}.meas.sensorOrientation(:,lenSample));
-                        for blockIdx = 1 : block.nrOfBlocks
+                        for blockIdx = blockID
                             % ---Labels
                             angAcc_sensor(angAccSensIdx).meas(blockIdx).block  = block.labels(blockIdx);
                             % ---Cut meas
@@ -450,14 +457,14 @@ if opts.task1_SOT
         break
     end
 
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
         bucket.basePosition(blockIdx).basePos_wrtG  = basePos_tot(:,tmp.cutRange{blockIdx});
         bucket.orientation(blockIdx).baseOrientation = baseOrientation_tot(:,tmp.cutRange{blockIdx});
     end
     clearvars basePos_tot baseOrientation_tot;
 
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         G_T_base(blockIdx).block = block.labels(blockIdx);
         G_T_base(blockIdx).G_T_b = computeTransformBaseToGlobalFrame(human_kinDynComp, ...
             synchroKin(blockIdx),...
@@ -469,7 +476,7 @@ if opts.task1_SOT
     %% Contact pattern definition
     % Trials are performed with both the feet attached to the ground (i.e.,
     % doubleSupport).  No single support is assumed for this analysis.
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         contactPattern(blockIdx).block = block.labels(blockIdx);
         contactPattern(blockIdx).contactPattern = cell(length(synchroKin(blockIdx).masterTime),1);
         for tmpIdx = 1 : length(synchroKin(blockIdx).masterTime)
@@ -483,7 +490,7 @@ if opts.task1_SOT
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] Computing the <',currentBase,'> velocity...'));
     if ~exist(fullfile(bucket.pathToProcessedData,'baseVel.mat'), 'file')
-        for blockIdx = 1 : block.nrOfBlocks
+        for blockIdx = blockID
             baseVel(blockIdx).block = block.labels(blockIdx);
             [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
                 synchroKin(blockIdx),...
@@ -500,7 +507,7 @@ if opts.task1_SOT
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] Computing the rate of change of centroidal momentum w.r.t. the <',currentBase,'>...'));
      if ~exist(fullfile(bucket.pathToProcessedData_SOTtask1,'base_dh.mat'), 'file')
-        for blockIdx = 1 : block.nrOfBlocks
+        for blockIdx = blockID
             base_dh(blockIdx).block = block.labels(blockIdx);
             tmp.baseVelocity6D = [baseVel(blockIdx).baseLinVelocity ; baseVel(blockIdx).baseAngVelocity];
             base_dh(blockIdx).base_dh = computeRateOfChangeOfCentroidalMomentumWRTbase(human_kinDynComp, humanModel, ...
@@ -532,7 +539,7 @@ if opts.EXO && opts.task1_SOT
     end
 
     % Extraction and round of the shoulder angle vectors
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         % -------Right shoulder
         EXO.tmp.qToCompare_right = (- CoC(blockIdx).Rsho_qFirst(1,:) + 90)'; % operation to compare the angles: change sign and then +90 deg
         EXO.rightRoundedTable(blockIdx).block = block.labels(blockIdx);
@@ -545,7 +552,7 @@ if opts.EXO && opts.task1_SOT
     end
 
     % Extraction from table of values accordingly to the shoulder angle vectors (rounded_q)
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         % -------Right
         for qIdx = 1 : size(EXO.rightRoundedTable(blockIdx).qToCompare_right_round,1)
             for tableIdx = 1 : size(EXO.extractedTable(1).shoulder_angles,1)
@@ -591,7 +598,7 @@ end
 %% Measurements wrapping
 disp('-------------------------------------------------------------------');
 disp('[Start] Wrapping measurements...');
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     fext.rightHuman = shoes(blockIdx).Right_HF;
     fext.leftHuman  = shoes(blockIdx).Left_HF;
     
@@ -703,7 +710,7 @@ if opts.MAPbenchmarking
 end
 
 %% MAP computation
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     priors.Sigmay = data(blockIdx).Sigmay;
     estimation(blockIdx).block = block.labels(blockIdx);
     if opts.Sigma_dgiveny
@@ -748,7 +755,7 @@ end
 % if Task2 --> extract all
 
 % fext extraction (no via Berdy)
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] External force MAP extraction for Block ',num2str(blockIdx),'...'));
     estimatedVariables.Fext(blockIdx).block  = block.labels(blockIdx);
@@ -766,7 +773,7 @@ disp('[End] External force MAP extraction');
 
 if ~opts.task1_SOT
     % 6D acceleration (no via Berdy)
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Acceleration MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.Acc(blockIdx).block  = block.labels(blockIdx);
@@ -778,7 +785,7 @@ if ~opts.task1_SOT
         disp(strcat('[End] Acceleration MAP extraction for Block ',num2str(blockIdx)));
     end
     % torque extraction (via Berdy)
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Torque MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.tau(blockIdx).block  = block.labels(blockIdx);
@@ -789,7 +796,7 @@ if ~opts.task1_SOT
         disp(strcat('[End] Torque MAP extraction for Block ',num2str(blockIdx)));
     end
     % joint acc extraction (no via Berdy)
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Joint acceleration MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.ddq(blockIdx).block  = block.labels(blockIdx);
@@ -804,7 +811,7 @@ if ~opts.task1_SOT
         disp(strcat('[End] Joint acceleration MAP extraction for Block ',num2str(blockIdx)));
     end
     % fint extraction (no via Berdy)
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Internal force MAP extraction for Block ',num2str(blockIdx),'...'));
         estimatedVariables.Fint(blockIdx).block  = block.labels(blockIdx);
@@ -824,7 +831,7 @@ end
 % the results of the MAP.  Note: you cannot compare directly the results of
 % the MAP (i.e., mu_dgiveny) with the measurements in the y vector but you
 % have to pass through the y_sim and only later to compare y and y_sim.
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     disp('-------------------------------------------------------------------');
     disp(strcat('[Start] Simulated y computation for Block ',num2str(blockIdx),'...'));
     y_sim(blockIdx).block = block.labels(blockIdx);

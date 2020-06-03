@@ -39,7 +39,7 @@ for sjIdx = 1 : size(selectedJoints,1)
 end
 
 %% Compute angles from EXO
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     len = size(synchroKin(blockIdx).masterTime ,2);
     
     % -------Right shoulder

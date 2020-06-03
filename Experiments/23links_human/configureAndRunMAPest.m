@@ -87,6 +87,9 @@ if opts.plots
 end
 
 %% Covariances setting
+% Opts to run the covariance tuning test
+opts.tuneCovarianceTest = false;
+% Settings
 priors = struct;
 priors.trusted     = 1e-4; %magnitude for trusted values
 priors.no_trusted  = 1e4;  %magnitude for no-trusted values

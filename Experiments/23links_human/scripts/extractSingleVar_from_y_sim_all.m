@@ -8,7 +8,7 @@
 % -----------------------------------------------------------------------%
 %  EXTERNAL FORCES
 % -----------------------------------------------------------------------%
-for blockIdx = 1 : block.nrOfBlocks
+for blockIdx = blockID
     y_sim_fext(blockIdx).block = block.labels(blockIdx);
     y_sim_fext(blockIdx).order = dVectorOrder;
     y_sim_fext(blockIdx).meas  = cell(length(dVectorOrder),1);
@@ -27,7 +27,7 @@ if ~opts.task1_SOT
     % -----------------------------------------------------------------------%
     %  LIN ACCELERATION
     % -----------------------------------------------------------------------%
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         nrOfLinAccelerometer = 17;
         y_sim_linAcc(blockIdx).block = block.labels(blockIdx);
         y_sim_linAcc(blockIdx).order = cell(nrOfLinAccelerometer,1);
@@ -43,7 +43,7 @@ if ~opts.task1_SOT
     % -----------------------------------------------------------------------%
     %  JOINT ACCELERATION
     % -----------------------------------------------------------------------%
-    for blockIdx = 1 : block.nrOfBlocks
+    for blockIdx = blockID
         y_sim_ddq(blockIdx).block = block.labels(blockIdx);
         y_sim_ddq(blockIdx).order = selectedJoints;
         y_sim_ddq(blockIdx).meas = cell(humanModel.getNrOfDOFs,1);

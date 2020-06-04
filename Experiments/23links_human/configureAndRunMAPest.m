@@ -91,8 +91,9 @@ end
 opts.tuneCovarianceTest = false;
 % Settings
 priors = struct;
-priors.trusted     = 1e-4; %magnitude for trusted values
-priors.no_trusted  = 1e4;  %magnitude for no-trusted values
+priors.absPowerValue = 3;
+priors.trusted     = str2double(strcat('1e-',num2str(priors.absPowerValue))); %magnitude for trusted values
+priors.no_trusted  = str2double(strcat('1e' ,num2str(priors.absPowerValue))); %magnitude for non trusted values
 
 priors.acc_IMU     = priors.trusted * ones(3,1); %[m^2/s^2]
 % priors.gyro_IMU    = xxxxxx * ones(3,1); %[rad^2/s^2]
@@ -111,7 +112,7 @@ if opts.EXO
 end
 % covariances for SOT in Task1
 priors.fext_hands = priors.no_trusted * ones(6,1); %[N^2,(Nm)^2]
-priors.b_dh       = 1e-2 * ones(6,1); %different values, TBI
+priors.b_dh       = priors.trusted * ones(6,1);
 
 %% Run MAPest stack of tasks (SOT)
 % =========================================================================
@@ -150,3 +151,26 @@ disp('-------------------------------------------------------------------');
 
 fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 disp('===================================================================');
+
+%% If covariance tuning analysis
+if opts.tuneCovarianceTest
+    bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToTask,'covarianceTuning');
+    if ~exist(bucket.pathToCovarianceTuningData)
+        mkdir(bucket.pathToCovarianceTuningData)
+    end
+    % Move folders
+    path_destination  = bucket.pathToCovarianceTuningData;
+    path_source_task1 = bucket.pathToProcessedData_SOTtask1;
+    movefile(path_source_task1,path_destination);
+    path_source_task2 = bucket.pathToProcessedData_SOTtask2;
+    movefile(path_source_task2,path_destination);
+    % Rename folders by adding the power
+    oldFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask1');
+    newFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask1_power%d', priors.absPowerValue));
+    mkdir(oldFolder_SOTtask1);
+    movefile(oldFolder_SOTtask1,newFolder_SOTtask1);
+    oldFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask2');
+    newFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask2_power%d', priors.absPowerValue));
+    mkdir(oldFolder_SOTtask2);
+    movefile(oldFolder_SOTtask2,newFolder_SOTtask2);
+end

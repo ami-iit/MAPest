@@ -16,8 +16,9 @@ for blockIdx = blockID
         RMSE(blockIdx).linAcc(linAccIdx).label = y_sim_linAcc(1).order(linAccIdx);
         RMSE(blockIdx).linAcc(linAccIdx).meas  = zeros(3,1);
         for i = 1 : 3
-            RMSE(blockIdx).linAcc(linAccIdx).meas(i) = sqrt(mean(data(blockIdx).data(linAccIdx).meas(i,:) - ...
-                y_sim_linAcc(blockIdx).meas{linAccIdx,1}(i,:)).^2);
+            vect_meas  = data(blockIdx).data(linAccIdx).meas(i,:);
+            vect_estim = y_sim_linAcc(blockIdx).meas{linAccIdx,1}(i,:);
+            RMSE(blockIdx).linAcc(linAccIdx).meas(i) = sqrt(mean((vect_meas - vect_estim).^2));
         end
     end
 end
@@ -41,8 +42,9 @@ for blockIdx = blockID
         RMSE(blockIdx).fext(vectOrderIdx).meas  = zeros(3,1);
         for dataFextIdx = tmp.fextIndex(1) : tmp.fextIndex(end)
             for i = 1 : 3
-                RMSE(blockIdx).fext(vectOrderIdx).meas(i) = sqrt(mean(data(blockIdx).data(dataFextIdx).meas(i,:) - ...
-                    y_sim_fext(blockIdx).meas{vectOrderIdx,1}(1,:)).^2);
+                vect_meas  = data(blockIdx).data(dataFextIdx).meas(i,:);
+                vect_estim = y_sim_fext(blockIdx).meas{vectOrderIdx,1}(1,:);
+                RMSE(blockIdx).fext(vectOrderIdx).meas(i) = sqrt(mean((vect_meas - vect_estim).^2));
             end
         end
     end
@@ -56,8 +58,9 @@ for blockIdx = blockID
         RMSE(blockIdx).mext(vectOrderIdx).meas  = zeros(3,1);
         for dataFextIdx = tmp.fextIndex(1) : tmp.fextIndex(end)
             for i = 1 : 3
-                RMSE(blockIdx).mext(vectOrderIdx).meas(i) = sqrt(mean(data(blockIdx).data(dataFextIdx).meas(i+3,:) - ...
-                    y_sim_fext(blockIdx).meas{vectOrderIdx,1}(i+3,:)).^2);
+                vect_meas  = data(blockIdx).data(dataFextIdx).meas(i+3,:);
+                vect_estim = y_sim_fext(blockIdx).meas{vectOrderIdx,1}(i+3,:);
+                RMSE(blockIdx).mext(vectOrderIdx).meas(i) = sqrt(mean((vect_meas - vect_estim).^2));
             end
         end
     end

@@ -7,6 +7,12 @@ RMSE_power2 = load(fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask
 RMSE_power3 = load(fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask2_power3/RMSE.mat'),'RMSE');
 RMSE_power4 = load(fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask2_power4/RMSE.mat'),'RMSE');
 
+% Define new legend colors
+power1_col = [1     0     1];
+power2_col = [1     0     0];
+power3_col = [0     0     1];
+power4_col = [0     0     0];
+
 %% @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 %                             NORM ANALYSIS
 %  @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -48,13 +54,13 @@ yticks(0:1:nrOfLinAccelerometer+1)
 tickLabelsList = cell(1,nrOfLinAccelerometer+1);
 for linAccIdx = 1  : nrOfLinAccelerometer
     xlabel( '$a^{lin}$ RMSE norm [m/$s^2$]','Interpreter','latex', 'FontSize',22);
-    plot_power1 = plot(RMSE_power1.RMSE.linAcc(linAccIdx).norm, y(linAccIdx),'om', 'Linewidth', 2);
+    plot_power1 = plot(RMSE_power1.RMSE.linAcc(linAccIdx).norm, y(linAccIdx),'color',power1_col, 'Linewidth', 2);
     hold on;
-    plot_power2 = plot(RMSE_power2.RMSE.linAcc(linAccIdx).norm, y(linAccIdx),'or', 'Linewidth', 2);
+    plot_power2 = plot(RMSE_power2.RMSE.linAcc(linAccIdx).norm, y(linAccIdx),'color',power2_col, 'Linewidth', 2);
     hold on;
-    plot_power3 = plot(RMSE_power3.RMSE.linAcc(linAccIdx).norm, y(linAccIdx),'ob', 'Linewidth', 2);
+    plot_power3 = plot(RMSE_power3.RMSE.linAcc(linAccIdx).norm, y(linAccIdx),'color',power3_col, 'Linewidth', 2);
     hold on;
-    plot_power4 = plot(RMSE_power4.RMSE.linAcc(linAccIdx).norm, y(linAccIdx),'ok', 'Linewidth', 2);
+    plot_power4 = plot(RMSE_power4.RMSE.linAcc(linAccIdx).norm, y(linAccIdx),'color',power4_col, 'Linewidth', 2);
     
     tickLabelsList{linAccIdx+1} = angAcc_sensor(linAccIdx).attachedLink;
 end
@@ -78,13 +84,13 @@ yticks(0:1:nrOfExternalWrenches+1)
 tickLabelsList = cell(1,nrOfExternalWrenches+1);
 for fextIdx = 1  : nrOfExternalWrenches
     xlabel( '$f^{x}$ RMSE norm [N]','Interpreter','latex', 'FontSize',22);
-    plot_power1 = plot(RMSE_power1.RMSE.fext(fextIdx).norm, y(fextIdx),'om', 'Linewidth', 2);
+    plot_power1 = plot(RMSE_power1.RMSE.fext(fextIdx).norm, y(fextIdx),'color',power1_col, 'Linewidth', 2);
     hold on;
-    plot_power2 = plot(RMSE_power2.RMSE.fext(fextIdx).norm, y(fextIdx),'or', 'Linewidth', 2);
+    plot_power2 = plot(RMSE_power2.RMSE.fext(fextIdx).norm, y(fextIdx),'color',power2_col, 'Linewidth', 2);
     hold on;
-    plot_power3 = plot(RMSE_power3.RMSE.fext(fextIdx).norm, y(fextIdx),'ob', 'Linewidth', 2);
+    plot_power3 = plot(RMSE_power3.RMSE.fext(fextIdx).norm, y(fextIdx),'color',power3_col, 'Linewidth', 2);
     hold on;
-    plot_power4 = plot(RMSE_power4.RMSE.fext(fextIdx).norm, y(fextIdx),'ok', 'Linewidth', 2);
+    plot_power4 = plot(RMSE_power4.RMSE.fext(fextIdx).norm, y(fextIdx),'color',power4_col, 'Linewidth', 2);
     
     tickLabelsList{fextIdx+1} = string(RMSE_power2.RMSE.fext(fextIdx).label);
 end
@@ -108,13 +114,13 @@ yticks(0:1:nrOfExternalWrenches+1)
 tickLabelsList = cell(1,nrOfExternalWrenches+1);
 for fextIdx = 1  : nrOfExternalWrenches
     xlabel( '$m^{x}$ RMSE norm [Nm]','Interpreter','latex', 'FontSize',22);
-    plot_power1 = plot(RMSE_power1.RMSE.mext(fextIdx).norm, y(fextIdx),'om', 'Linewidth', 2);
+    plot_power1 = plot(RMSE_power1.RMSE.mext(fextIdx).norm, y(fextIdx),'color',power1_col, 'Linewidth', 2);
     hold on;
-    plot_power2 = plot(RMSE_power2.RMSE.mext(fextIdx).norm, y(fextIdx),'or', 'Linewidth', 2);
+    plot_power2 = plot(RMSE_power2.RMSE.mext(fextIdx).norm, y(fextIdx),'color',power2_col, 'Linewidth', 2);
     hold on;
-    plot_power3 = plot(RMSE_power3.RMSE.mext(fextIdx).norm, y(fextIdx),'ob', 'Linewidth', 2);
+    plot_power3 = plot(RMSE_power3.RMSE.mext(fextIdx).norm, y(fextIdx),'color',power3_col, 'Linewidth', 2);
     hold on;
-    plot_power4 = plot(RMSE_power4.RMSE.mext(fextIdx).norm, y(fextIdx),'ok', 'Linewidth', 2);
+    plot_power4 = plot(RMSE_power4.RMSE.mext(fextIdx).norm, y(fextIdx),'color',power4_col, 'Linewidth', 2);
     
     tickLabelsList{fextIdx+1} = string(RMSE_power2.RMSE.fext(fextIdx).label);
 end

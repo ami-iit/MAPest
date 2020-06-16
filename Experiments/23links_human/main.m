@@ -669,6 +669,15 @@ for blockIdx = blockID
     end
 end
 disp('[End] Wrapping measurements');
+
+if opts.tuneCovarianceTest
+    % Saving data
+    if opts.task1_SOT
+        save(fullfile(bucket.pathToProcessedData_SOTtask1,'data.mat'),'data');
+    else
+        save(fullfile(bucket.pathToProcessedData_SOTtask2,'data.mat'),'data');
+    end
+end
 % ---------------------------------------------------
 % CHECK: print the order of measurement in y
 % printBerdySensorOrder(berdy, opts.stackOfTaskMAP);

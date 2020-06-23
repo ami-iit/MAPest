@@ -99,15 +99,17 @@ if opts.totalVariableTuning
           box(axes1,'on');
           hold(axes1,'on');
           
-          plot_power1 = plot(absErr_power1,'color',power1_col,'lineWidth',2);
+          plot_power1 = plot(absErr_power1,'color',power1_col,'lineWidth',4);
           hold on;
-          plot_power2 = plot(absErr_power2,'color',power2_col,'lineWidth',2);
+          plot_power2 = plot(absErr_power2,'color',power2_col,'lineWidth',4);
           hold on;
-          plot_power3 = plot(absErr_power3,'color',power3_col,'lineWidth',2);
+          plot_power3 = plot(absErr_power3,'color',power3_col,'lineWidth',4);
           hold on;
-          plot_power4 = plot(absErr_power4,'color',power4_col,'lineWidth',2);
+          plot_power4 = plot(absErr_power4,'color',power4_col,'lineWidth',4);
           grid on;
-          title(sprintf('Absolute error, Block %d',blockIdx),'FontSize',15);
+          title(sprintf('Absolute error, Block %d',blockIdx),'FontSize',20);
+          ylabel('$\epsilon_{abs}$','Interpreter','latex');
+          xlabel('samples');
           %           title(sprintf('%s',y_sim_linAcc_power3.y_sim_linAcc(blockIdx).order{linAccIdx, 1}),'FontSize',15 );
           leg = legend([plot_power1,plot_power2,plot_power3,plot_power4],{'estim n=1','estim n=2','estim n=3','estim n=4'});
           set(leg,'Interpreter','latex', ...
@@ -131,15 +133,17 @@ if opts.totalVariableTuning
           box(axes1,'on');
           hold(axes1,'on');
           
-          plot_power1 = plot(relErr_power1,'color',power1_col,'lineWidth',2);
+          plot_power1 = plot(relErr_power1,'color',power1_col,'lineWidth',4);
           hold on;
-          plot_power2 = plot(relErr_power2,'color',power2_col,'lineWidth',2);
+          plot_power2 = plot(relErr_power2,'color',power2_col,'lineWidth',4);
           hold on;
-          plot_power3 = plot(relErr_power3,'color',power3_col,'lineWidth',2);
+          plot_power3 = plot(relErr_power3,'color',power3_col,'lineWidth',4);
           hold on;
-          plot_power4 = plot(relErr_power4,'color',power4_col,'lineWidth',2);
+          plot_power4 = plot(relErr_power4,'color',power4_col,'lineWidth',4);
           grid on;
-          title(sprintf('Relative error, Block %d',blockIdx),'FontSize',15);
+          title(sprintf('Relative error, Block %d',blockIdx),'FontSize',20);
+          ylabel('$\epsilon_{rel}$','Interpreter','latex');
+          xlabel('samples');
           %           title(sprintf('%s',y_sim_linAcc_power3.y_sim_linAcc(blockIdx).order{linAccIdx, 1}),'FontSize',15 );
           leg = legend([plot_power1,plot_power2,plot_power3,plot_power4],{'estim n=1','estim n=2','estim n=3','estim n=4'});
           set(leg,'Interpreter','latex', ...

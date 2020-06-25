@@ -1,5 +1,5 @@
 
-% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% Copyright (C) 2020 Istituto Italiano di Tecnologia (IIT)
 % All rights reserved.
 %
 % This software may be modified and distributed under the terms of the
@@ -35,18 +35,14 @@ bucket.datasetRoot = fullfile(pwd, 'dataJSI');
 
 % Subject and task to be processed
 subjectID = 1;
-taskID = 1;
-
-disp(' ');
-disp('===================== FLOATING-BASE ANALYSIS ========================');
-fprintf('[Start] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
+taskID = 0;
 
 % EXO option
 opts.EXO = true;
 if opts.EXO
     opts.EXO_torqueLevelAnalysis = false;
     opts.EXO_forceLevelAnalysis  = false;
-    opts.EXO_insideMAP           = false;
+    opts.EXO_insideMAP           = true;
 end
 
 % Option for C7 joints as follows:
@@ -86,91 +82,59 @@ if opts.plots
     end
 end
 
-%% Covariances setting
-% Opts to run the covariance tuning test
-opts.tuneCovarianceTest = false;
-% Settings
-priors = struct;
-priors.absPowerValue = 3;
-priors.trusted     = str2double(strcat('1e-',num2str(priors.absPowerValue))); %magnitude for trusted values
-priors.no_trusted  = str2double(strcat('1e' ,num2str(priors.absPowerValue))); %magnitude for non trusted values
+%% Tuning covariance
+disp(' ');
+disp('======================= COVARIANCE TUNING ==========================');
+opts.tuneCovarianceTest = true;
 
-priors.acc_IMU     = priors.trusted * ones(3,1); %[m^2/s^2]
-% priors.gyro_IMU    = xxxxxx * ones(3,1); %[rad^2/s^2]
-priors.angAcc      = priors.trusted * ones(3,1);
-priors.ddq         = priors.trusted; %[rad^2/s^4]
-priors.foot_fext   = priors.trusted * ones(6,1); %[N^2,(Nm)^2]
-priors.noSens_fext = priors.trusted * ones(6,1); %[N^2,(Nm)^2]
-
-bucket.Sigmad = priors.no_trusted; % low reliability on the estimation (i.e., no prior info on the model regularization term d)
-bucket.SigmaD = priors.trusted;    % high reliability on the model constraints
-
-if opts.EXO
-    if opts.EXO_insideMAP
-        priors.exo_fext   = priors.trusted * ones(6,1); %[N^2,(Nm)^2]
+covTun.rangePowerForPolarizedTuning = [1, 2, 3, 4];
+for powerIdx = 1 : length(covTun.rangePowerForPolarizedTuning)
+    fprintf('[Start] Covariance tuning SUBJECT_%02d, TRIAL_%02d. Test with power %01d\n',subjectID,taskID, powerIdx);
+    covarianceSelectedValue = covTun.rangePowerForPolarizedTuning(powerIdx);
+    config;
+    % Save
+    if opts.tuneCovarianceTest
+        bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToTask,'covarianceTuning');
+        if ~exist(bucket.pathToCovarianceTuningData)
+            mkdir(bucket.pathToCovarianceTuningData)
+        end
+        % Move folders
+        path_destination  = bucket.pathToCovarianceTuningData;
+        path_source_task1 = bucket.pathToProcessedData_SOTtask1;
+        movefile(path_source_task1,path_destination);
+        path_source_task2 = bucket.pathToProcessedData_SOTtask2;
+        movefile(path_source_task2,path_destination);
+        % Rename folders by adding the power
+        oldFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask1');
+        newFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask1_power%d', priors.absPowerValue));
+        mkdir(oldFolder_SOTtask1);
+        movefile(oldFolder_SOTtask1,newFolder_SOTtask1);
+        oldFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask2');
+        newFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask2_power%d', priors.absPowerValue));
+        mkdir(oldFolder_SOTtask2);
+        movefile(oldFolder_SOTtask2,newFolder_SOTtask2);
     end
 end
-% covariances for SOT in Task1
-priors.fext_hands = priors.no_trusted * ones(6,1); %[N^2,(Nm)^2]
-priors.b_dh       = priors.trusted * ones(6,1);
+% Define chosen covarianceChosenSelectedValue
+tuningCovariance_measVSestim;
+covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
 
-%% Run MAPest stack of tasks (SOT)
-% =========================================================================
-%  RUN TASK1
-disp('=====================================================================');
-disp('=====================================================================');
-disp('[Start] Run SOT Task1...');
-opts.task1_SOT = true;
-opts.stackOfTaskMAP = true; % argument value for berdy functions for Task1
-main;
-disp('[End] Run SOT Task1.');
+% Remove file/folders related to the covariance tuning analysis
+clearvars covTun;
+rmdir(bucket.pathToCovarianceTuningData);
 
-% =========================================================================
-%  RUN TASK2
-disp('=====================================================================');
-disp('=====================================================================');
-disp('[Start] Run SOT Task2...');
-opts.task1_SOT = false;
-opts.stackOfTaskMAP = false; % argument value for berdy functions for Task2
-main;
-disp('[End] Run SOT Task2.');
+opts.tuneCovarianceTest = false;
+fprintf('[End] Covariance tuning SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 
-%% Post computation analysis and plots
-disp('-------------------------------------------------------------------');
-disp('[Start] Compute RMSE in measured Vs. estimated variables...');
-computeRMSE;
-disp('[End] Compute RMSE in measured Vs. estimated variables.');
-%
-disp('-------------------------------------------------------------------');
-disp('[Start] Compute error norm for measured Vs. estimated variables...');
-computeNorm;
-disp('[End] Compute error norm for measured Vs. estimated variables.');
-disp('-------------------------------------------------------------------');
-%
-%SOT_plots;
+%% Launch the analysis script
+clearvars -except bucket opts subjectID taskID covarianceSelectedValue powerIdx;
 
+disp(' ');
+disp('===================== FLOATING-BASE ANALYSIS ========================');
+fprintf('[Start] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
+fprintf('[Info] Trusted covariance Sigma_trusted = 1e-%01d\n',covarianceSelectedValue);
+fprintf('[Info] Trusted covariance Sigma_notrusted = 1e%01d\n',covarianceSelectedValue);
+config;
 fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 disp('===================================================================');
 
-%% If covariance tuning analysis
-if opts.tuneCovarianceTest
-    bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToTask,'covarianceTuning');
-    if ~exist(bucket.pathToCovarianceTuningData)
-        mkdir(bucket.pathToCovarianceTuningData)
-    end
-    % Move folders
-    path_destination  = bucket.pathToCovarianceTuningData;
-    path_source_task1 = bucket.pathToProcessedData_SOTtask1;
-    movefile(path_source_task1,path_destination);
-    path_source_task2 = bucket.pathToProcessedData_SOTtask2;
-    movefile(path_source_task2,path_destination);
-    % Rename folders by adding the power
-    oldFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask1');
-    newFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask1_power%d', priors.absPowerValue));
-    mkdir(oldFolder_SOTtask1);
-    movefile(oldFolder_SOTtask1,newFolder_SOTtask1);
-    oldFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask2');
-    newFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask2_power%d', priors.absPowerValue));
-    mkdir(oldFolder_SOTtask2);
-    movefile(oldFolder_SOTtask2,newFolder_SOTtask2);
-end

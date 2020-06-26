@@ -9,7 +9,7 @@
 % JSI_experiments main
 %--------------------------------------------------------------------------
 bucket.pathToSubject = fullfile(bucket.datasetRoot, sprintf('S%02d',subjectID));
-bucket.pathToTask    = fullfile(bucket.pathToSubject,sprintf('task%d',taskID));
+bucket.pathToTask    = fullfile(bucket.pathToSubject,sprintf('Task%d',taskID));
 bucket.pathToRawData = fullfile(bucket.pathToTask,'data');
 bucket.pathToProcessedData   = fullfile(bucket.pathToTask,'processed');
 
@@ -184,7 +184,7 @@ if opts.task1_SOT
         %     load(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'));
         load(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'));
     end
-    % disp('[Warning]: The IK is expressed in current frame and not in fixed frame!');
+    disp('[Warning]: The IK is expressed in current frame and not in fixed frame!');
 
     % External ddq computation
     Sg.samplingTime = 1/suit.properties.frameRate;
@@ -228,12 +228,12 @@ if opts.task1_SOT
 
     if ~opts.tuneCovarianceTest || powerIdx == 1
         %% Save synchroData with the kinematics infos
-        if ~exist(fullfile(bucket.pathToProcessedData,'synchroKin.mat'), 'file')
-            fieldsToBeRemoved = {'RightShoe_SF','LeftShoe_SF','FP_SF'};
-            synchroKin = rmfield(synchroData,fieldsToBeRemoved);
+        fieldsToBeRemoved = {'RightShoe_SF','LeftShoe_SF','FP_SF'};
+        synchroKin = rmfield(synchroData,fieldsToBeRemoved);
+        % save
+        if ~opts.tuneCovarianceTest
             save(fullfile(bucket.pathToProcessedData,'synchroKin.mat'),'synchroKin');
         end
-        load(fullfile(bucket.pathToProcessedData,'synchroKin.mat'));
 
         %% Transform forces into human forces
         % Preliminary assumption on contact links: 2 contacts only (or both feet
@@ -490,17 +490,16 @@ if opts.task1_SOT
         % This value is mandatorily required in the floating-base formalism.
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Computing the <',currentBase,'> velocity...'));
-        if ~exist(fullfile(bucket.pathToProcessedData,'baseVel.mat'), 'file')
-            for blockIdx = blockID
-                baseVel(blockIdx).block = block.labels(blockIdx);
-                [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
-                    synchroKin(blockIdx),...
-                    G_T_base(blockIdx), ...
-                    contactPattern(blockIdx).contactPattern);
-            end
+        for blockIdx = blockID
+            baseVel(blockIdx).block = block.labels(blockIdx);
+            [baseVel(blockIdx).baseLinVelocity, baseVel(blockIdx).baseAngVelocity] = computeBaseVelocity(human_kinDynComp, ...
+                synchroKin(blockIdx),...
+                G_T_base(blockIdx), ...
+                contactPattern(blockIdx).contactPattern);
+        end
+        % save
+        if ~opts.tuneCovarianceTest
             save(fullfile(bucket.pathToProcessedData,'baseVel.mat'),'baseVel');
-        else
-            load(fullfile(bucket.pathToProcessedData,'baseVel.mat'),'baseVel');
         end
         disp(strcat('[End] Computing the <',currentBase,'> velocity'));
 

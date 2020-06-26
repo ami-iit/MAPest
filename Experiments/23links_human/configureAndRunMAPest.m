@@ -65,6 +65,7 @@ opts.tuneCovarianceTest = true;
 
 covTun.rangePowerForPolarizedTuning = [1, 2, 3, 4];
 for powerIdx = 1 : length(covTun.rangePowerForPolarizedTuning)
+    disp('=====================================================================');
     fprintf('[Start] Covariance tuning SUBJECT_%02d, TRIAL_%02d. Test with power %01d\n',subjectID,taskID, powerIdx);
     covarianceSelectedValue = covTun.rangePowerForPolarizedTuning(powerIdx);
     config;

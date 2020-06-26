@@ -532,11 +532,9 @@ if opts.EXO && opts.task1_SOT
     % Load raw meas from EXO table
     loadEXOtableMeas;
     % Compute angles compatible with the EXO
-    if ~exist(fullfile(bucket.pathToProcessedData_EXO,'CoC.mat'), 'file')
-        computeAnglesFromEXO;
+    computeAnglesFromEXO;
+    if ~opts.tuneCovarianceTest
         save(fullfile(bucket.pathToProcessedData_EXO,'CoC.mat'),'CoC');
-    else
-        load(fullfile(bucket.pathToProcessedData_EXO,'CoC.mat'),'CoC');
     end
 
     % Extraction and round of the shoulder angle vectors
@@ -587,11 +585,9 @@ if opts.EXO && opts.task1_SOT
     % Transform forces from the EXO into human forces
     disp('-------------------------------------------------------------------');
     disp('[Start] Transforming EXO force in human frames...');
-    if ~exist(fullfile(bucket.pathToProcessedData_EXO,'EXOfext.mat'), 'file')
-        transformEXOforcesInHumanFrames;
+    transformEXOforcesInHumanFrames;
+    if ~opts.tuneCovarianceTest
         save(fullfile(bucket.pathToProcessedData_EXO,'EXOfext.mat'),'EXOfext');
-    else
-        load(fullfile(bucket.pathToProcessedData_EXO,'EXOfext.mat'),'EXOfext');
     end
     disp('[End] Transforming EXO force in human frames');
 end

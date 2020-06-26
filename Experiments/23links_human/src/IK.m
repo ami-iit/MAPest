@@ -47,13 +47,14 @@ Sg.window = 57;
 % [Sg.time, ~] = angleFromName(motionData, 'time');
 state.q  = zeros(size(motionData.data,2)-7, size(motionData.data,1));
 state.dq = zeros(size(state.q));
-ddq      = zeros(size(state.q));
+% ddq      = zeros(size(state.q));
 
-state.q = motionData.data(:, 8:end)';  % in deg
-[~,state.dq,ddq] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window,state.q,Sg.samplingTime); % in deg
+stateTmp.q = motionData.data(:, 8:end)';  % in deg
+[state.q,~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window,stateTmp.q,Sg.samplingTime); % in deg
+[~,state.dq,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window,state.q,Sg.samplingTime); % in deg
 
 % Transformation in radians
-ddq      = ddq * pi/180;      % in rad
+% ddq      = ddq * pi/180;      % in rad
 state.q  = state.q * pi/180;  % in rad
 state.dq = state.dq * pi/180; % in rad
 

@@ -5,18 +5,6 @@
 % This software may be modified and distributed under the terms of the
 % GNU Lesser General Public License v2.1 or any later version.
 
-
-clc; close all; clear all;
-
-rng(1); % Force the casual generator to be const
-format long;
-
-%% Add src to the path
-addpath(genpath('src'));
-addpath(genpath('../../src'));
-addpath(genpath('../../external'));
-addpath(genpath('scripts'));
-
 %% Set Java path needed by OSIM - SCREWS MATLAB CURRENT CONFIGURATION
 %       UNCONMMENT ONLY IF YOU KNOW WHAT YOU ARE DOING
 %  Routine left here just for Legacy, not to be used since it erases the
@@ -32,18 +20,6 @@ bucket = struct;
 %% Configure
 % Root folder of the dataset
 bucket.datasetRoot = fullfile(pwd, 'dataJSI');
-
-% Subject and task to be processed
-subjectID = 1;
-taskID = 0;
-
-% EXO option
-opts.EXO = true;
-if opts.EXO
-    opts.EXO_torqueLevelAnalysis = false;
-    opts.EXO_forceLevelAnalysis  = false;
-    opts.EXO_insideMAP           = true;
-end
 
 % Option for C7 joints as follows:
 % - fixed in the URDF model  (i.e., opts.noC7joints = true)
@@ -121,7 +97,7 @@ covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
 
 % Remove file/folders related to the covariance tuning analysis
 clearvars covTun;
-rmdir(bucket.pathToCovarianceTuningData);
+% rmdir(bucket.pathToCovarianceTuningData);
 
 opts.tuneCovarianceTest = false;
 fprintf('[End] Covariance tuning SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
@@ -137,4 +113,4 @@ fprintf('[Info] Trusted covariance Sigma_notrusted = 1e%01d\n',covarianceSelecte
 config;
 fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 disp('===================================================================');
-
+toc;

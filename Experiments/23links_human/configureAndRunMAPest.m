@@ -104,7 +104,7 @@ opts.tuneCovarianceTest = false;
 fprintf('[End] Covariance tuning SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 
 %% Launch the analysis script
-clearvars -except bucket opts subjectID taskID covarianceSelectedValue powerIdx;
+clearvars -except bucket opts subjectID task taskID covarianceSelectedValue powerIdx;
 
 disp(' ');
 disp('===================== FLOATING-BASE ANALYSIS ========================');
@@ -114,4 +114,3 @@ fprintf('[Info] Trusted covariance Sigma_notrusted = 1e%01d\n',covarianceSelecte
 config;
 fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 disp('===================================================================');
-toc;

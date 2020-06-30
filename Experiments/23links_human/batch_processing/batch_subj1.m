@@ -5,7 +5,6 @@
 % This software may be modified and distributed under the terms of the
 % GNU Lesser General Public License v2.1 or any later version.
 
-tic;
 clc; close all; clear all;
 
 rng(1); % Force the casual generator to be const

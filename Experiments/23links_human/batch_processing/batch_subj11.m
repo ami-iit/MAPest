@@ -19,7 +19,7 @@ addpath(genpath('scripts'));
 addpath(genpath('batch_processing'));
 
 subjectID = 11;
-task = [0,1]; 
+task = [0,1];
 % Legend: O WE, 1 NE
 
 for taskIdx = 1 : length(task)

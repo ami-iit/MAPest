@@ -184,7 +184,7 @@ if opts.task1_SOT
         %     load(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'));
         load(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'));
     end
-    disp('[Warning]: The IK is expressed in current frame and not in fixed frame!');
+    % disp('[Warning]: The IK is expressed in current frame and not in fixed frame!');
 
     % External ddq computation
     Sg.samplingTime = 1/suit.properties.frameRate;
@@ -404,7 +404,9 @@ if opts.task1_SOT
         % Angular Acceleration struct
         disp('-------------------------------------------------------------------');
         disp('[Start] Computing the link angular acceleration...');
-        if ~exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
+        if ~opts.tuneCovarianceTest && exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
+            load(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'));
+        else
             angAcc_sensor = struct;
             for angAccSensIdx = 1 : length(suit.sensors)
                 angAcc_sensor(angAccSensIdx).attachedLink = suit.sensors{angAccSensIdx, 1}.label;
@@ -433,8 +435,6 @@ if opts.task1_SOT
                 end
             end
             save(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'),'angAcc_sensor');
-        else
-            load(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'));
         end
 
         % Create new angular accelerometer sensor in berdy sensor

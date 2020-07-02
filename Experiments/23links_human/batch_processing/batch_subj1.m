@@ -21,23 +21,30 @@ subjectID = 1;
 task = [0,1]; 
 % Legend: O WE, 1 NE
 
+tic;
 for taskIdx = 1 : length(task)
     taskID = task(taskIdx);
     
     % WE
     if taskID == 0
-        opts.EXO = true;
-        if opts.EXO
-            opts.EXO_torqueLevelAnalysis = false;
-            opts.EXO_forceLevelAnalysis  = false;
-            opts.EXO_insideMAP           = true;
+        if ~exist(fullfile(pwd,sprintf(('/dataJSI/S%02d/Task%d/processed/processed_SOTtask2/y_sim_ddq.mat'),subjectID,taskID)), 'file')
+            opts.EXO = true;
+            if opts.EXO
+                opts.EXO_torqueLevelAnalysis = false;
+                opts.EXO_forceLevelAnalysis  = false;
+                opts.EXO_insideMAP           = true;
+            end
+            configureAndRunMAPest;
         end
-        configureAndRunMAPest;
     end
     
     % NE
     if taskID == 1
-        opts.EXO = false;
-        configureAndRunMAPest;
-    end 
+        if ~exist(fullfile(pwd,sprintf(('/dataJSI/S%02d/Task%d/processed/processed_SOTtask2/y_sim_ddq.mat'),subjectID,taskID)), 'file')
+            clearvars -except subjectID taskID
+            opts.EXO = false;
+            configureAndRunMAPest;
+        end
+    end
 end
+toc;

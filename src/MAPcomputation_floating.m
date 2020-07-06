@@ -108,9 +108,9 @@ berdy.resizeAndZeroBerdyMatrices(berdyMatrices.D,...
 
 % Set priors
 mud        = priors.mud;
-Sigmad_inv = sparse(inv(priors.Sigmad));
-SigmaD_inv = sparse(inv(priors.SigmaD));
-Sigmay_inv = sparse(inv(priors.Sigmay));
+Sigmad = sparse(priors.Sigmad);
+SigmaD = sparse(priors.SigmaD);
+Sigmay = sparse(priors.Sigmay);
 
 % Allocate outputs
 samples = size(y, 2);
@@ -168,8 +168,8 @@ for i = 1 : samples
         end
     end
     
-    if ~stackOfTaskMAP
-        SigmaBarD_inv   = D' * SigmaD_inv * D + Sigmad_inv;
+    if ~opts.stackOfTaskMAP
+        SigmaBarD_inv   = D' * (SigmaD \ D) + inv(Sigmad);
 
         % the permutation matrix for SigmaBarD_inv is computed only for the first
         % sample, beacuse this matrix does not change in the experiment
@@ -177,30 +177,28 @@ for i = 1 : samples
             [~,~,PBarD]= chol(SigmaBarD_inv);
         end
 
-        rhsBarD         = Sigmad_inv * mud - D' * (SigmaD_inv * b_D);
+        rhsBarD         = (Sigmad \ mud) - D' * (SigmaD \ b_D);
         muBarD          = CholSolve(SigmaBarD_inv , rhsBarD, PBarD);
 
-        Sigma_dgiveny_inv = SigmaBarD_inv + Y' * Sigmay_inv * Y;
+        Sigma_dgiveny_inv = SigmaBarD_inv + Y' * (Sigmay \ Y);
 
         % the permutation matrix for Sigma_dgiveny_inv is computed only for the first
         % sample, beacuse this matrix does not change in the experiment
         if (i==1)
             [~,~,P]= chol(Sigma_dgiveny_inv);
         end
-
-        rhs             = Y' * (Sigmay_inv * (y(:,i) - b_Y)) + SigmaBarD_inv * muBarD;
+        rhs             = Y' * (Sigmay \ (y(:,i) - b_Y)) + SigmaBarD_inv * muBarD;
 
     else
 
-        Sigma_dgiveny_inv = Y' * Sigmay_inv * Y;
+        Sigma_dgiveny_inv = Y' * (Sigmay \ Y);
 
         % the permutation matrix for Sigma_dgiveny_inv is computed only for the first
         % sample, beacuse this matrix does not change in the experiment
         if (i==1)
             [~,~,P]= chol(Sigma_dgiveny_inv);
         end
-
-        rhs              = Y' * Sigmay_inv * (y(:,i) - b_Y);
+        rhs              = Y' * (Sigmay \ (y(:,i) - b_Y));
     end
 
     if nargout > 1   % Sigma_dgiveny requested as output

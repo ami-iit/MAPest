@@ -5,7 +5,7 @@
 % This software may be modified and distributed under the terms of the
 % GNU Lesser General Public License v2.1 or any later version.
 
-function y_simulated = sim_y_floating(berdy, human_state, traversal, baseAngVel, mu_dgiveny, stackOfTaskMAP)
+function y_simulated = sim_y_floating(berdy, human_state, traversal, G_T_base, baseAngVel, mu_dgiveny, opts)
 %SIMYFLOATING is useful (mandatoty) to compare the measurements in the y vector
 % (i.e., the vector of the measurements) and the results of the MAP estimation in mu_dgiveny.
 %
@@ -30,7 +30,7 @@ berdy.resizeAndZeroBerdyMatrices(berdyMatrices.D,...
     berdyMatrices.b_D,...
     berdyMatrices.Y,...
     berdyMatrices.b_Y,...
-    stackOfTaskMAP);
+    opts.stackOfTaskMAP);
 
 q  = iDynTree.JointPosDoubleArray(berdy.model());
 dq = iDynTree.JointDOFsDoubleArray(berdy.model());
@@ -40,18 +40,21 @@ base_angVel = iDynTree.Vector3();
 samples = size(human_state.q ,2);
 
 for i = 1: samples
-
     q.fromMatlab(human_state.q(:,i));
     dq.fromMatlab(human_state.dq(:,i));
     base_angVel.fromMatlab(baseAngVel(:,i));
     
-    berdy.updateKinematicsFromFloatingBase(q,dq,baseIndex,base_angVel);
+    if opts.task1_SOT
+        berdy.updateKinematicsFromFloatingBase(G_T_base{i},q,dq,baseIndex,base_angVel);
+    else
+        berdy.updateKinematicsFromFloatingBase(q,dq,baseIndex,base_angVel);
+    end
     
     berdy.getBerdyMatrices(berdyMatrices.D,...
         berdyMatrices.b_D,...
         berdyMatrices.Y,...
         berdyMatrices.b_Y,...
-        stackOfTaskMAP);
+        opts.stackOfTaskMAP);
     
     Y_nonsparse = berdyMatrices.Y.toMatlab();
     

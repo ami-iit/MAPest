@@ -5,7 +5,7 @@
 % This software may be modified and distributed under the terms of the
 % GNU Lesser General Public License v2.1 or any later version.
 
-function [mu_dgiveny, Sigma_dgiveny] = MAPcomputation_floating(berdy, traversal, state, y, priors, baseAngVel, stackOfTaskMAP, varargin)
+function [mu_dgiveny, Sigma_dgiveny] = MAPcomputation_floating(berdy, traversal, state, y, G_T_base, priors, baseAngVel, opts, varargin)
 % MAPCOMPUTATION_FLOATING solves the inverse dynamics problem with a
 % maximum-a-posteriori estimation by using the Newton-Euler algorithm and
 % redundant sensor measurements as originally described in the paper
@@ -80,7 +80,7 @@ end
 rangeOfRemovedSensors = [];
 for i = 1 : size(options.SENSORS_TO_REMOVE)
     ithSensor = options.SENSORS_TO_REMOVE(i);
-    [index, len] = rangeOfSensorMeasurement( berdy, ithSensor.type, ithSensor.id, stackOfTaskMAP);
+    [index, len] = rangeOfSensorMeasurement( berdy, ithSensor.type, ithSensor.id, opts.stackOfTaskMAP);
     rangeOfRemovedSensors = [rangeOfRemovedSensors, index : index + len - 1];
 end
 
@@ -104,7 +104,7 @@ berdy.resizeAndZeroBerdyMatrices(berdyMatrices.D,...
     berdyMatrices.b_D,...
     berdyMatrices.Y,...
     berdyMatrices.b_Y,...
-    stackOfTaskMAP);
+    opts.stackOfTaskMAP);
 
 % Set priors
 mud        = priors.mud;
@@ -114,7 +114,7 @@ Sigmay = sparse(priors.Sigmay);
 
 % Allocate outputs
 samples = size(y, 2);
-nrOfDynVariables = berdy.getNrOfDynamicVariables(stackOfTaskMAP);
+nrOfDynVariables = berdy.getNrOfDynamicVariables(opts.stackOfTaskMAP);
 mu_dgiveny    = zeros(nrOfDynVariables, samples);
 % Sigma_dgiveny = sparse(nrOfDynVariables, nrOfDynVariables, samples);
 Sigma_dgiveny =  cell(samples,1);
@@ -131,13 +131,17 @@ for i = 1 : samples
     dq.fromMatlab(state.dq(:,i));
     base_angVel.fromMatlab(baseAngVel(:,i));
     
-    berdy.updateKinematicsFromFloatingBase(q,dq,baseIndex,base_angVel);
+    if opts.task1_SOT
+        berdy.updateKinematicsFromFloatingBase(G_T_base{i},q,dq,baseIndex,base_angVel);
+    else
+        berdy.updateKinematicsFromFloatingBase(q,dq,baseIndex,base_angVel);
+    end
     
     berdy.getBerdyMatrices(berdyMatrices.D,...
         berdyMatrices.b_D,...
         berdyMatrices.Y,...
         berdyMatrices.b_Y,...
-        stackOfTaskMAP);
+        opts.stackOfTaskMAP);
     
     D   = sparse(berdyMatrices.D.toMatlab());
     b_D = berdyMatrices.b_D.toMatlab();

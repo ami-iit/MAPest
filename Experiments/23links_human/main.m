@@ -556,7 +556,7 @@ if opts.EXO && opts.task1_SOT
     for blockIdx = blockID
         % -------Right
         for qIdx = 1 : size(EXO.rightRoundedTable(blockIdx).qToCompare_right_round,1)
-            for tableIdx = 1 : size(EXO.extractedTable(1).shoulder_angles,1)
+            for tableIdx = 1 : size(EXO.extractedTable(subjectID).shoulder_angles,1)
                 if (EXO.rightRoundedTable(blockIdx).qToCompare_right_round(qIdx) == EXO.extractedTable(subjectID).shoulder_angles(tableIdx,1))
                     EXO.rightRoundedTable(blockIdx).F_arm_scher(qIdx)   = EXO.extractedTable(subjectID).F_arm_scher(tableIdx,1);
                     EXO.rightRoundedTable(blockIdx).F_arm_support(qIdx) = EXO.extractedTable(subjectID).F_arm_support(tableIdx,1);
@@ -570,7 +570,7 @@ if opts.EXO && opts.task1_SOT
         end
         % -------Left
         for qIdx = 1 : size(EXO.leftRoundedTable(blockIdx).qToCompare_left_round,1)
-            for tableIdx = 1 : size(EXO.extractedTable(1).shoulder_angles,1)
+            for tableIdx = 1 : size(EXO.extractedTable(subjectID).shoulder_angles,1)
                 if (EXO.leftRoundedTable(blockIdx).qToCompare_left_round(qIdx) == EXO.extractedTable(subjectID).shoulder_angles(tableIdx,1))
                     EXO.leftRoundedTable(blockIdx).F_arm_scher(qIdx)   = EXO.extractedTable(subjectID).F_arm_scher(tableIdx,1);
                     EXO.leftRoundedTable(blockIdx).F_arm_support(qIdx) = EXO.extractedTable(subjectID).F_arm_support(tableIdx,1);

@@ -404,7 +404,7 @@ if opts.task1_SOT
         % Angular Acceleration struct
         disp('-------------------------------------------------------------------');
         disp('[Start] Computing the link angular acceleration...');
-        if ~opts.tuneCovarianceTest && exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
+        if exist(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'), 'file')
             load(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'));
         else
             angAcc_sensor = struct;
@@ -434,7 +434,9 @@ if opts.task1_SOT
                     end
                 end
             end
-            save(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'),'angAcc_sensor');
+            if ~opts.tuneCovarianceTest
+                save(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'),'angAcc_sensor');
+            end
         end
 
         % Create new angular accelerometer sensor in berdy sensor

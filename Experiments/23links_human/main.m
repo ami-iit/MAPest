@@ -263,8 +263,8 @@ if opts.task1_SOT
             shoes(blockIdx).Left_HF = shoes2tbr(blockIdx).Left_HF;
             shoes(blockIdx).Right_HF = shoes2tbr(blockIdx).Right_HF;
             % remove NaN (if any)
-            shoes.Left_HF(isnan(shoes.Left_HF))=0;
-            shoes.Right_HF(isnan(shoes.Right_HF))=0;
+            shoes(blockIdx).Left_HF(isnan(shoes(blockIdx).Left_HF))=0;
+            shoes(blockIdx).Right_HF(isnan(shoes(blockIdx).Right_HF))=0;
         end
         % Remove useless quantities
         clearvars shoes2tbr;

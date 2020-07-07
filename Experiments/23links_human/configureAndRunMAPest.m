@@ -59,6 +59,7 @@ if opts.plots
 end
 
 %% Tuning covariance
+tic;
 disp(' ');
 disp('======================= COVARIANCE TUNING ==========================');
 opts.tuneCovarianceTest = true;
@@ -118,3 +119,4 @@ fprintf('[Info] Trusted covariance Sigma_notrusted = 1e%01d\n',covarianceSelecte
 config;
 fprintf('[End] Analysis SUBJECT_%02d, TRIAL_%02d\n',subjectID,taskID);
 disp('===================================================================');
+toc;

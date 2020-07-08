@@ -6,6 +6,10 @@
 
 %% Preliminaries
 close all;
+clc; clear all;
+% Root folder of the dataset
+bucket = struct;
+bucket.datasetRoot = fullfile(pwd, 'dataJSI');
 
 % Subjects
 tmp.subjects = {'subj01'; ...
@@ -35,7 +39,7 @@ orangeAnDycolor = [0.952941176470588   0.592156862745098   0.172549019607843];
 greenAnDycolor  = [0.282352941176471   0.486274509803922   0.427450980392157];
 
 %% Extraction data
-subjectID = [1,2];% subjectID = [1,3,5,7,9,11];
+subjectID = [1,2,3,4,5,6,7,8,9,10,11,12];
 nrOfSubject = length(subjectID);
 taskID = [0,1];
 
@@ -65,7 +69,7 @@ for subjIdx = 1 : nrOfSubject
 end 
 
 %% ========================================================================
-%%                    OVERALL WHOLE-BODY EFFECT
+%%                    OVERALL NORM WHOLE-BODY EFFECT
 %% ========================================================================
 % -------- Intra-subject overall torque norm
 for subjIdx = 1 : nrOfSubject
@@ -86,23 +90,37 @@ for subjIdx = 1 : nrOfSubject
 end
 
 % -------- Inter-subject overall torque norm
+% Uniform the range of signals per block
+for blockIdx = 1 : block.nrOfBlocks
+    interSubj(blockIdx).block = block.labels(blockIdx);
+    tmp.interSubj(blockIdx).rangeNE = [];
+    tmp.interSubj(blockIdx).rangeWE = [];
+    for subjIdx = 1 : nrOfSubject
+        tmp.interSubj(blockIdx).rangeNE = [tmp.interSubj(blockIdx).rangeNE; ...
+            size(intraSubj(subjIdx).torqueNormNE(blockIdx).torqueNorm,2)];
+        tmp.interSubj(blockIdx).rangeWE = [tmp.interSubj(blockIdx).rangeWE; ...
+            size(intraSubj(subjIdx).torqueNormWE(blockIdx).torqueNorm,2)];
+    end
+    interSubj(blockIdx).lenghtOfIntersubjNormNE = min(tmp.interSubj(blockIdx).rangeNE);
+    interSubj(blockIdx).lenghtOfIntersubjNormWE = min(tmp.interSubj(blockIdx).rangeWE);
+end
+
 % Create vector for all the subjects divided in blocks
 for blockIdx = 1 : block.nrOfBlocks
     tmp.interSubj(blockIdx).overallTorqueListNE = [];
     tmp.interSubj(blockIdx).overallTorqueListWE = [];
     for subjIdx = 1 : nrOfSubject
         tmp.interSubj(blockIdx).overallTorqueListNE  = [tmp.interSubj(blockIdx).overallTorqueListNE; ...
-            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values];
+            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(:, 1:interSubj(blockIdx).lenghtOfIntersubjNormNE)];
         tmp.interSubj(blockIdx).overallTorqueListWE  = [tmp.interSubj(blockIdx).overallTorqueListWE; ... 
-            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values];
+            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(:, 1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
 end
 
 % Overall torque norm
 for blockIdx = 1 : block.nrOfBlocks
-    interSubj(blockIdx).block = block.labels(blockIdx);
-    lenNE = length(tmp.interSubj(blockIdx).overallTorqueListNE);
-    lenWE = length(tmp.interSubj(blockIdx).overallTorqueListWE);
+    lenNE = interSubj(blockIdx).lenghtOfIntersubjNormNE;
+    lenWE = interSubj(blockIdx).lenghtOfIntersubjNormWE;
      for i = 1 : lenNE
          interSubj(blockIdx).torqueNormNE(1,i) = norm(tmp.interSubj(blockIdx).overallTorqueListNE(:,i));
      end
@@ -110,6 +128,8 @@ for blockIdx = 1 : block.nrOfBlocks
          interSubj(blockIdx).torqueNormWE(1,i) = norm(tmp.interSubj(blockIdx).overallTorqueListWE(:,i));
      end
 end
+
+% Plot norm
 fig = figure('Name', 'Intersubject whole-body effect NE vs WE','NumberTitle','off');
 axes1 = axes('Parent',fig,'FontSize',16);
 box(axes1,'on');
@@ -123,8 +143,8 @@ for blockIdx = 1 : block.nrOfBlocks
     % WE
     plot2 = plot(interSubj(blockIdx).torqueNormWE,'color',greenAnDycolor,'lineWidth',1.5);
     hold on
-    title(sprintf('overall norm, S%02d, Block %s',subjectID(subjIdx), num2str(blockIdx)));
-    ylabel('\tau norm');
+    title(sprintf('Overall norm, Block %s', num2str(blockIdx)));
+    ylabel('\tau');
     if blockIdx == 5
         xlabel('samples');
     end
@@ -136,7 +156,42 @@ for blockIdx = 1 : block.nrOfBlocks
     axis tight
 end
 
-%% Body areas
+% -------- Inter-subject overall torque mean
+for blockIdx = 1 : block.nrOfBlocks
+    interSubj(blockIdx).torqueMeanNE = mean(tmp.interSubj(blockIdx).overallTorqueListNE);
+    interSubj(blockIdx).torqueMeanWE = mean(tmp.interSubj(blockIdx).overallTorqueListWE);
+end
+
+% Plot mean
+fig = figure('Name', 'Intersubject whole-body effect NE vs WE','NumberTitle','off');
+axes1 = axes('Parent',fig,'FontSize',16);
+box(axes1,'on');
+hold(axes1,'on');
+grid on;
+for blockIdx = 1 : block.nrOfBlocks
+    subplot (5,1,blockIdx)
+    % NE
+    plot1 = plot(interSubj(blockIdx).torqueMeanNE,'color',orangeAnDycolor,'lineWidth',1.5);
+    hold on
+    % WE
+    plot2 = plot(interSubj(blockIdx).torqueMeanWE,'color',greenAnDycolor,'lineWidth',1.5);
+    hold on
+    title(sprintf('Overall mean, Block %s', num2str(blockIdx)));
+    ylabel('\tau');
+    if blockIdx == 5
+        xlabel('samples');
+    end
+    set(gca,'FontSize',15)
+    grid on;
+    %legend
+    leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
+    set(leg,'Interpreter','latex');
+    axis tight
+end
+
+%% ========================================================================
+%%                     EFFECT DIVIDED PER AREAS
+%% ========================================================================
 tmp.torso_range    = (1:14);
 tmp.rightArm_range = (15:22);
 tmp.leftArm_range  = (23:30);
@@ -150,9 +205,9 @@ for blockIdx = 1 : block.nrOfBlocks
     % Create vector for all the subjects divided in blocks
     for subjIdx = 1 : nrOfSubject
         tmp.interSubj(blockIdx).torqueListNE  = [tmp.interSubj(blockIdx).torqueListNE; ...
-            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.torso_range,:)];
+            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.torso_range,1:interSubj(blockIdx).lenghtOfIntersubjNormNE)];
         tmp.interSubj(blockIdx).torqueListWE  = [tmp.interSubj(blockIdx).torqueListWE; ...
-            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.torso_range,:)];
+            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.torso_range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
     interSubj(blockIdx).torsoTorqueMeanNE = mean(tmp.interSubj(blockIdx).torqueListNE);
@@ -171,8 +226,8 @@ for blockIdx = 1 : block.nrOfBlocks
     % WE
     plot2 = plot(interSubj(blockIdx).torsoTorqueMeanWE,'color',greenAnDycolor,'lineWidth',1.5);
     hold on
-    title(sprintf('Torso mean torque, S%02d, Block %s',subjectID(subjIdx), num2str(blockIdx)));
-    ylabel('\tau norm');
+    title(sprintf('Torso mean torque, Block %s', num2str(blockIdx)));
+    ylabel('\tau');
     if blockIdx == 5
         xlabel('samples');
     end
@@ -191,9 +246,9 @@ for blockIdx = 1 : block.nrOfBlocks
     % Create vector for all the subjects divided in blocks
     for subjIdx = 1 : nrOfSubject
         tmp.interSubj(blockIdx).torqueListNE  = [tmp.interSubj(blockIdx).torqueListNE; ...
-            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.rightArm_range,:)];
+            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.rightArm_range,1:interSubj(blockIdx).lenghtOfIntersubjNormNE)];
         tmp.interSubj(blockIdx).torqueListWE  = [tmp.interSubj(blockIdx).torqueListWE; ...
-            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.rightArm_range,:)];
+            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.rightArm_range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
     interSubj(blockIdx).rightArmTorqueMeanNE = mean(tmp.interSubj(blockIdx).torqueListNE);
@@ -212,8 +267,8 @@ for blockIdx = 1 : block.nrOfBlocks
     % WE
     plot2 = plot(interSubj(blockIdx).rightArmTorqueMeanWE,'color',greenAnDycolor,'lineWidth',1.5);
     hold on
-    title(sprintf('Right arm mean torque, S%02d, Block %s',subjectID(subjIdx), num2str(blockIdx)));
-    ylabel('\tau norm');
+    title(sprintf('Right arm mean torque, Block %s', num2str(blockIdx)));
+    ylabel('\tau');
     if blockIdx == 5
         xlabel('samples');
     end
@@ -232,9 +287,9 @@ for blockIdx = 1 : block.nrOfBlocks
     % Create vector for all the subjects divided in blocks
     for subjIdx = 1 : nrOfSubject
         tmp.interSubj(blockIdx).torqueListNE  = [tmp.interSubj(blockIdx).torqueListNE; ...
-            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.leftArm_range,:)];
+            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.leftArm_range,1:interSubj(blockIdx).lenghtOfIntersubjNormNE)];
         tmp.interSubj(blockIdx).torqueListWE  = [tmp.interSubj(blockIdx).torqueListWE; ...
-            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.leftArm_range,:)];
+            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.leftArm_range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
     interSubj(blockIdx).leftArmTorqueMeanNE = mean(tmp.interSubj(blockIdx).torqueListNE);
@@ -253,8 +308,8 @@ for blockIdx = 1 : block.nrOfBlocks
     % WE
     plot2 = plot(interSubj(blockIdx).leftArmTorqueMeanWE,'color',greenAnDycolor,'lineWidth',1.5);
     hold on
-    title(sprintf('Left arm mean torque, S%02d, Block %s',subjectID(subjIdx), num2str(blockIdx)));
-    ylabel('\tau norm');
+    title(sprintf('Left arm mean torque, Block %s', num2str(blockIdx)));
+    ylabel('\tau');
     if blockIdx == 5
         xlabel('samples');
     end
@@ -273,9 +328,9 @@ for blockIdx = 1 : block.nrOfBlocks
     % Create vector for all the subjects divided in blocks
     for subjIdx = 1 : nrOfSubject
         tmp.interSubj(blockIdx).torqueListNE  = [tmp.interSubj(blockIdx).torqueListNE; ...
-            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.rightLeg_range,:)];
+            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.rightLeg_range,1:interSubj(blockIdx).lenghtOfIntersubjNormNE)];
         tmp.interSubj(blockIdx).torqueListWE  = [tmp.interSubj(blockIdx).torqueListWE; ...
-            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.rightLeg_range,:)];
+            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.rightLeg_range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
     interSubj(blockIdx).rightLegTorqueMeanNE = mean(tmp.interSubj(blockIdx).torqueListNE);
@@ -294,8 +349,8 @@ for blockIdx = 1 : block.nrOfBlocks
     % WE
     plot2 = plot(interSubj(blockIdx).rightLegTorqueMeanWE,'color',greenAnDycolor,'lineWidth',1.5);
     hold on
-    title(sprintf('Right leg mean torque, S%02d, Block %s',subjectID(subjIdx), num2str(blockIdx)));
-    ylabel('\tau norm');
+    title(sprintf('Right leg mean torque, Block %s', num2str(blockIdx)));
+    ylabel('\tau');
     if blockIdx == 5
         xlabel('samples');
     end
@@ -314,9 +369,9 @@ for blockIdx = 1 : block.nrOfBlocks
     % Create vector for all the subjects divided in blocks
     for subjIdx = 1 : nrOfSubject
         tmp.interSubj(blockIdx).torqueListNE  = [tmp.interSubj(blockIdx).torqueListNE; ...
-            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.leftLeg_range,:)];
+            intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(tmp.leftLeg_range,1:interSubj(blockIdx).lenghtOfIntersubjNormNE)];
         tmp.interSubj(blockIdx).torqueListWE  = [tmp.interSubj(blockIdx).torqueListWE; ...
-            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.leftLeg_range,:)];
+            intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.leftLeg_range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
     interSubj(blockIdx).leftLegTorqueMeanNE = mean(tmp.interSubj(blockIdx).torqueListNE);
@@ -335,8 +390,8 @@ for blockIdx = 1 : block.nrOfBlocks
     % WE
     plot2 = plot(interSubj(blockIdx).leftLegTorqueMeanWE,'color',greenAnDycolor,'lineWidth',1.5);
     hold on
-    title(sprintf('Left leg mean torque, S%02d, Block %s',subjectID(subjIdx), num2str(blockIdx)));
-    ylabel('\tau norm');
+    title(sprintf('Left leg mean torque, Block %s', num2str(blockIdx)));
+    ylabel('\tau');
     if blockIdx == 5
         xlabel('samples');
     end

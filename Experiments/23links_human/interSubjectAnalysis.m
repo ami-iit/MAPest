@@ -39,19 +39,15 @@ block.nrOfBlocks = size(block.labels,1);
 orangeAnDycolor = [0.952941176470588   0.592156862745098   0.172549019607843];
 % WE color
 greenAnDycolor  = [0.282352941176471   0.486274509803922   0.427450980392157];
-% Block colors
-block1_color = [0.0244 0.4350 0.8755];
-block2_color = [0.0265 0.6137 0.8135];
-block3_color = [0.1986 0.7214 0.6310];
-block4_color = [0.6473 0.7456 0.4188];
-block5_color = [0.9856 0.7372 0.2537];
-
+% Effect colors
+benefit_color_green = [0.4660 0.6740 0.1880];
+noBenefit_color_red = [1 0 0];
 % Plot folder
 bucket.pathToPlots = fullfile(bucket.datasetRoot,'/plots');
 if ~exist(bucket.pathToPlots)
     mkdir (bucket.pathToPlots)
 end
-saveON = true;
+saveON = false;
 
 %% Extraction data
 subjectID = [1,2,3,4,5,6,7,8,9,10,11,12];
@@ -108,6 +104,28 @@ for subjIdx = 1 : nrOfSubject
 end
 relErrPercentage_NE_mean = mean(tmp.relErrPercentage_NE);
 relErrPercentage_WE_mean = mean(tmp.relErrPercentage_WE);
+
+%% Check if NaN in loaded raw data
+for subjIdx = 1 : nrOfSubject
+    for blockIdx = 1 : block.nrOfBlocks
+        for i = 1 : length(selectedJoints.selectedJoints)
+            % NE
+            if ~isempty(find(isnan(intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(i,:)) == 1))
+                nanVal = find(isnan(intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(i,:)) == 1);
+                intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(i,nanVal) = ...
+                    (intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(i,nanVal-1)+ ...
+                    intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(i,nanVal+1))/2;
+            end
+            % WE
+            if ~isempty(find(isnan(intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(i,:)) == 1))
+                nanVal = find(isnan(intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(i,:)) == 1);
+                intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(i,nanVal) = ...
+                    (intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(i,nanVal-1)+ ...
+                    intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(i,nanVal+1))/2;
+            end
+        end
+    end
+end
 
 %% ========================================================================
 %%                    OVERALL NORM WHOLE-BODY EFFECT
@@ -215,24 +233,12 @@ grid on;
 for blockIdx = 1 : block.nrOfBlocks
     subplot (5,1,blockIdx)
     % NE
-    % check if isnan
-    if ~isempty(find(isnan(interSubj(blockIdx).torqueNormNE) == 1))
-       nanVal = find(isnan(interSubj(blockIdx).torqueNormNE) == 1);
-       interSubj(blockIdx).torqueNormNE(:,nanVal) = (interSubj(blockIdx).torqueNormNE(:,nanVal-1)+ ...
-           interSubj(blockIdx).torqueNormNE(:,nanVal+1))/2;
-    end
     plot1 = plot(interSubj(blockIdx).torqueNormNE,'color',orangeAnDycolor,'lineWidth',4);
     axis tight;
     ax = gca;
     ax.FontSize = 20;
     hold on
     % WE
-    % check if isnan
-    if ~isempty(find(isnan(interSubj(blockIdx).torqueNormWE) == 1))
-       nanVal = find(isnan(interSubj(blockIdx).torqueNormWE) == 1);
-       interSubj(blockIdx).torqueNormWE(:,nanVal) = (interSubj(blockIdx).torqueNormWE(:,nanVal-1)+ ...
-           interSubj(blockIdx).torqueNormWE(:,nanVal+1))/2;
-    end
     plot2 = plot(interSubj(blockIdx).torqueNormWE,'color',greenAnDycolor,'lineWidth',4);
     hold on
     title(sprintf('Block %s', num2str(blockIdx)),'FontSize',22);
@@ -248,13 +254,12 @@ for blockIdx = 1 : block.nrOfBlocks
     % axis tight
     ylim([40,400]);
 end
-% align_Ylabels(gcf)
-% subplotsqueeze(gcf, 1.12);
 tightfig();
 % save
 if saveON
     save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauNorm_s'),fig,600);
 end
+
 % -------- Inter-subject overall torque mean
 for blockIdx = 1 : block.nrOfBlocks
     interSubj(blockIdx).torqueMeanNE = mean(tmp.interSubj(blockIdx).overallTorqueListNE);
@@ -270,29 +275,17 @@ grid on;
 for blockIdx = 1 : block.nrOfBlocks
     subplot (5,1,blockIdx)
     % NE
-    % check if isnan
-    if ~isempty(find(isnan(interSubj(blockIdx).torqueMeanNE) == 1))
-        nanVal = find(isnan(interSubj(blockIdx).torqueMeanNE) == 1);
-        interSubj(blockIdx).torqueMeanNE(:,nanVal) = (interSubj(blockIdx).torqueMeanNE(:,nanVal-1)+ ...
-            interSubj(blockIdx).torqueMeanNE(:,nanVal+1))/2;
-    end
     plot1 = plot(interSubj(blockIdx).torqueMeanNE,'color',orangeAnDycolor,'lineWidth',4);
     axis tight;
     ax = gca;
     ax.FontSize = 20;
     hold on
     % WE
-    % check if isnan
-    if ~isempty(find(isnan(interSubj(blockIdx).torqueMeanWE) == 1))
-        nanVal = find(isnan(interSubj(blockIdx).torqueMeanWE) == 1);
-        interSubj(blockIdx).torqueMeanWE(:,nanVal) = (interSubj(blockIdx).torqueMeanWE(:,nanVal-1)+ ...
-            interSubj(blockIdx).torqueMeanWE(:,nanVal+1))/2;
-    end
     plot2 = plot(interSubj(blockIdx).torqueMeanWE,'color',greenAnDycolor,'lineWidth',4);
     hold on
     title(sprintf('Block %s', num2str(blockIdx)),'FontSize',22);
-    ylabel('$\bar\tau$','HorizontalAlignment','center',...
-    'FontSize',40,'interpreter','latex');
+    ylabel('$\bar\tau$ [Nm]','HorizontalAlignment','center',...
+    'FontSize',30,'interpreter','latex');
     if blockIdx == 5
         xlabel('samples','FontSize',25);
     end
@@ -301,7 +294,9 @@ for blockIdx = 1 : block.nrOfBlocks
     leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
     set(leg,'Interpreter','latex','FontSize',25);
     % axis tight
-    ylim([-1.6, 0.7]);
+    %     ylim([-1.8, 0.7]);
+    ylim([-1.8, 0.8]);
+    yticks([-1 0])
 end
 % align_Ylabels(gcf)
 % subplotsqueeze(gcf, 1.12);
@@ -314,14 +309,15 @@ end
 %% ========================================================================
 %%                 BODY EFFECT DIVIDED PER AREAS
 %% ========================================================================
-tmp.torso_range    = (1:14);
+% Torso
+tmp.torso_range  = [1:12]; %no 13,14, head joints
 interSubjectAnalysis_torso;
-
-tmp.rightArm_range = (15:22);
-tmp.leftArm_range  = (23:30);
+% Arms
+tmp.rightArm_range = [15:22];
+tmp.leftArm_range  = [23:30];
 interSubjectAnalysis_arms;
-
-tmp.rightLeg_range = (31:39);
-tmp.leftLeg_range  = (40:48);
+% Legs
+tmp.rightLeg_range = [31:38]; %no 39, rightBallFoot joint
+tmp.leftLeg_range  = [40:47]; %no 48, leftBallFoot joint
 interSubjectAnalysis_legs;
 

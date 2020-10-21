@@ -507,7 +507,7 @@ xBox = [xl(1), xl_L5S1, xl_L5S1, xl(1), xl(1)];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch1 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch1,'DisplayName','L5S1');
-txt = 'L5S1';
+txt = 'jL5S1';
 text(xl_L5S1/2,-11,txt,'FontSize',25);
 % L4L3
 xl_L4L3 = bar5.XData(4) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -515,7 +515,7 @@ xBox = [xl_L5S1, xl_L4L3, xl_L4L3, xl_L5S1, xl_L5S1];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch2 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch2,'DisplayName','L4L3');
-txt = 'L4L3';
+txt = 'jL4L3';
 text(xl_L5S1+(xl_L4L3-xl_L5S1)/3,-11,txt,'FontSize',25);
 % L1T12
 xl_L1T12 = bar5.XData(6) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -523,7 +523,7 @@ xBox = [xl_L4L3, xl_L1T12, xl_L1T12, xl_L4L3, xl_L4L3];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch3 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch3,'DisplayName','L1T12');
-txt = 'L1T12';
+txt = 'jL1T12';
 text(xl_L4L3+(xl_L1T12-xl_L4L3)/3,-11,txt,'FontSize',25);
 % T9T8
 xl_T9T8 = bar5.XData(9) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -531,7 +531,7 @@ xBox = [xl_L1T12, xl_T9T8, xl_T9T8, xl_L1T12, xl_L1T12];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch4 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch4,'DisplayName','T9T8');
-txt = 'T9T8';
+txt = 'jT9T8';
 text(xl_L1T12+(xl_T9T8-xl_L1T12)/3,-11,txt,'FontSize',25);
 % T1C7
 xl_T1C7 = bar5.XData(12) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -539,7 +539,7 @@ xBox = [xl_T9T8, xl_T1C7, xl_T1C7, xl_T9T8, xl_T9T8];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch5 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch5,'DisplayName','T1C7');
-txt = 'T1C7';
+txt = 'jT1C7';
 text(xl_T9T8+(xl_T1C7-xl_T9T8)/3,-11,txt,'FontSize',25);
 
 

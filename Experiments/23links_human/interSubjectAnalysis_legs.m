@@ -377,7 +377,7 @@ xBox = [xl(1), xl_hip, xl_hip, xl(1), xl(1)];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch1 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch1,'DisplayName','C7shoulder');
-txt = 'hip';
+txt = 'jHip';
 text(xl_hip/2,-11,txt,'FontSize',25);
 % knee
 xl_knee = bar5.XData(5) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -385,7 +385,7 @@ xBox = [xl_hip, xl_knee, xl_knee, xl_hip, xl_hip];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch2 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch2,'DisplayName','shoulder');
-txt = 'knee';
+txt = 'jKnee';
 text(xl_hip+(xl_knee-xl_hip)/3,-11,txt,'FontSize',25);
 % ankle
 xl_ankle = bar5.XData(8) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -393,7 +393,7 @@ xBox = [xl_knee, xl_ankle, xl_ankle, xl_knee, xl_knee];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch4 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch4,'DisplayName','wrist');
-txt = 'ankle';
+txt = 'jAnkle';
 text(xl_knee+(xl_ankle-xl_knee)/3,-11,txt,'FontSize',25);
 
 %% Save
@@ -779,7 +779,7 @@ xBox = [xl(1), xl_hip, xl_hip, xl(1), xl(1)];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch1 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch1,'DisplayName','C7shoulder');
-txt = 'hip';
+txt = 'jHip';
 text(xl_hip/2,-11,txt,'FontSize',25);
 % knee
 xl_knee = bar5.XData(5) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -787,7 +787,7 @@ xBox = [xl_hip, xl_knee, xl_knee, xl_hip, xl_hip];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch2 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch2,'DisplayName','shoulder');
-txt = 'knee';
+txt = 'jKnee';
 text(xl_hip+(xl_knee-xl_hip)/3,-11,txt,'FontSize',25);
 % ankle
 xl_ankle = bar5.XData(8) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -795,7 +795,7 @@ xBox = [xl_knee, xl_ankle, xl_ankle, xl_knee, xl_knee];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch4 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch4,'DisplayName','wrist');
-txt = 'ankle';
+txt = 'jAnkle';
 text(xl_knee+(xl_ankle-xl_knee)/3,-11,txt,'FontSize',25);
 %% Save
 tightfig();

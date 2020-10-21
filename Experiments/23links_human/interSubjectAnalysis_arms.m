@@ -378,7 +378,7 @@ xBox = [xl(1), xl_C7shoulder, xl_C7shoulder, xl(1), xl(1)];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch1 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch1,'DisplayName','C7shoulder');
-txt = 'C7sho';
+txt = 'jC7sho';
 text(xl_C7shoulder/2,-11,txt,'FontSize',25);
 % shoulder
 xl_shoulder = bar5.XData(4) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -386,7 +386,7 @@ xBox = [xl_C7shoulder, xl_shoulder, xl_shoulder, xl_C7shoulder, xl_C7shoulder];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch2 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch2,'DisplayName','shoulder');
-txt = 'shoulder';
+txt = 'jShoulder';
 text(xl_C7shoulder+(xl_shoulder-xl_C7shoulder)/3,-11,txt,'FontSize',25);
 % elbow
 xl_elbow = bar5.XData(6) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -394,7 +394,7 @@ xBox = [xl_shoulder, xl_elbow, xl_elbow, xl_shoulder, xl_shoulder];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch3 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch3,'DisplayName','elbow');
-txt = 'elbow';
+txt = 'jElbow';
 text(xl_shoulder+(xl_elbow-xl_shoulder)/3,-11,txt,'FontSize',25);
 % wrist
 xl_wrist = bar5.XData(8) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -402,7 +402,7 @@ xBox = [xl_elbow, xl_wrist, xl_wrist, xl_elbow, xl_elbow];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch4 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch4,'DisplayName','wrist');
-txt = 'wrist';
+txt = 'jWrist';
 text(xl_elbow+(xl_wrist-xl_elbow)/3,-11,txt,'FontSize',25);
 
 %% Save
@@ -790,7 +790,7 @@ xBox = [xl(1), xl_C7shoulder, xl_C7shoulder, xl(1), xl(1)];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch1 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch1,'DisplayName','C7shoulder');
-txt = 'C7sho';
+txt = 'jC7sho';
 text(xl_C7shoulder/2,-11,txt,'FontSize',25);
 % shoulder
 xl_shoulder = bar5.XData(4) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -798,7 +798,7 @@ xBox = [xl_C7shoulder, xl_shoulder, xl_shoulder, xl_C7shoulder, xl_C7shoulder];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch2 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch2,'DisplayName','shoulder');
-txt = 'shoulder';
+txt = 'jShoulder';
 text(xl_C7shoulder+(xl_shoulder-xl_C7shoulder)/3,-11,txt,'FontSize',25);
 % elbow
 xl_elbow = bar5.XData(6) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -806,7 +806,7 @@ xBox = [xl_shoulder, xl_elbow, xl_elbow, xl_shoulder, xl_shoulder];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch3 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch3,'DisplayName','elbow');
-txt = 'elbow';
+txt = 'jElbow';
 text(xl_shoulder+(xl_elbow-xl_shoulder)/3,-11,txt,'FontSize',25);
 % wrist
 xl_wrist = bar5.XData(8) + (bar1.XData(2) - bar5.XData(1))/2;
@@ -814,7 +814,7 @@ xBox = [xl_elbow, xl_wrist, xl_wrist, xl_elbow, xl_elbow];
 yBox = [yl(1), yl(1), yl(2), yl(2), yl(1)];
 patch4 = patch(xBox, yBox, 'black', 'FaceColor', 'white', 'FaceAlpha', 0.05);
 % set(patch4,'DisplayName','wrist');
-txt = 'wrist';
+txt = 'jWrist';
 text(xl_elbow+(xl_wrist-xl_elbow)/3,-11,txt,'FontSize',25);
 
 %% Save

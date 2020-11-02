@@ -1,210 +1,211 @@
 
 %--------------------------------------------------------------------------
-% Xsens frequency  --> 60  Hz, acquired with MVNX2018
-% shoes frequency  --> 100 Hz
-% FP    frequency  --> 1K  Hz
-% EMG   frequency  --> 100 Hz (to be verified)
-% exoskeleton      --> passive
+% Xsens frequency  --> 60  Hz, acquired with MVNX2018, (master)
+% FP    frequency  --> 1K  Hz (slave)
+% exoskeleton      --> passive  --> TO BE VERIFIED
 %--------------------------------------------------------------------------
-% 5 repetitions of the same task (i.e.,5 blocks).
-% Data in the masterFile.mat are saved in 5 separate blocks while the 
-% suit.mat (extracted from MVNX) does not have this division.
+% Xsens triggered via Xsens sync station the forceplates.
+% Dataset assumption: the timestamp 0 of the forceplates is exactly
+% the timestamp 0 of Xsens.
 
-block.labels = {'block1'; ...
-                    'block2'; ...
-                    'block3'; ...
-                    'block4'; ...
-                    'block5'};
-block.nrOfBlocks = size(block.labels,1);
+%% ------------------------------ XSENS -----------------------------------
+% No need to cut/interpolate Xsens data
 
-for i = 1 : length(masterFile.Subject.Xsens(1).Timestamp)
-    tmp.block1 = masterFile.Subject.Xsens(1).Timestamp - masterFile.Subject.Xsens(1).Timestamp(end);
-    if tmp.block1(i)<=0
-        tmp.block1Init = i;
-        break
+%% --------------------------- FORCE PLATES -------------------------------
+opts.CoPmovingPlots = false;
+bucket.CSVfilename = fullfile(bucket.pathToTask, sprintf('S%03d-FP-%s.csv',subjectID,listOfTasks{tasksIdx}));
+FPdataFromCSV.data         = table2array(readtable(bucket.CSVfilename,'Delimiter',',')); %array
+FPdataFromCSV.orderedLabel = (getListFromCSV(bucket.CSVfilename,1,1,size(FPdataFromCSV.data,2)))'; %list of char
+
+% Extract forces and CoP per each platform
+rawForceplateData.time = FPdataFromCSV.data(:,1);
+for fpIdx = 1 : length(FPdataFromCSV.orderedLabel)
+    % -------------- Right
+    % Fx
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fx-R')
+        rawForceplateData.Right.Fx = FPdataFromCSV.data(:,fpIdx);
     end
-end
-for i = 1 : length(masterFile.Subject.Xsens) %5 blocks
-    if i == 1
-        tmp.XsensBlockRange(i).first = masterFile.Subject.Xsens(i).Timestamp(tmp.block1Init);
-    else
-        tmp.XsensBlockRange(i).first = masterFile.Subject.Xsens(i).Timestamp(1);
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fx-14-R')
+        rawForceplateData.Right.Fx_14 = FPdataFromCSV.data(:,fpIdx);
     end
-    tmp.XsensBlockRange(i).last = masterFile.Subject.Xsens(i).Timestamp(end);
-end
-
-for i = 1 : size(suit.sensors{1, 1}.meas.sensorOrientation,2) % sens1 since it is equal for all the sensors
-    for j = 1 : block.nrOfBlocks
-        if suit.time.xSens(i) == tmp.XsensBlockRange(1,j).first
-            tmp.blockRange(j).first = i;
-        end
-        if suit.time.xSens(i) == tmp.XsensBlockRange(1,j).last
-            tmp.blockRange(j).last = i;
-        end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fx-23-R')
+        rawForceplateData.Right.Fx_23 = FPdataFromCSV.data(:,fpIdx);
     end
-end
-
-%% Timestamps struct
-for blockIdx = 1 : block.nrOfBlocks
-    % ---Labels
-    timestampTable(blockIdx).block  = block.labels(blockIdx);
-
-    % ---Xsens Timestamp Range
-    if blockIdx == 1 %exception
-        for i = 1: size(masterFile.Subject.Xsens(blockIdx).Timestamp,1)
-            if masterFile.Subject.Xsens(blockIdx).Timestamp(i) == tmp.XsensBlockRange(1).first
-                tmp.exception_first = i;
-            end
-            if masterFile.Subject.Xsens(blockIdx).Timestamp(i) == tmp.XsensBlockRange(1).last
-                tmp.exception_last = i;
-            end
-        end
-        tmp.cutRange = (tmp.exception_first : tmp.exception_last);
-        timestampTable(blockIdx).masterfileTimestamps = masterFile.Subject.Xsens(blockIdx).Timestamp(tmp.cutRange,:); %exception
-        timestampTable(blockIdx).masterfileTimeRT = masterFile.Subject.Xsens(blockIdx).TimeRT(tmp.cutRange,:); %exception
-    else
-        timestampTable(blockIdx).masterfileTimestamps  = masterFile.Subject.Xsens(blockIdx).Timestamp;
-        timestampTable(blockIdx).masterfileTimeRT  = masterFile.Subject.Xsens(blockIdx).TimeRT;
+    % Fy
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fy-R')
+        rawForceplateData.Right.Fy = FPdataFromCSV.data(:,fpIdx);
     end
-
-    % ---Cut MVNX in 5 blocks according to previous ranges
-    timestampTable(blockIdx).XsensTimestampRange = [tmp.XsensBlockRange(blockIdx).first, tmp.XsensBlockRange(blockIdx).last];
-    timestampTable(blockIdx).XsensCutRange = [tmp.blockRange(blockIdx).first, tmp.blockRange(blockIdx).last];
-    tmp.cutRange = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
-    timestampTable(blockIdx).timeMVNX = suit.time.xSens(:,tmp.cutRange);
-    %timestampTable(blockIdx).timeMVNX_ms = suit.time.ms(:,tmp.cutRange);
-
-    % ---Create a new sampling vector
-    % NOTE: this vector will be used as sampling vector for the FP and
-    % ftShoes data contained in the masterfile!
-    tmp.RTblock_samples = size(timestampTable(blockIdx).timeMVNX,2);
-    tmp.step = (timestampTable(blockIdx).masterfileTimeRT(end) - timestampTable(blockIdx).masterfileTimeRT(1))/(tmp.RTblock_samples -1);
-    timestampTable(blockIdx).masterfileNewTimeRT = timestampTable(blockIdx).masterfileTimeRT(1) : tmp.step : timestampTable(blockIdx).masterfileTimeRT(end);
-end
-
-%% Subdivide suit.mat meas in 5 blocks accordingly to the above division
-
-tmp.cutRange = cell(5,1);
-for sensIdx = 1: size(suit.sensors,1)
-    suit_runtime.sensors{sensIdx, 1}.label        = suit.sensors{sensIdx, 1}.label;
-    suit_runtime.sensors{sensIdx, 1}.attachedLink = suit.sensors{sensIdx, 1}.attachedLink;
-    suit_runtime.sensors{sensIdx, 1}.position     = suit.sensors{sensIdx, 1}.position;
-
-    for blockIdx = 1 : block.nrOfBlocks
-        % ---Labels
-        suit_runtime.sensors{sensIdx, 1}.meas(blockIdx).block  = block.labels(blockIdx);
-        % ---Cut (useful) meas
-        tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
-        suit_runtime.sensors{sensIdx, 1}.meas(blockIdx).sensorOrientation = suit.sensors{sensIdx, 1}.meas.sensorOrientation(:,tmp.cutRange{blockIdx});
-        suit_runtime.sensors{sensIdx, 1}.meas(blockIdx).sensorFreeAcceleration = suit.sensors{sensIdx, 1}.meas.sensorFreeAcceleration(:,tmp.cutRange{blockIdx});
-        % NOTE: MVNX data do not need interpolation!
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fy-12-R')
+        rawForceplateData.Right.Fy_12 = FPdataFromCSV.data(:,fpIdx);
     end
-end
-
-%% Transform the sensorFreeAcceleration of MVNX2018 into the oldest version
-if ~exist(fullfile(bucket.pathToProcessedData,'suit_runtime.mat'), 'file')
-    gravity = [0; 0; -9.81];
-    for sensIdx = 1: size(suit.sensors,1)
-        for blockIdx = 1 : block.nrOfBlocks
-            len = size(suit_runtime.sensors{sensIdx, 1}.meas(blockIdx).sensorOrientation,2);
-            for lenIdx = 1 : len
-                G_R_S = quat2Mat(suit_runtime.sensors{sensIdx, 1}.meas(blockIdx).sensorOrientation(:,lenIdx));% fromQuaternion(quaternion);
-                % Transformation:        S_a_old = S_R_G * (G_a_new - gravity)
-                suit_runtime.sensors{sensIdx, 1}.meas(blockIdx).sensorOldAcceleration(:,lenIdx) = ...
-                    transpose(G_R_S) * (suit_runtime.sensors{sensIdx, 1}.meas(blockIdx).sensorFreeAcceleration(:,lenIdx) - gravity);
-            end
-        end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fy-34-R')
+        rawForceplateData.Right.Fy_34 = FPdataFromCSV.data(:,fpIdx);
     end
-    save(fullfile(bucket.pathToProcessedData,'suit_runtime.mat'),'suit_runtime');
-else
-    load(fullfile(bucket.pathToProcessedData,'suit_runtime.mat'));
-end
-
-%% Create the synchroData struct
-% Struct where every external is synchronized:
-% - masterTime
-% - ftshoes
-% - state (q,dq)
-% - ddq
-
-for blockIdx = 1 : block.nrOfBlocks
-    synchroData(blockIdx).block = block.labels(blockIdx);
-    synchroData(blockIdx).masterTime = timestampTable(blockIdx).masterfileNewTimeRT;
-    synchroData(blockIdx).q   = human_state_tmp.q(:,tmp.cutRange{blockIdx});
-    synchroData(blockIdx).dq  = human_state_tmp.dq(:,tmp.cutRange{blockIdx});
-    synchroData(blockIdx).ddq = human_ddq_tmp(:,tmp.cutRange{blockIdx});
-end
-clearvars human_state_tmp human_ddq_tmp;
-
-%% ftShoes Interpolation
-% FS1 --> Right ftShoe wrench
-% FS2 --> Left ftShoe wrench
-
-% Cutting (when needed) signals
-for blockIdx = 1 : block.nrOfBlocks
-     tmp.lengthFS = size(masterFile.Subject.FS(blockIdx).Measurement,1);
-     for j = 1 : tmp.lengthFS
-          if (timestampTable(blockIdx).masterfileNewTimeRT(1) - masterFile.Subject.FS(blockIdx).TimeRT(j) < 0.01)
-              tmp.idxFS(blockIdx) = j;
-              break;
-          end
-     end
-     tmp.ftShoes.cutRange = (tmp.idxFS(blockIdx) : size(masterFile.Subject.FS(blockIdx).Measurement,1));
-     if tmp.ftShoes.cutRange(1) ~= 1
-        tmp.ftShoes.cut(blockIdx).RightShoe = masterFile.Subject.FS(blockIdx).FS1(tmp.ftShoes.cutRange,:);
-        tmp.ftShoes.cut(blockIdx).LeftShoe  = masterFile.Subject.FS(blockIdx).FS2(tmp.ftShoes.cutRange,:);
-        tmp.ftShoes.cut(blockIdx).timeRT    = masterFile.Subject.FS(blockIdx).TimeRT(tmp.ftShoes.cutRange,:);
-     else
-        tmp.ftShoes.cut(blockIdx).RightShoe = masterFile.Subject.FS(blockIdx).FS1;
-        tmp.ftShoes.cut(blockIdx).LeftShoe  = masterFile.Subject.FS(blockIdx).FS2;
-        tmp.ftShoes.cut(blockIdx).timeRT    = masterFile.Subject.FS(blockIdx).TimeRT;
-     end
-end
-
-% Interpolation
-% SF = sensor frame
-for blockIdx = 1 : block.nrOfBlocks
-    for i = 1 : 6
-        synchroData(blockIdx).RightShoe_SF(:,i) = interp1(tmp.ftShoes.cut(blockIdx).timeRT, ...
-                                                 tmp.ftShoes.cut(blockIdx).RightShoe(:,i), ...
-                                                 timestampTable(blockIdx).masterfileNewTimeRT);
-        synchroData(blockIdx).LeftShoe_SF(:,i)  = interp1(tmp.ftShoes.cut(blockIdx).timeRT, ...
-                                                 tmp.ftShoes.cut(blockIdx).LeftShoe(:,i), ...
-                                                 timestampTable(blockIdx).masterfileNewTimeRT);
+    % Fz
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fz-R')
+        rawForceplateData.Right.Fz = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fz-1-R')
+        rawForceplateData.Right.Fz_1 = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fz-2-R')
+        rawForceplateData.Right.Fz_2 = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fz-3-R')
+        rawForceplateData.Right.Fz_3 = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:Fz-4-R')
+        rawForceplateData.Right.Fz_4 = FPdataFromCSV.data(:,fpIdx);
+    end
+    % CoPx
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:COPx-R')
+        rawForceplateData.Right.CoPx = FPdataFromCSV.data(:,fpIdx);
+    end
+    % CoPy
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'RIGHT plate:COPy-R')
+        rawForceplateData.Right.CoPy = FPdataFromCSV.data(:,fpIdx);
+    end
+    % -------------- Left
+    % Fx
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fx-L')
+        rawForceplateData.Left.Fx = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fx-14-L')
+        rawForceplateData.Left.Fx_14 = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fx-23-L')
+        rawForceplateData.Left.Fx_23 = FPdataFromCSV.data(:,fpIdx);
+    end
+    % Fy
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fy-L')
+        rawForceplateData.Left.Fy = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fy-12-L')
+        rawForceplateData.Left.Fy_12 = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fy-34-L')
+        rawForceplateData.Left.Fy_34 = FPdataFromCSV.data(:,fpIdx);
+    end
+    % Fz
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fz-L')
+        rawForceplateData.Left.Fz = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fz-1-L')
+        rawForceplateData.Left.Fz_1 = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fz-2-L')
+        rawForceplateData.Left.Fz_2 = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fz-3-L')
+        rawForceplateData.Left.Fz_3 = FPdataFromCSV.data(:,fpIdx);
+    end
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:Fz-4-L')
+        rawForceplateData.Left.Fz_4 = FPdataFromCSV.data(:,fpIdx);
+    end
+    % CoPx
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:COPx-L')
+        rawForceplateData.Left.CoPx = FPdataFromCSV.data(:,fpIdx);
+    end
+    % CoPy
+    if strcmp(FPdataFromCSV.orderedLabel{fpIdx}, 'LEFT plate:COPy-L')
+        rawForceplateData.Left.CoPy = FPdataFromCSV.data(:,fpIdx);
     end
 end
 
-%% Forceplates Interpolation
-% The total force is outputted as a single value.
-
-% Cutting (when needed) signals
-for blockIdx = 1 : block.nrOfBlocks
-     tmp.lengthFP = size(masterFile.Subject.FP(blockIdx).Measurement,1);
-     for j = 1 : tmp.lengthFP
-          if (timestampTable(blockIdx).masterfileNewTimeRT(1) - masterFile.Subject.FP(blockIdx).TimeRT(j) < 0.001)
-              tmp.idxFP(blockIdx) = j;
-              break;
-          end
-     end
-     tmp.fp.cutRange = (tmp.idxFP(blockIdx) : size(masterFile.Subject.FP(blockIdx).Measurement,1));
-     if tmp.fp.cutRange(1) ~= 1
-        tmp.fp.cut(blockIdx).fpTot   = masterFile.Subject.FP(blockIdx).FPC(tmp.fp.cutRange,:);
-        tmp.fp.cut(blockIdx).timeRT  = masterFile.Subject.FP(blockIdx).TimeRT(tmp.fp.cutRange,:);
-     else
-        tmp.fp.cut(blockIdx).fpTot   = masterFile.Subject.FP(blockIdx).FPC;
-        tmp.fp.cut(blockIdx).timeRT  = masterFile.Subject.FP(blockIdx).TimeRT;
-     end
+% raw CoP representation
+if opts.CoPmovingPlots
+    % fpRawDataLength = length(rawForceplateData.Right.CoPx);
+    % plotCoPinForcePlates(listOfTasks{tasksIdx},subjectID,fpRawDataLength, ...
+    %     rawForceplateData.Right, rawForceplateData.Left, bucket)
 end
 
-% Interpolation
-% SF = sensor frame
-for blockIdx = 1 : block.nrOfBlocks
-    for i = 1 : 8
-        synchroData(blockIdx).FP_SF(:,i) = interp1(tmp.fp.cut(blockIdx).timeRT, ...
-                                                 tmp.fp.cut(blockIdx).fpTot(:,i), ...
-                                                 timestampTable(blockIdx).masterfileNewTimeRT);
-    end
+%% Compute moments
+tmp.sensorOffset_length = 0.2; %in [m], from datasheet
+tmp.sensorOffset_width  = 0.12; %in [m], from datasheet
+% Apply Kistler manual formulae for moments
+for FPidx = 1 : length(rawForceplateData.Right.CoPx)
+    % ------------- Right
+    %     rawForceplateData.Right.CoPdistanceFromFPorigin(FPidx,1) = ...
+    %         sqrt((rawForceplateData.Right.CoPx(FPidx,1))^2 + (rawForceplateData.Right.CoPy(FPidx,1))^2);
+    % moment x
+    rawForceplateData.Right.Mx(FPidx,1) = tmp.sensorOffset_length * ...
+        (rawForceplateData.Right.Fz_1 (FPidx,1) + rawForceplateData.Right.Fz_2 (FPidx,1) - ...
+        rawForceplateData.Right.Fz_3 (FPidx,1) - rawForceplateData.Right.Fz_4 (FPidx,1));
+    % moment y
+    rawForceplateData.Right.My(FPidx,1) = tmp.sensorOffset_width * ...
+        (-rawForceplateData.Right.Fz_1 (FPidx,1) + rawForceplateData.Right.Fz_2 (FPidx,1) + ...
+        rawForceplateData.Right.Fz_3 (FPidx,1) - rawForceplateData.Right.Fz_4 (FPidx,1));
+    % moment z
+    rawForceplateData.Right.Mz(FPidx,1) = tmp.sensorOffset_length * ...
+        (-rawForceplateData.Right.Fx_14(FPidx,1) + rawForceplateData.Right.Fx_23(FPidx,1)) + ...
+        tmp.sensorOffset_width * ...
+        (rawForceplateData.Right.Fy_12(FPidx,1) - rawForceplateData.Right.Fy_34(FPidx,1));
+    % ------------- Left
+    % moment x
+    rawForceplateData.Left.Mx(FPidx,1) = tmp.sensorOffset_length * ...
+        (rawForceplateData.Left.Fz_1 (FPidx,1) + rawForceplateData.Left.Fz_2 (FPidx,1) - ...
+        rawForceplateData.Left.Fz_3 (FPidx,1) - rawForceplateData.Left.Fz_4 (FPidx,1));
+    % moment y
+    rawForceplateData.Left.My(FPidx,1) = tmp.sensorOffset_width * ...
+        (-rawForceplateData.Left.Fz_1 (FPidx,1) + rawForceplateData.Left.Fz_2 (FPidx,1) + ...
+        rawForceplateData.Left.Fz_3 (FPidx,1) - rawForceplateData.Left.Fz_4 (FPidx,1));
+    % moment z
+    rawForceplateData.Left.Mz(FPidx,1) = tmp.sensorOffset_length * ...
+        (-rawForceplateData.Left.Fx_14(FPidx,1) + rawForceplateData.Left.Fx_23(FPidx,1)) + ...
+        tmp.sensorOffset_width * ...
+        (rawForceplateData.Left.Fy_12(FPidx,1) - rawForceplateData.Left.Fy_34(FPidx,1));
 end
 
-%% Cleaning up workspace
-clearvars timestampTable;
+%% Combine raw data in raw wrenches
+% ------------- Right
+rawForceplateData.Right.wrench = [rawForceplateData.Right.Fx, ...
+    rawForceplateData.Right.Fy, ...
+    rawForceplateData.Right.Fz, ...
+    rawForceplateData.Right.Mx, ...
+    rawForceplateData.Right.My, ...
+    rawForceplateData.Right.Mz,];
+% ------------- Left
+rawForceplateData.Left.wrench = [rawForceplateData.Left.Fx, ...
+    rawForceplateData.Left.Fy, ...
+    rawForceplateData.Left.Fz, ...
+    rawForceplateData.Left.Mx, ...
+    rawForceplateData.Left.My, ...
+    rawForceplateData.Left.Mz,];
+
+%% Forceplates Interpolation (downsampling)
+xsensTimestamp_ms = suit.time.xSens'; %xsens abs timestamp, in [ms]
+FPtimestamp_ms    = (rawForceplateData.time(:,1) - rawForceplateData.time(1,1)) * 1e3; %FP abs timestamp in [ms]
+synchroData.timestamp = xsensTimestamp_ms; %new synchro timestamp in [ms]
+
+% Interpolation wrench in sensor frame (SF)
+% ------------- Right
+synchroData.fp.interpolated_right = interp1(FPtimestamp_ms, ...
+    rawForceplateData.Right.wrench, ...
+    synchroData.timestamp);
+% ------------- Left
+synchroData.fp.interpolated_left = interp1(FPtimestamp_ms, ...
+    rawForceplateData.Left.wrench, ...
+    synchroData.timestamp);
+
+%% CoP Interpolation (downsampling)
+% Interpolation CoP in sensor frame (SF)
+% ------------- Right
+synchroData.CoP.interpolated.Right.CoPx = interp1(FPtimestamp_ms, ...
+    rawForceplateData.Right.CoPx, ...
+    synchroData.timestamp);
+synchroData.CoP.interpolated.Right.CoPy = interp1(FPtimestamp_ms, ...
+    rawForceplateData.Right.CoPy, ...
+    synchroData.timestamp);
+% % ------------- Left
+synchroData.CoP.interpolated.Left.CoPx = interp1(FPtimestamp_ms, ...
+    rawForceplateData.Left.CoPx, ...
+    synchroData.timestamp);
+synchroData.CoP.interpolated.Left.CoPy = interp1(FPtimestamp_ms, ...
+    rawForceplateData.Left.CoPy, ...
+    synchroData.timestamp);
+
+% interpolated CoP representation
+if opts.CoPmovingPlots
+    plotCoPinForcePlates(listOfTasks{tasksIdx},subjectID,length(synchroData.timestamp), ...
+        synchroData.CoP.interpolated.Right, synchroData.CoP.interpolated.Left, bucket);
+end

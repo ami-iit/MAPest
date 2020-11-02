@@ -1,12 +1,23 @@
-function printBerdySensorOrder( berdy)
+
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
+function printBerdySensorOrder(berdy, stackOfTaskMAP)
 % PRINTBERDYSENSORORDER prints the order of the sensor of the vector y.
 % For each measurement, the function returns:
 % - the type of sensor;
 % - the index of its location in the vector y (NOTE: it is in  0-based
 %   notation!);
 % - the range or lenght of element for that sensor.
+%
+% With the option stackOfTaskMAP = true, the function prints the y vector
+% with only the measurements of the external forces and the rate of
+% change of the linear momentum.
 
-sensorOrder = berdy.getSensorsOrdering();
+sensorOrder = berdy.getSensorsOrdering(stackOfTaskMAP);
 
 for i = 1 : size(sensorOrder,2)
     currentInfo = sensorOrder{i};
@@ -22,6 +33,8 @@ for i = 1 : size(sensorOrder,2)
             typeStr = 'AngAcceleration_sensor          ';
         case iDynTree.GYROSCOPE_SENSOR
             typeStr= 'Gyroscope                ';
+        case iDynTree.COM_ACCELEROMETER_SENSOR
+            typeStr = 'COMacceleration_sensor          ';
         case iDynTree.DOF_ACCELERATION_SENSOR
             typeStr = 'JointAcceleration_sensor';
         case iDynTree.DOF_TORQUE_SENSOR

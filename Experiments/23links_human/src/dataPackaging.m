@@ -1,4 +1,11 @@
-function [ dataPacked ] = dataPackaging(blockIdx,model, sensors, suit, angAcc, fext, ddq, contactLink, priors)
+
+% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
+% All rights reserved.
+%
+% This software may be modified and distributed under the terms of the
+% GNU Lesser General Public License v2.1 or any later version.
+
+function [ dataPacked ] = dataPackaging(model, base, sensors, suit, angAcc, fext, b_dh, ddq, contactLink, priors, stackOfTaskMAP)
 %DATAPACKAGING creates a data struct organised in the following way:
 % - data.time (a unified time for all type of sensors)
 % Each substructure is identified by:
@@ -34,7 +41,7 @@ for i = 1 :  nOfSensor.acc
     sensorsLabelToCmp{i}= tempData(i,1);
     for j = 1 : nOfSensorsFromSuit
         if  strcmp(sensorsLabelToCmp{i},suit.sensors{j, 1}.label)
-            data.acc.meas{i} = suit.sensors{j, 1}.meas(blockIdx).sensorOldAcceleration;
+            data.acc.meas{i} = suit.sensors{j, 1}.meas.sensorOldAcceleration;
             break;
         end
     end
@@ -81,10 +88,22 @@ end
 % meas
 data.angAcc.meas = cell(nOfSensor.angAcc,1);
 for i = 1 : nOfSensor.angAcc
-    data.angAcc.meas{i} = angAcc(i).meas(blockIdx).S_meas_L;
+    data.angAcc.meas{i} = angAcc(i).meas.S_meas_L;
 end
 % variance
 data.angAcc.var = priors.angAcc;
+
+%% FROM b_dh
+if stackOfTaskMAP
+    data.b_dh  = struct;
+    % type
+    data.b_dh.type = iDynTree.COM_ACCELEROMETER_SENSOR;
+    % id & meas
+    data.b_dh.id   = base;
+    data.b_dh.meas = b_dh;
+    % variance
+    data.b_dh.var  = priors.b_dh;
+end
 
 %% FROM ddq
 nOfSensor.DOFacc = size(ddq,1);
@@ -109,8 +128,8 @@ data.ddq.var = priors.ddq;
 %% FROM FORCE SOURCE (it could be forceplates OR shoes)
 % ---------------------------------------------------------------
 % Both sensors are considered as external forces acting as follow:
-% - on human rightFoot --> FP1 or ftShoe_Right
-% - on human leftFoot  --> FP2 or ftShoe_Left
+% - on human rightFoot --> FPR or ftShoe_Right
+% - on human leftFoot  --> FPL or ftShoe_Left
 % - null meas for all the others.
 % ---------------------------------------------------------------
 nOfSensor.fext = model.getNrOfLinks;
@@ -186,6 +205,15 @@ for i = 1 : nOfSensor.angAcc
     dataPacked(i + (indx)).var          = data.angAcc.var;
 end
 indx = indx + nOfSensor.angAcc;
+%--
+if stackOfTaskMAP
+    % COM_sensor
+    dataPacked(indx + 1).type         = data.b_dh.type;
+    dataPacked(indx + 1).id           = data.b_dh.id;
+    dataPacked(indx + 1).meas         = data.b_dh.meas;
+    dataPacked(indx + 1).var          = data.b_dh.var;
+    indx = indx + 1;
+end
 %--
 for i = 1 : nOfSensor.DOFacc
     dataPacked(i + (indx)).type         = data.ddq.type;

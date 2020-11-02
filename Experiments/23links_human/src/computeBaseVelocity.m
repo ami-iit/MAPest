@@ -12,7 +12,7 @@ function [ baseLinVelocity, baseAngVelocity] = computeBaseVelocity(kinDynComputa
 %  - kinDynComputation: berdy object
 %  - currentBerdyBase:  base of the model you want to compute the angular velocity
 %  - state:             Matlab struct containing q and dq
-%  - I_T_base           iDynTreeTransform from the base frame to the inertial
+%  - I_G_base           iDynTreeTransform from the base frame to the inertial
 %                       frame
 %  - contactPattern:    list of frames of end effectors whose velocity is assumed
 %                       to be zero (e.g., a frame associated to a link that is in
@@ -38,7 +38,7 @@ for i = 1 : samples
     dq.fromMatlab(state.dq(:,i));
     base_vel.fromMatlab(zeros(6,1));
     % Compute the Jacobian J = [J(q)_B J(q)_S] from kin
-    kinDynComputation.setRobotState(I_T_base.G_T_b{i,1},q,base_vel,dq,gravity);
+    kinDynComputation.setRobotState(I_T_base{i,1},q,base_vel,dq,gravity);
     
     if strcmp(contactPattern{i},'doubleSupport')
         endEffectorFrame = {'LeftFoot','RightFoot'};

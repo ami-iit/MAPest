@@ -32,56 +32,50 @@ for tasksIdx = 1 %: length(listOfTasks) --- >TBC
         opts.EXO_insideMAP = false;
     end
 
-    %% Tuning covariance covariance tuning only for free task --- >TBC
-    %     tic;
-    %     disp(' ');
-    %     disp('======================= COVARIANCE TUNING ==========================');
-    %     opts.tuneCovarianceTest = true;
-    %
-    %     if ~exist(fullfile(pwd,sprintf(('/dataJSI/S%02d/Task%d/processed/covarianceTuning.mat'),subjectID,taskID)), 'file')
-    %         covTun.rangePowerForPolarizedTuning = [1, 2, 3, 4];
-    %         for powerIdx = 1 : length(covTun.rangePowerForPolarizedTuning)
-    %             disp('=====================================================================');
-    %             fprintf('[Start] Covariance tuning SUBJECT_%02d, TRIAL_%02d. Test with power %01d\n',subjectID,taskID, powerIdx);
-    %             covarianceSelectedValue = covTun.rangePowerForPolarizedTuning(powerIdx);
-    %             config;
-    %             % Save
-    %             if opts.tuneCovarianceTest
-    %                 bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToTask,'covarianceTuning');
-    %                 if ~exist(bucket.pathToCovarianceTuningData)
-    %                     mkdir(bucket.pathToCovarianceTuningData)
-    %                 end
-    %                 % Move folders
-    %                 path_destination  = bucket.pathToCovarianceTuningData;
-    %                 path_source_task1 = bucket.pathToProcessedData_SOTtask1;
-    %                 movefile(path_source_task1,path_destination);
-    %                 path_source_task2 = bucket.pathToProcessedData_SOTtask2;
-    %                 movefile(path_source_task2,path_destination);
-    %                 % Rename folders by adding the power
-    %                 oldFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask1');
-    %                 newFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask1_power%d', priors.absPowerValue));
-    %                 mkdir(oldFolder_SOTtask1);
-    %                 movefile(oldFolder_SOTtask1,newFolder_SOTtask1);
-    %                 oldFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask2');
-    %                 newFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask2_power%d', priors.absPowerValue));
-    %                 mkdir(oldFolder_SOTtask2);
-    %                 movefile(oldFolder_SOTtask2,newFolder_SOTtask2);
-    %             end
-    %         end
-    %         % Define chosen covarianceChosenSelectedValue
-    %         tuningCovariance_measVSestim;
-    %         covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
-    %         % Remove file/folders related to the covariance tuning analysis
-    %         clearvars covTun;
-    %         % rmdir(bucket.pathToCovarianceTuningData);
-    %     else
-    %         load(fullfile(pwd,sprintf(('/dataJSI/S%02d/Task%d/processed/covarianceTuning.mat'),subjectID,taskID)), 'covarianceTuning')
-    %         covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
-    %     end
-
-    % temp solution
-    opts.tuneCovarianceTest = false;
-    covarianceSelectedValue = 3; % TBC temp value
+    % Tuning covariance
+        disp(' ');
+        disp('======================= COVARIANCE TUNING ==========================');
+        opts.tuneCovarianceTest = true;
+        if ~exist(fullfile(bucket.pathToProcessedData, '/covarianceTuning.mat'), 'file')
+            covTun.rangePowerForPolarizedTuning = [1, 2, 3, 4];
+            for powerIdx = 1 : length(covTun.rangePowerForPolarizedTuning)
+                disp('=====================================================================');
+                fprintf('[Start] Covariance tuning SUBJECT_%03d, %s\n. Test with power %01d\n',subjectID,listOfTasks{tasksIdx}, powerIdx);
+                covarianceSelectedValue = covTun.rangePowerForPolarizedTuning(powerIdx);
+                config;
+                % Save
+                if opts.tuneCovarianceTest
+                    bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToTask,'covarianceTuning');
+                    if ~exist(bucket.pathToCovarianceTuningData)
+                        mkdir(bucket.pathToCovarianceTuningData)
+                    end
+                    % Move folders
+                    path_destination  = bucket.pathToCovarianceTuningData;
+                    path_source_task1 = bucket.pathToProcessedData_SOTtask1;
+                    movefile(path_source_task1,path_destination);
+                    path_source_task2 = bucket.pathToProcessedData_SOTtask2;
+                    movefile(path_source_task2,path_destination);
+                    % Rename folders by adding the power
+                    oldFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask1');
+                    newFolder_SOTtask1 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask1_power%d', priors.absPowerValue));
+                    mkdir(oldFolder_SOTtask1);
+                    movefile(oldFolder_SOTtask1,newFolder_SOTtask1);
+                    oldFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask2');
+                    newFolder_SOTtask2 = fullfile(bucket.pathToCovarianceTuningData,sprintf('processed_SOTtask2_power%d', priors.absPowerValue));
+                    mkdir(oldFolder_SOTtask2);
+                    movefile(oldFolder_SOTtask2,newFolder_SOTtask2);
+                end
+            end
+            % Define chosen covarianceChosenSelectedValue
+            tuningCovariance_measVSestim;
+            covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
+            % Remove file/folders related to the covariance tuning analysis
+            clearvars covTun;
+            % rmdir(bucket.pathToCovarianceTuningData);
+        else
+            load(fullfile(sprintf(bucket.pathToProcessedData, '/covarianceTuning.mat')), 'covarianceTuning')
+            covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
+        end
 
     %% Run config file
     disp(' ');

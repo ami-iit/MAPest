@@ -12,7 +12,7 @@
 %% Covariances setting
 % Settings
 priors = struct;
-priors.absPowerValue = 3; %covarianceSelectedValue; --- >TBC
+priors.absPowerValue = covarianceSelectedValue;
 priors.trusted     = str2double(strcat('1e-',num2str(priors.absPowerValue))); %magnitude for trusted values
 priors.no_trusted  = str2double(strcat('1e' ,num2str(priors.absPowerValue))); %magnitude for non trusted values
 

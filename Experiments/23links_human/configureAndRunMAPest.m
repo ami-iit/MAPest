@@ -40,7 +40,7 @@ for tasksIdx = 1 %: length(listOfTasks) --- >TBC
             covTun.rangePowerForPolarizedTuning = [1, 2, 3, 4];
             for powerIdx = 1 : length(covTun.rangePowerForPolarizedTuning)
                 disp('=====================================================================');
-                fprintf('[Start] Covariance tuning SUBJECT_%03d, %s\n. Test with power %01d\n',subjectID,listOfTasks{tasksIdx}, powerIdx);
+                fprintf('[Start] Covariance tuning SUBJECT_%03d, %s\n Test with power %01d\n',subjectID,listOfTasks{tasksIdx}, powerIdx);
                 covarianceSelectedValue = covTun.rangePowerForPolarizedTuning(powerIdx);
                 config;
                 % Save
@@ -73,8 +73,9 @@ for tasksIdx = 1 %: length(listOfTasks) --- >TBC
             clearvars covTun;
             % rmdir(bucket.pathToCovarianceTuningData);
         else
-            load(fullfile(sprintf(bucket.pathToProcessedData, '/covarianceTuning.mat')), 'covarianceTuning')
+            load(fullfile(bucket.pathToProcessedData, '/covarianceTuning.mat'))
             covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
+            opts.tuneCovarianceTest = false;
         end
 
     %% Run config file

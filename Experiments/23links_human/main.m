@@ -215,7 +215,7 @@ if opts.task1_SOT
     rawDataHandling;
 
     %% Covariance tuning test
-    if ~opts.tuneCovarianceTest || powerIdx == 1
+    if ~opts.tuneCovarianceTest %|| powerIdx == 1
 
         %% Transform forces into human forces
         % Preliminary assumption on contact links: 2 contacts only (or both feet

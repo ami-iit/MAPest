@@ -84,6 +84,9 @@ for tasksIdx = 1 %: length(listOfTasks) --- >TBC
         opts.tuneCovarianceTest = false;
     end
 
+    %% Launch the analysis script
+    clearvars -except bucket opts subjectID listOfTasks tasksIdx covarianceSelectedValue powerIdx;
+
     %% Run config file
     disp(' ');
     disp('===================== FLOATING-BASE ANALYSIS ========================');

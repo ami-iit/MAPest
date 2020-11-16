@@ -8,7 +8,7 @@
 covTun.opts.plot = false;
 nrOfDoFs = double(humanModel.getNrOfDOFs);
 close all;
-bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToTask,'covarianceTuning');
+bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToSubject,'covarianceTuning');
 
 % Load y_sim_linAcc
 covTun.y_sim_linAcc_power1 = load(fullfile(bucket.pathToCovarianceTuningData,'processed_SOTtask2_power1/y_sim_linAcc.mat'),'y_sim_linAcc');
@@ -144,4 +144,4 @@ if covTun.opts.plot
 end
 
 % Save
-save(fullfile(bucket.pathToProcessedData,'covarianceTuning.mat'),'covarianceTuning');
+save(fullfile(bucket.pathToSubject,'covarianceTuning.mat'),'covarianceTuning');

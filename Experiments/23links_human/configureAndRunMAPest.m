@@ -32,11 +32,12 @@ for tasksIdx = 1 %: length(listOfTasks) --- >TBC
         opts.EXO_insideMAP = false;
     end
 
-    % Tuning covariance
-        disp(' ');
-        disp('======================= COVARIANCE TUNING ==========================');
+    % Tuning covariance only in the free task
+    if tasksIdx == 1
         opts.tuneCovarianceTest = true;
-        if ~exist(fullfile(bucket.pathToProcessedData, '/covarianceTuning.mat'), 'file')
+        if ~exist(fullfile(bucket.pathToSubject, '/covarianceTuning'))
+            disp(' ');
+            disp('======================= COVARIANCE TUNING ==========================');
             covTun.rangePowerForPolarizedTuning = [1, 2, 3, 4];
             for powerIdx = 1 : length(covTun.rangePowerForPolarizedTuning)
                 disp('=====================================================================');
@@ -45,7 +46,7 @@ for tasksIdx = 1 %: length(listOfTasks) --- >TBC
                 config;
                 % Save
                 if opts.tuneCovarianceTest
-                    bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToTask,'covarianceTuning');
+                    bucket.pathToCovarianceTuningData   = fullfile(bucket.pathToSubject,'covarianceTuning');
                     if ~exist(bucket.pathToCovarianceTuningData)
                         mkdir(bucket.pathToCovarianceTuningData)
                     end
@@ -73,10 +74,15 @@ for tasksIdx = 1 %: length(listOfTasks) --- >TBC
             clearvars covTun;
             % rmdir(bucket.pathToCovarianceTuningData);
         else
-            load(fullfile(bucket.pathToProcessedData, '/covarianceTuning.mat'))
+            load(fullfile(bucket.pathToSubject, '/covarianceTuning.mat'))
             covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
             opts.tuneCovarianceTest = false;
         end
+    else
+        load(fullfile(bucket.pathToSubject, '/covarianceTuning.mat'))
+        covarianceSelectedValue = covarianceTuning.chosenSelectedValue;
+        opts.tuneCovarianceTest = false;
+    end
 
     %% Run config file
     disp(' ');

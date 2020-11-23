@@ -498,8 +498,57 @@ end
 %% ------------------------------------------------------------------------
 %% ============================ EXO (if) ==================================
 %% ------------------------------------------------------------------------
-% TODO
-% analysis to be done
+
+if opts.EXO && opts.task1_SOT
+    %% Preliminaries
+    bucket.pathToProcessedData_EXO   = fullfile(bucket.pathToProcessedData,'processed_EXO');
+    if ~exist(bucket.pathToProcessedData_EXO)
+        mkdir(bucket.pathToProcessedData_EXO)
+    end
+    % Load raw meas from EXO table
+    loadSPEXORtableMeas;
+
+    % Define beam length - subject pairing --> TODO
+    % hp --> S021 --> beam28
+
+    %% Extract measurements from SPEXOR angles compatible with the suit
+    % The assumption is to consider the kinematic of the pelvis around
+    % jL5S1 roty equal to the beta angle of the SPEXOR analysis
+    L5S1rotyAngleInRad = synchroKin.q(2,:)';
+    lenKinVect = length(L5S1rotyAngleInRad);
+    % Check if there are negative angles.  In case they have to be removed
+    % and set to 0.  The removal is required since is not coverd by the exo angle.
+    for lenIdx = 1 : lenKinVect
+        if L5S1rotyAngleInRad(lenIdx) < 0
+            L5S1rotyAngleInRad(lenIdx) = 0;
+        end
+    end
+    L5S1rotyAngleInRad_rounded = round(L5S1rotyAngleInRad,3);
+
+    % Extraction from SPEXOR table according to L5S1rotyAngleInRad_rounded
+    for lenSuitIdx = 1: lenKinVect
+        for exoTableIdx = 1 : length(EXO.betaInRad)
+            if round(L5S1rotyAngleInRad_rounded(lenSuitIdx,1) - EXO.betaInRad(exoTableIdx,1),1) == 0
+                EXO.roundedTable(1).beamHeight(lenSuitIdx)     = EXO.extractedTable(1).beamHeight(exoTableIdx);
+                EXO.roundedTable(1).beamDeviation(lenSuitIdx)  = EXO.extractedTable(1).beamDeviation(exoTableIdx);
+                EXO.roundedTable(1).beamLength(lenSuitIdx)     = EXO.extractedTable(1).beamLength(exoTableIdx);
+                EXO.roundedTable(1).beamDeflection(lenSuitIdx) = EXO.extractedTable(1).beamDeflection(exoTableIdx);
+                EXO.roundedTable(1).force(lenSuitIdx)          = EXO.extractedTable(1).force(exoTableIdx);
+                EXO.roundedTable(1).beamBaseMoment(lenSuitIdx) = EXO.extractedTable(1).beamBaseMoment(exoTableIdx);
+                EXO.roundedTable(1).alpha(lenSuitIdx)          = EXO.extractedTable(1).alpha(exoTableIdx);
+            end
+        end
+    end
+
+    %% Transform forces from the EXO into human forces
+    disp('-------------------------------------------------------------------');
+    disp('[Start] Transforming EXO force in human frames...');
+    transformSPEXORforcesInHumanFrames;
+    if ~opts.tuneCovarianceTest
+        save(fullfile(bucket.pathToProcessedData_EXO,'EXOfext.mat'),'EXOfext');
+    end
+    disp('[End] Transforming EXO force in human frames');
+end
 
 %% ------------------------------------------------------------------------
 %% ====================== MEASUREMENTS WRAPING ============================
@@ -521,30 +570,24 @@ data  = dataPackaging(humanModel,...
     priors, ...
     opts.stackOfTaskMAP);
 
-if opts.EXO % --> TODO
-    % %     % Find links where EXO forces are acting
-    % %     lenCheck = length(data(blockIdx).data);
-    % %     for idIdx = 1 : lenCheck
-    % %         if strcmp(data(1).data(idIdx).id,'Pelvis')
-    % %             tmp.pelvisIdx = idIdx;
-    % %         end
-    % %         if strcmp(data(1).data(idIdx).id,'LeftUpperArm')
-    % %             tmp.LUAIdx = idIdx;
-    % %         end
-    % %         if strcmp(data(1).data(idIdx).id,'RightUpperArm')
-    % %             tmp.RUAIdx = idIdx;
-    % %         end
-    % %     end
-    % %     % Add to data struct the EXO forces
-    % %     % PELVIS
-    % %     data(blockIdx).data(tmp.pelvisIdx).meas = EXOfext(blockIdx).PELVIS;
-    % %     data(blockIdx).data(tmp.pelvisIdx).var  = priors.exo_fext;
-    % %     % LUA
-    % %     data(blockIdx).data(tmp.LUAIdx).meas = EXOfext(blockIdx).LUA;
-    % %     data(blockIdx).data(tmp.LUAIdx).var  = priors.exo_fext;
-    % %     % RUA
-    % %     data(blockIdx).data(tmp.RUAIdx).meas = EXOfext(blockIdx).RUA;
-    % %     data(blockIdx).data(tmp.RUAIdx).var  = priors.exo_fext;
+if opts.EXO
+    % Find links where SPEXOR forces are acting
+    lenCheck = length(data);
+    for idIdx = 1 : lenCheck
+        if strcmp(data(idIdx).id,'T8')
+            tmp.T8Idx = idIdx;
+        end
+        if strcmp(data(idIdx).id,'Pelvis')
+            tmp.pelvisIdx = idIdx;
+        end
+    end
+    % Add to data struct the EXO forces
+    % T8
+    data(tmp.T8Idx).meas = EXOfext.T8;
+    data(tmp.T8Idx).var  = priors.exo_fext;
+    % PELVIS
+    data(tmp.pelvisIdx).meas = EXOfext.PELVIS;
+    data(tmp.pelvisIdx).var  = priors.exo_fext;
 end
 
 if ~opts.task1_SOT %Task2

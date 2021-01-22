@@ -92,18 +92,18 @@ if opts.task1_SOT
             subjectParamsFromDataEXO.leftShoulderIzz  = (subjectParamsFromDataEXO.leftShoulderMass/12) * ...
                 (3 * (subjectParamsFromData.leftSho_z/2)^2 + subjectParamsFromData.leftSho_y^2);
 
-            % --- 3 kg at the pelvis
-            subjectParamsFromDataEXO.pelvisMass = subjectParamsFromData.pelvisMass + 3;
-            subjectParamsFromDataEXO.pelvisIxx  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
-                ((subjectParamsFromData.pelvisBox(2))^2 + (subjectParamsFromData.pelvisBox(3))^2);
-            subjectParamsFromDataEXO.pelvisIyy  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
-                ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(1))^2);
-            subjectParamsFromDataEXO.pelvisIzz  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
-                ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(2))^2);
+%             % --- 0.4 kg at the pelvis
+%             subjectParamsFromDataEXO.pelvisMass = subjectParamsFromData.pelvisMass + 3;
+%             subjectParamsFromDataEXO.pelvisIxx  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
+%                 ((subjectParamsFromData.pelvisBox(2))^2 + (subjectParamsFromData.pelvisBox(3))^2);
+%             subjectParamsFromDataEXO.pelvisIyy  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
+%                 ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(1))^2);
+%             subjectParamsFromDataEXO.pelvisIzz  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
+%                 ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(2))^2);
 
-            % --- 0.9 kg per upper leg
+            % --- 2.4 kg per upper leg
             % right
-            subjectParamsFromDataEXO.rightUpperLegMass = subjectParamsFromData.rightUpperLegMass + 0.9;
+            subjectParamsFromDataEXO.rightUpperLegMass = subjectParamsFromData.rightUpperLegMass + 2.4;
             subjectParamsFromDataEXO.rightUpperLegIxx  = (subjectParamsFromDataEXO.rightUpperLegMass/12) * ...
                 (3 * (subjectParamsFromData.rightUpperLeg_x/2)^2 + subjectParamsFromData.rightUpperLeg_z^2);
             subjectParamsFromDataEXO.rightUpperLegIyy  = (subjectParamsFromDataEXO.rightUpperLegMass/12) * ...
@@ -111,7 +111,7 @@ if opts.task1_SOT
             subjectParamsFromDataEXO.rightUpperLegIzz  = (subjectParamsFromDataEXO.rightUpperLegMass/2) * ...
                 ((subjectParamsFromData.rightUpperLeg_x/2)^2);
             % left
-            subjectParamsFromDataEXO.leftUpperLegMass = subjectParamsFromData.leftUpperLegMass + 0.9;
+            subjectParamsFromDataEXO.leftUpperLegMass = subjectParamsFromData.leftUpperLegMass + 2.4;
             subjectParamsFromDataEXO.leftUpperLegIxx  = (subjectParamsFromDataEXO.leftUpperLegMass/12) * ...
                 (3 * (subjectParamsFromData.leftUpperLeg_x/2)^2 + subjectParamsFromData.leftUpperLeg_z^2);
             subjectParamsFromDataEXO.leftUpperLegIyy  = (subjectParamsFromDataEXO.leftUpperLegMass/12) * ...
@@ -578,17 +578,30 @@ if opts.EXO
         if strcmp(data(idIdx).id,'T8')
             tmp.T8Idx = idIdx;
         end
-        if strcmp(data(idIdx).id,'Pelvis')
-            tmp.pelvisIdx = idIdx;
+        % % %         if strcmp(data(idIdx).id,'Pelvis')
+        % % %             tmp.pelvisIdx = idIdx;
+        % % %         end
+        if strcmp(data(idIdx).id,'RightUpperLeg')
+            tmp.RightUpperLegIdx = idIdx;
+        end
+        if strcmp(data(idIdx).id,'LeftUpperLeg')
+            tmp.LeftUpperLegIdx = idIdx;
         end
     end
     % Add to data struct the EXO forces
     % T8
     data(tmp.T8Idx).meas = EXOfext.T8;
     data(tmp.T8Idx).var  = priors.exo_fext;
-    % PELVIS
-    data(tmp.pelvisIdx).meas = EXOfext.PELVIS;
-    data(tmp.pelvisIdx).var  = priors.exo_fext;
+    % % %     % PELVIS
+    % % %     data(tmp.pelvisIdx).meas = zeros(size(EXOfext.PELVIS)); %tappullo
+    % % % %     data(tmp.pelvisIdx).meas = EXOfext.PELVIS;
+    % % %     data(tmp.pelvisIdx).var  = priors.exo_fext;
+    % RUL
+    data(tmp.RightUpperLegIdx).meas = EXOfext.RUL;
+    data(tmp.RightUpperLegIdx).var  = priors.exo_fext;
+    % LUL
+    data(tmp.LeftUpperLegIdx).meas = EXOfext.LUL;
+    data(tmp.LeftUpperLegIdx).var  = priors.exo_fext;
 end
 
 if ~opts.task1_SOT %Task2

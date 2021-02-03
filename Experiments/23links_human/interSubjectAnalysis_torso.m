@@ -28,6 +28,47 @@ for exoCheckIdx = 1 : block.nrOfBlocks
         abs(singleJointsTau.torso.tableTorsoMean.L5S1_rotx(exoCheckIdx,1)) - ...
         abs(singleJointsTau.torso.tableTorsoMean.L5S1_rotx(exoCheckIdx,2));
 end
+
+% Plot mean
+fig = figure('Name', 'jL5S1 rotx','NumberTitle','off');
+axes1 = axes('Parent',fig,'FontSize',16);
+box(axes1,'on');
+hold(axes1,'on');
+grid on;
+for blockIdx = 1 : block.nrOfBlocks
+    subplot (5,1,blockIdx)
+    % NE
+    plot1 = plot(singleJointsTau.torso.jointsPerArea(blockIdx).L5S1_rotx.torqueMeanNE,'color',orangeAnDycolor,'lineWidth',4);
+    axis tight;
+    ax = gca;
+    ax.FontSize = 20;
+    hold on
+    % WE
+    plot2 = plot(singleJointsTau.torso.jointsPerArea(blockIdx).L5S1_rotx.torqueMeanWE,'color',greenAnDycolor,'lineWidth',4);
+    hold on
+    title(sprintf('Block %s', num2str(blockIdx)),'FontSize',22);
+    ylabel('$\bar\tau$ [Nm]','HorizontalAlignment','center',...
+    'FontSize',30,'interpreter','latex');
+    if blockIdx == 5
+        xlabel('samples','FontSize',25);
+    end
+    grid on;
+    %legend
+    leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
+    set(leg,'Interpreter','latex','FontSize',25);
+    % axis tight
+    %     ylim([-1.8, 0.7]);
+%     ylim([-1.8, 0.8]);
+%     yticks([-1 0])
+end
+% align_Ylabels(gcf)
+% subplotsqueeze(gcf, 1.12);
+tightfig();
+% save
+if saveON
+    save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauMean'),fig,600);
+end
+
 % ---roty
 tmp.range = 2;
 singleJointsTau.torso.tableTorsoMean.L5S1_roty = zeros(block.nrOfBlocks,3);
@@ -54,6 +95,47 @@ for exoCheckIdx = 1 : block.nrOfBlocks
         abs(singleJointsTau.torso.tableTorsoMean.L5S1_roty(exoCheckIdx,1)) - ...
         abs(singleJointsTau.torso.tableTorsoMean.L5S1_roty(exoCheckIdx,2));
 end
+
+% Plot mean
+fig = figure('Name', 'jL5S1 roty','NumberTitle','off');
+axes1 = axes('Parent',fig,'FontSize',16);
+box(axes1,'on');
+hold(axes1,'on');
+grid on;
+for blockIdx = 1 : block.nrOfBlocks
+    subplot (5,1,blockIdx)
+    % NE
+    plot1 = plot(singleJointsTau.torso.jointsPerArea(blockIdx).L5S1_roty.torqueMeanNE,'color',orangeAnDycolor,'lineWidth',4);
+    axis tight;
+    ax = gca;
+    ax.FontSize = 20;
+    hold on
+    % WE
+    plot2 = plot(singleJointsTau.torso.jointsPerArea(blockIdx).L5S1_roty.torqueMeanWE,'color',greenAnDycolor,'lineWidth',4);
+    hold on
+    title(sprintf('Block %s', num2str(blockIdx)),'FontSize',22);
+    ylabel('$\bar\tau$ [Nm]','HorizontalAlignment','center',...
+    'FontSize',30,'interpreter','latex');
+    if blockIdx == 5
+        xlabel('samples','FontSize',25);
+    end
+    grid on;
+    %legend
+    leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
+    set(leg,'Interpreter','latex','FontSize',25);
+    % axis tight
+    %     ylim([-1.8, 0.7]);
+%     ylim([-1.8, 0.8]);
+%     yticks([-1 0])
+end
+% align_Ylabels(gcf)
+% subplotsqueeze(gcf, 1.12);
+tightfig();
+% save
+if saveON
+    save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauMean'),fig,600);
+end
+
 %% L4L3
 % ---rotx
 tmp.range = 3;
@@ -484,15 +566,15 @@ end
 
 % Legend and title
 % Note: this legend is tuned on the bar plot
-leg = legend([bar3, bar1],'benefit', 'no-benefit');
+leg = legend([bar3, bar1],'effort reduction', 'effort increase');
 set(leg,'Interpreter','latex');
 set(leg,'FontSize',25);
 set(leg,  'NumColumns', 2);
 
 title('Torso','FontSize',20);
-ylabel(' $|{\bar\tau_{NE}}|-|{\bar\tau_{WE}}|$ [Nm]','HorizontalAlignment','center',...
+ylabel(' $|\bar {\bar{\tau}}^{t}_{NE}|-|\bar {\bar{\tau}}^{t}_{WE}|$ [Nm]','HorizontalAlignment','center',...
     'FontWeight','bold',...
-    'FontSize',26,...
+    'FontSize',30,...
     'Interpreter','latex');
 ylim([-12, 11.5]);
 set(axes1, 'XLimSpec', 'Tight');

@@ -354,15 +354,15 @@ end
 
 % Legend and title
 % Note: this legend is tuned on the bar plot
-leg = legend([bar3, bar1],'benefit', 'no-benefit');
+leg = legend([bar3, bar1],'effort reduction', 'effort increase');
 set(leg,'Interpreter','latex');
 set(leg,'FontSize',18);
 % set(leg,  'NumColumns', 2);
 
 title('Right leg','FontSize',20);
-ylabel(' $|{\bar\tau_{NE}}|-|{\bar\tau_{WE}}|$ [Nm]','HorizontalAlignment','center',...
+ylabel(' $|\bar{\bar{\tau}}^{rl}_{NE}|-|\bar{\bar{\tau}}^{rl}_{WE}|$ [Nm]','HorizontalAlignment','center',...
        'FontWeight','bold',...
-       'FontSize',26,...
+       'FontSize',30,...
        'Interpreter','latex');
 ylim([-12, 11.5]);
 set(axes1, 'XLimSpec', 'Tight');
@@ -756,15 +756,15 @@ end
 
 % Legend and title
 % Note: this legend is tuned on the bar plot
-leg = legend([bar1, bar2],'benefit', 'no-benefit');
+leg = legend([bar1, bar2],'effort reduction', 'effort increase');
 set(leg,'Interpreter','latex');
 set(leg,'FontSize',18);
 % set(leg,  'NumColumns', 2);
 
 title('Left leg','FontSize',20);
-ylabel(' $|{\bar\tau_{NE}}|-|{\bar\tau_{WE}}|$ [Nm]','HorizontalAlignment','center',...
+ylabel(' $|\bar{\bar{\tau}}^{ll}_{NE}|-|\bar{\bar{\tau}}^{ll}_{WE}|$ [Nm]','HorizontalAlignment','center',...
        'FontWeight','bold',...
-       'FontSize',26,...
+       'FontSize',30,...
        'Interpreter','latex');
 ylim([-12, 11.5]);
 set(axes1, 'XLimSpec', 'Tight');

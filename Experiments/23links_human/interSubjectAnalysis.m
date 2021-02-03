@@ -260,6 +260,9 @@ if saveON
     save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauNorm_s'),fig,600);
 end
 
+%% ========================================================================
+%%                    OVERALL MEAN WHOLE-BODY EFFECT
+%% ========================================================================
 % -------- Inter-subject overall torque mean
 for blockIdx = 1 : block.nrOfBlocks
     interSubj(blockIdx).torqueMeanNE = mean(tmp.interSubj(blockIdx).overallTorqueListNE);
@@ -284,7 +287,7 @@ for blockIdx = 1 : block.nrOfBlocks
     plot2 = plot(interSubj(blockIdx).torqueMeanWE,'color',greenAnDycolor,'lineWidth',4);
     hold on
     title(sprintf('Block %s', num2str(blockIdx)),'FontSize',22);
-    ylabel('$\bar\tau$ [Nm]','HorizontalAlignment','center',...
+    ylabel('$\bar\tau^{wb}$ [Nm]','HorizontalAlignment','center',...
     'FontSize',30,'interpreter','latex');
     if blockIdx == 5
         xlabel('samples','FontSize',25);

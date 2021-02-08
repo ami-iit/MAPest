@@ -102,16 +102,30 @@ for subjIdx = 1 : nrOfSubject
 end
 
 %% Statistics
-disp('-------------------------------------------------------------------');
-disp('[Start] All-joint torques statistics..');
-% Computation of all joints norm
-stats_tauNorm_blocks_allJoints;
-disp('[End] All-joint torques statistics.');
-disp('-------------------------------------------------------------------');
-disp('-------------------------------------------------------------------');
-disp('-------------------------------------------------------------------');
-disp('[Start] Joint-area torques statistics..');
-% Computation of all joints norm
-stats_tauNorm_blocks_areas;
-disp('[End] Joint-area torques statistics.');
+%% Stats torques w.r.t. blocks (for all and areas joints)
+% % % disp('-------------------------------------------------------------------');
+% % % disp('[Start] All-joint torques statistics..');
+% % % % Computation of all joints norm
+% % % stats_tauNorm_blocks_allJoints;
+% % % disp('[End] All-joint torques statistics.');
+% % % disp('-------------------------------------------------------------------');
+% % % disp('-------------------------------------------------------------------');
+% % % disp('-------------------------------------------------------------------');
+% % % disp('[Start] Joint-area torques statistics..');
+% % % % Computation of all joints norm
+% % % stats_tauNorm_blocks_areas;
+% % % disp('[End] Joint-area torques statistics.');
 
+%% Stats torques w.r.t. blocks (for all and areas joints)
+% Torso
+stats_tauNorm_jointType_torso;
+
+% Left arm
+stats_tauNorm_jointType_larm;
+% Right arm
+stats_tauNorm_jointType_rarm;
+
+% Left leg
+stats_tauNorm_jointType_lleg;
+% Right leg
+stats_tauNorm_jointType_rleg;

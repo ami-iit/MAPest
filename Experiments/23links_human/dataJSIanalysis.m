@@ -1,3 +1,4 @@
+
 % Copyright (C) 2020 Istituto Italiano di Tecnologia (IIT)
 % All rights reserved.
 %
@@ -12,6 +13,7 @@ bucket = struct;
 bucket.datasetRoot = fullfile(pwd, 'dataJSI');
 
 addpath(genpath('../../external'));
+addpath(genpath('analysis_scripts'));
 
 % Subjects
 tmp.subjects = {'subj01'; ...
@@ -85,8 +87,6 @@ end
 selectedJoints = load(fullfile(pathToProcessedData,'selectedJoints.mat'));
 
 %% ========================================================================
-%%                    COVARIANCE TUNING CHOICE
-%% ========================================================================
 % Create the vector for the choice of the trustfull power --> n = 4
 tmp.trustfullPower_NE = [];
 tmp.trustfullPower_WE = [];
@@ -128,7 +128,7 @@ for subjIdx = 1 : nrOfSubject
 end
 
 %% ========================================================================
-%%                    OVERALL NORM WHOLE-BODY EFFECT
+%%                         INTRA-SUBJECT COMPUTATIONS
 %% ========================================================================
 % -------- Intra-subject overall torque norm
 for subjIdx = 1 : nrOfSubject
@@ -147,7 +147,60 @@ for subjIdx = 1 : nrOfSubject
         end
     end
 end
+% Normalization
+for subjIdx = 1 : nrOfSubject
+    for blockIdx = 1 : block.nrOfBlocks
+        % ---- normalized norm NE
+        intraSubj(subjIdx).torqueNormNE(blockIdx).torqueNorm_normalized = ...
+            (intraSubj(subjIdx).torqueNormNE(blockIdx).torqueNorm - ...
+            min(intraSubj(subjIdx).torqueNormNE(blockIdx).torqueNorm))/ ...
+            (max(intraSubj(subjIdx).torqueNormNE(blockIdx).torqueNorm) - ...
+            min(intraSubj(subjIdx).torqueNormNE(blockIdx).torqueNorm));
+        % ---- normalized norm WE
+        intraSubj(subjIdx).torqueNormWE(blockIdx).torqueNorm_normalized = ...
+            (intraSubj(subjIdx).torqueNormWE(blockIdx).torqueNorm - ...
+            min(intraSubj(subjIdx).torqueNormWE(blockIdx).torqueNorm))/ ...
+            (max(intraSubj(subjIdx).torqueNormWE(blockIdx).torqueNorm) - ...
+            min(intraSubj(subjIdx).torqueNormWE(blockIdx).torqueNorm));
+    end
+end
 
+% -------- Intra-subject overall torque MEAN
+for subjIdx = 1 : nrOfSubject
+    for blockIdx = 1 : block.nrOfBlocks
+        lenNE = length(intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values);
+        lenWE = length(intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values);
+        for i = 1 : lenNE
+            intraSubj(subjIdx).torqueMeanNE(blockIdx).torqueMean(1,i) = ...
+                mean(intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(:,i));
+        end
+        for i = 1 : lenWE
+            intraSubj(subjIdx).torqueMeanWE(blockIdx).torqueMean(1,i) = ...
+                mean(intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(:,i));
+        end
+    end
+end
+% Normalization
+for subjIdx = 1 : nrOfSubject
+    for blockIdx = 1 : block.nrOfBlocks
+        % ---- normalized mean NE
+        intraSubj(subjIdx).torqueMeanNE(blockIdx).torqueMean_normalized = ...
+            (intraSubj(subjIdx).torqueMeanNE(blockIdx).torqueMean - ...
+            min(intraSubj(subjIdx).torqueMeanNE(blockIdx).torqueMean))/ ...
+            (max(intraSubj(subjIdx).torqueMeanNE(blockIdx).torqueMean) - ...
+            min(intraSubj(subjIdx).torqueMeanNE(blockIdx).torqueMean));
+        % ---- normalized mean WE
+        intraSubj(subjIdx).torqueMeanWE(blockIdx).torqueMean_normalized = ...
+            (intraSubj(subjIdx).torqueMeanWE(blockIdx).torqueMean - ...
+            min(intraSubj(subjIdx).torqueMeanWE(blockIdx).torqueMean))/ ...
+            (max(intraSubj(subjIdx).torqueMeanWE(blockIdx).torqueMean) - ...
+            min(intraSubj(subjIdx).torqueMeanWE(blockIdx).torqueMean));
+    end
+end
+
+%% ========================================================================
+%%                         WHOLE-BODY NORM
+%% ========================================================================
 % -------- Inter-subject overall torque norm
 % Uniform the range of signals per block
 for blockIdx = 1 : block.nrOfBlocks
@@ -171,59 +224,24 @@ for blockIdx = 1 : block.nrOfBlocks
     for subjIdx = 1 : nrOfSubject
         tmp.interSubj(blockIdx).overallTorqueListNE  = [tmp.interSubj(blockIdx).overallTorqueListNE; ...
             intraSubj(subjIdx).NE.estimatedVariables.tau(blockIdx).values(:, 1:interSubj(blockIdx).lenghtOfIntersubjNormNE)];
-        tmp.interSubj(blockIdx).overallTorqueListWE  = [tmp.interSubj(blockIdx).overallTorqueListWE; ... 
+        tmp.interSubj(blockIdx).overallTorqueListWE  = [tmp.interSubj(blockIdx).overallTorqueListWE; ...
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(:, 1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
 end
 
-% Overall torque norm
+% -------- Inter-subject overall torque norm
 for blockIdx = 1 : block.nrOfBlocks
     lenNE = interSubj(blockIdx).lenghtOfIntersubjNormNE;
     lenWE = interSubj(blockIdx).lenghtOfIntersubjNormWE;
-     for i = 1 : lenNE
-         interSubj(blockIdx).torqueNormNE(1,i) = norm(tmp.interSubj(blockIdx).overallTorqueListNE(:,i));
-     end
-     for i = 1 : lenWE
-         interSubj(blockIdx).torqueNormWE(1,i) = norm(tmp.interSubj(blockIdx).overallTorqueListWE(:,i));
-     end
+    for i = 1 : lenNE
+        interSubj(blockIdx).torqueNormNE(1,i) = norm(tmp.interSubj(blockIdx).overallTorqueListNE(:,i));
+    end
+    for i = 1 : lenWE
+        interSubj(blockIdx).torqueNormWE(1,i) = norm(tmp.interSubj(blockIdx).overallTorqueListWE(:,i));
+    end
 end
 
-% Overall torque norm difference
-% % % Find the minimum length for the difference
-% % for blockIdx = 1 : block.nrOfBlocks
-% %     interSubj(blockIdx).lenghtOfIntersubjDiff = min(interSubj(blockIdx).lenghtOfIntersubjNormNE, ....
-% %         interSubj(blockIdx).lenghtOfIntersubjNormWE); 
-% % end
-% % % Cut signals with new length
-% % for blockIdx = 1 : block.nrOfBlocks
-% %     tmp.interSubj(blockIdx).overallTorqueListNE_cut = tmp.interSubj(blockIdx).overallTorqueListNE(:,1:interSubj(blockIdx).lenghtOfIntersubjDiff);
-% %     tmp.interSubj(blockIdx).overallTorqueListWE_cut = tmp.interSubj(blockIdx).overallTorqueListWE(:,1:interSubj(blockIdx).lenghtOfIntersubjDiff);
-% % end
-% % 
-% % % Difference: (tau_NE - tau_WE)
-% % for blockIdx = 1 : block.nrOfBlocks
-% %         tmp.interSubj(blockIdx).tauDiff = tmp.interSubj(blockIdx).overallTorqueListNE_cut - tmp.interSubj(blockIdx).overallTorqueListWE_cut;
-% % end
-% % % Norm of the difference |tau_NE - tau_WE|
-% % for blockIdx = 1 : block.nrOfBlocks
-% %     for lenIdx = 1 : interSubj(blockIdx).lenghtOfIntersubjDiff
-% %         tmp.interSubj(blockIdx).tauNormDiff(1,lenIdx) = norm(tmp.interSubj(blockIdx).tauDiff(:,lenIdx));
-% %     end
-% % end
-% % % Norm of |tau_NE|
-% % for blockIdx = 1 : block.nrOfBlocks
-% %     for lenIdx = 1 : interSubj(blockIdx).lenghtOfIntersubjDiff
-% %         tmp.interSubj(blockIdx).normTau_NE(1,lenIdx) = norm(tmp.interSubj(blockIdx).overallTorqueListNE_cut(:,lenIdx));
-% %     end
-% % end
-% % % Relative error: |tau_NE - tau_WE|/|tau_NE|
-% % for blockIdx = 1 : block.nrOfBlocks
-% %     for lenIdx = 1 : interSubj(blockIdx).lenghtOfIntersubjDiff
-% %         interSubj(blockIdx).relTauError(1,lenIdx) = (tmp.interSubj(blockIdx).tauNormDiff(1,lenIdx)/tmp.interSubj(blockIdx).normTau_NE(1,lenIdx));
-% %     end
-% % end
-
-% Plot norm
+%% Plot norm
 fig = figure('Name', 'Intersubject overall tau norm','NumberTitle','off');
 axes1 = axes('Parent',fig,'FontSize',16);
 box(axes1,'on');
@@ -242,8 +260,8 @@ for blockIdx = 1 : block.nrOfBlocks
     plot2 = plot(interSubj(blockIdx).torqueNormWE,'color',greenAnDycolor,'lineWidth',4);
     hold on
     title(sprintf('Block %s', num2str(blockIdx)),'FontSize',22);
-    ylabel('$|\tau|$','HorizontalAlignment','center',...
-    'FontSize',40,'interpreter','latex');
+    ylabel('$||\tau||$','HorizontalAlignment','center',...
+        'FontSize',40,'interpreter','latex');
     if blockIdx == 5
         xlabel('samples','FontSize',25);
     end
@@ -260,17 +278,26 @@ if saveON
     save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauNorm_s'),fig,600);
 end
 
+%% Stats and boxplot norm
+stats_tauNorm_wb_anova2;
+
 %% ========================================================================
-%%                    OVERALL MEAN WHOLE-BODY EFFECT
+%%                         WHOLE-BODY MEAN
 %% ========================================================================
 % -------- Inter-subject overall torque mean
+meanMeanTorques = zeros(block.nrOfBlocks,2);
 for blockIdx = 1 : block.nrOfBlocks
+    % NE
     interSubj(blockIdx).torqueMeanNE = mean(tmp.interSubj(blockIdx).overallTorqueListNE);
+    meanMeanTorques(blockIdx,1) = mean(interSubj(blockIdx).torqueMeanNE);
+    % WE
     interSubj(blockIdx).torqueMeanWE = mean(tmp.interSubj(blockIdx).overallTorqueListWE);
+        meanMeanTorques(blockIdx,2) = mean(interSubj(blockIdx).torqueMeanWE);
 end
 
-% Plot mean
-fig = figure('Name', 'Intersubject overall tau mean','NumberTitle','off');
+
+%% Plot mean
+fig = figure('Name', 'Intersubje overall tau mean','NumberTitle','off');
 axes1 = axes('Parent',fig,'FontSize',16);
 box(axes1,'on');
 hold(axes1,'on');
@@ -288,7 +315,7 @@ for blockIdx = 1 : block.nrOfBlocks
     hold on
     title(sprintf('Block %s', num2str(blockIdx)),'FontSize',22);
     ylabel('$\bar\tau^{wb}$ [Nm]','HorizontalAlignment','center',...
-    'FontSize',30,'interpreter','latex');
+        'FontSize',30,'interpreter','latex');
     if blockIdx == 5
         xlabel('samples','FontSize',25);
     end
@@ -309,11 +336,74 @@ if saveON
     save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauMean'),fig,600);
 end
 
+%% Bar plot single joints
+fig = figure();
+axes1 = axes('Parent',fig, ...
+    'YGrid','on',...
+    'XTickLabel',{'Block1',...
+    'Block2',...
+    'Block3',...
+    'Block4',...
+    'Block5'},...
+    'XTick',[1 2 3 4 5],...
+    'FontSize',20);
+box(axes1,'off');
+hold(axes1,'on');
+grid on;
+
+bar1 = bar([1 2 3 4 5],...
+    [meanMeanTorques(1,1) ...
+    meanMeanTorques(2,1) ...
+    meanMeanTorques(3,1) ...
+    meanMeanTorques(4,1) ...
+    meanMeanTorques(5,1)], ...
+    0.30,'FaceColor',orangeAnDycolor);
+hold on;
+bar2 = bar([1.3 2.3 3.3 4.3 5.3],...
+    [meanMeanTorques(1,2) ...
+    meanMeanTorques(2,2) ...
+    meanMeanTorques(3,2) ...
+    meanMeanTorques(4,2) ...
+    meanMeanTorques(5,2)], ...
+    0.30,'FaceColor',greenAnDycolor);
+
+% Legend and title
+% Note: this legend is tuned on the bar plot
+% leg = legend([bar1, bar2],'effort reduction', 'effort increase');
+% set(leg,'Interpreter','latex');
+% set(leg,'FontSize',25);
+% set(leg,  'NumColumns', 2);
+
+title('Head and torso','FontSize',20);
+ylabel(' $\bar {\bar{\tau}}$ [Nm]','HorizontalAlignment','center',...
+    'FontWeight','bold',...
+    'FontSize',30,...
+    'Interpreter','latex');
+set(axes1, 'XLimSpec', 'Tight');
+% axis tight;
+
+% % align_Ylabels(gcf)
+% subplotsqueeze(gcf, 1.12);
+% tightfig();
+% save
+if saveON
+    save2pdf(fullfile(bucket.pathToPlots,'meanOfNormalizedNormOfTorques'),fig,600);
+end
+
+%% Computation (|barBarTau_NE| - |barBarTau_WE|)/|barBarTau_NE|
+wholeBodyExo.values = zeros(5,3);
+for blockIdx = 1 : block.nrOfBlocks
+    wholeBodyExo.values(blockIdx,1) = mean(interSubj(blockIdx).torqueMeanNE);
+    wholeBodyExo.values(blockIdx,2) = mean(interSubj(blockIdx).torqueMeanWE);
+    wholeBodyExo.values(blockIdx,3) = (abs(wholeBodyExo.values(blockIdx,1)) - ...
+        abs(wholeBodyExo.values(blockIdx,2)))/abs(wholeBodyExo.values(blockIdx,1));
+end
+
 %% ========================================================================
-%%                 BODY EFFECT DIVIDED PER AREAS
+%%                              AREAS MEAN
 %% ========================================================================
 % Torso
-tmp.torso_range  = [1:12]; %no 13,14, head joints
+tmp.torso_range  = [1:14];
 interSubjectAnalysis_torso;
 % Arms
 tmp.rightArm_range = [15:22];
@@ -323,4 +413,3 @@ interSubjectAnalysis_arms;
 tmp.rightLeg_range = [31:38]; %no 39, rightBallFoot joint
 tmp.leftLeg_range  = [40:47]; %no 48, leftBallFoot joint
 interSubjectAnalysis_legs;
-

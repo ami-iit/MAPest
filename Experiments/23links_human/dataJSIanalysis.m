@@ -308,21 +308,21 @@ for blockIdx = 1 : block.nrOfBlocks
     plot1 = plot(interSubj(blockIdx).torqueMeanNE,'color',orangeAnDycolor,'lineWidth',4);
     axis tight;
     ax = gca;
-    ax.FontSize = 20;
+    ax.FontSize = 27;
     hold on
     % WE
     plot2 = plot(interSubj(blockIdx).torqueMeanWE,'color',greenAnDycolor,'lineWidth',4);
     hold on
-    title(sprintf('Block %s', num2str(blockIdx)),'FontSize',22);
+    title(sprintf('Block %s', num2str(blockIdx)),'FontSize',23);
     ylabel('$\bar\tau^{wb}$ [Nm]','HorizontalAlignment','center',...
         'FontSize',30,'interpreter','latex');
     if blockIdx == 5
-        xlabel('samples','FontSize',25);
+        xlabel('samples','FontSize',30);
     end
     grid on;
     %legend
     leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
-    set(leg,'Interpreter','latex','FontSize',25);
+    set(leg,'Interpreter','latex','FontSize',33);
     % axis tight
     %     ylim([-1.8, 0.7]);
     ylim([-1.8, 0.8]);

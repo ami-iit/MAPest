@@ -83,6 +83,7 @@ end
 % - columns --> conditions (NE or WE), nrOfGroups = 2
 % - rows    --> block (per subject) --> block.nrOfBlocks*nrOfSubject
 repetitions = block.nrOfBlocks;
+% [p,tbl] = anova2(stats_vect,repetitions);
 [~,tbl,stats_anova2] = anova2(stats_vect,repetitions);
 c = multcompare(stats_anova2);
 
@@ -105,7 +106,7 @@ for blockIdx = 1 : block.nrOfBlocks
     % Group 2
     patch(get(h(2),'XData'),get(h(2),'YData'),greenAnDycolor,'FaceAlpha',.8);
     
-    title(sprintf('Block %s', num2str(blockIdx)),'FontSize',40);
+    title(sprintf('Block %s', num2str(blockIdx)),'FontSize',20);
     if blockIdx == 1
         ylabel('$||\tau^{wb}||$', 'HorizontalAlignment','center',...
             'FontSize',40,'interpreter','latex');
@@ -143,7 +144,7 @@ patch(get(h(2),'XData'),get(h(2),'YData'),greenAnDycolor,'FaceAlpha',.8);
 %  ** represents p<=1E-2
 % *** represents p<=1E-3
 H = sigstar({[1,2]},[c(1,6)]);
-title('Total','FontSize',40);
+title('Total','FontSize',20);
 % % %     ylabel('Normalized $\tau_{NORM}$ mean', 'HorizontalAlignment','center',...
 % % %         'FontSize',25,'interpreter','latex');
 % % % % xlabel('Factor: subjects ','HorizontalAlignment','center',...
@@ -160,7 +161,7 @@ box off;
 
 %legend
 leg = legend({'NE','WE'},'Location','southeast');
-set(leg,'Interpreter','latex','FontSize',25);
+set(leg,'Interpreter','latex','FontSize',30);
 
 % % align_Ylabels(gcf)
 % subplotsqueeze(gcf, 1.12);

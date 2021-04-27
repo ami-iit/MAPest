@@ -106,20 +106,59 @@ bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj0%d_
 %% Load URDF model with sensors and create human kinDyn
 disp('-------------------------------------------------------------------');
 disp('Loading the URDF model...');
-bucket.base = 'LeftToe';
+bucket.base = 'RightToe';
 human_kinDynComp_forViz = iDynTreeWrappers.loadReducedModel(selectedJoints, ...
     bucket.base, ...
     fullfile(bucket.pathToSubject, '/'), ...
     sprintf('XSensURDF_subj0%d_%ddof.urdf', subjectID, nrOfDoFs), ...
     false);
+
+%% Initialize link2joint map and spheres for dynamics visualization
+% The order of the map is the same of Visualizer.linkNames
+linkToJointMap = containers.Map;
+% inkToJointMap('Pelvis')       = [xxx]; not used
+linkToJointMap('L5')            = [1, 2];
+linkToJointMap('L3')            = [3, 4];
+linkToJointMap('T12')           = [5, 6];
+linkToJointMap('T8')            = [7, 8, 9];
+linkToJointMap('RightShoulder') = [15];
+linkToJointMap('LeftShoulder')  = [23];
+% linkToJointMap('Neck')        = [xxx]; not used
+% linkToJointMap('Head')        = [xxx]; not used
+linkToJointMap('LeftUpperArm')  = [24, 25, 26];
+linkToJointMap('LeftForeArm')   = [27, 28];
+linkToJointMap('LeftHand')      = [29, 30];
+linkToJointMap('RightUpperArm') = [16, 17, 18];
+linkToJointMap('RightForeArm')  = [19, 20];
+linkToJointMap('RightHand')     = [21, 22];
+linkToJointMap('LeftUpperLeg')  = [40, 41, 42];
+linkToJointMap('LeftLowerLeg')  = [43, 44];
+linkToJointMap('LeftFoot')      = [45,46,47];
+% linkToJointMap('LeftToe')     = [xxx]; not used
+linkToJointMap('RightUpperLeg') = [31, 32, 33];
+linkToJointMap('RightLowerLeg') = [34,35];
+linkToJointMap('RightFoot')     = [36, 37, 38];
+% linkToJointMap('RightToe')    = [xxx]; not used
  
 %% Prepare visualization
 for blockIdx = 1
     [Visualizer,Objects] = iDynTreeWrappers.prepareVisualization(human_kinDynComp_forViz, meshFilePrefix);
+    figNrLinks = length(Visualizer.linkNames);
     fprintf('------- Visualization of Subject_%02d, Trial_%02d , Block_%02d -------\n ',subjectID,taskID, blockIdx);
     title1 = title(sprintf('Subject %02d, Trial %02d , Block %02d',subjectID,taskID, blockIdx));
     set(title1, 'FontSize', 18);
     
+    % Sphere configuration
+    %  for jointIdx = 1 : figNrLinks
+    %    % tauSphere.abs_min(jointIdx,1) = min(abs(estimatedVariables.tau(blockIdx).values(jointIdx,:)));
+    %    tauSphere.abs_max(jointIdx,1) = max(abs(estimatedVariables.tau(blockIdx).values(jointIdx,:)));
+    %  end
+    [X_sphere,Y_sphere,Z_sphere] = sphere;
+    min_tau = 0; % Nm
+    %     max_tau = max(max(estimatedVariables.tau(blockIdx).values)); % Nm
+    max_tau = 27;
+    radius  = 0.05;
+
     if opts.videoRecording
         % Path to video folder
         bucket.pathToVideoFolder = fullfile(bucket.pathToProcessedData,'video');
@@ -134,6 +173,10 @@ for blockIdx = 1
     end
     
     %% Compute G_H_base
+    G_H_base = [1, 0, 0, 0;
+                0, 1, 0, 0;
+                0, 0, 1, 0;
+                0, 0, 0, 1];
 %     %--------Computation of the suit base orientation and position w.r.t. G
 %     for suitLinksIdx = 1 : size(suit.links,1)
 %         if strcmp(suit.links{suitLinksIdx, 1}.label, bucket.base)
@@ -158,15 +201,24 @@ for blockIdx = 1
 %         human_state_tmp,...
 %         baseOrientation_tot, ...
 %         basePos_tot);
-%       
-    G_H_base = [1, 0, 0, 0;
-        0, 1, 0, 0;
-        0, 0, 1, 0;
-        0, 0, 0, 1];
     
-    %% Update kinematics
-    for lenIdx = 203 : length(synchroKin(blockIdx).masterTime)
+    %% Initialiaze (prepare) dynamics
+    for sphereIdx = 1 : figNrLinks
+        if(linkToJointMap.isKey(Visualizer.linkNames{sphereIdx}))
+            color = [1,1,1]; % dummy color
+            ball{sphereIdx} = surf(X_sphere * radius, ...
+                Y_sphere * radius, ...
+                Z_sphere * radius, ...
+                'FaceColor',color, ...
+                'EdgeColor','none');
+        end
+    end
+    
+    %% Update kinematics and dynamics visualization
+    view(45,3) % set camera view
+    for lenIdx = 1000 : 3000 %length(synchroKin(blockIdx).masterTime)
         title1 = title(sprintf('Subject %02d, Trial %02d , Block %02d, len %02d',subjectID,taskID, blockIdx, lenIdx));
+        
         % q  = human_state_tmp.q(:,lenIdx); %in [rad]
         q  = synchroKin(blockIdx).q(:,lenIdx); %in [rad]
         dq = zeros(human_kinDynComp_forViz.NDOF,1);
@@ -174,14 +226,28 @@ for blockIdx = 1
         % G_H_b = G_T_base(blockIdx).G_T_b{lenIdx, 1}.asHomogeneousTransform();
         % G_H_b_matlab{lenIdx,1} = G_H_b.toMatlab;
         % iDynTreeWrappers.setRobotState(human_kinDynComp_forViz, G_H_b.toMatlab, q, baseVel, dq, gravity)
-       iDynTreeWrappers.setRobotState(human_kinDynComp_forViz, G_H_base, q, baseVel, dq, gravity)
-        %% Update visualization
+        iDynTreeWrappers.setRobotState(human_kinDynComp_forViz, G_H_base, q, baseVel, dq, gravity)
+
+        % --- Update kinematics
         iDynTreeWrappers.updateVisualization(human_kinDynComp_forViz,Visualizer);
         axis tight
-        xlim([-0.7 0.7]);
-        ylim([-0.7 0.7]);
+        xlim([-0.5 0.5]);
+        ylim([-0.6 0.7]);
         zlim([ 0   2.2]);
         drawnow;
+
+        % --- Update dynamics
+        for sphereIdx = 1 : figNrLinks
+            if(linkToJointMap.isKey(Visualizer.linkNames{sphereIdx}))
+                pos = Visualizer.transforms(sphereIdx).Matrix(1:3,4);
+                tauSphere.lenVal(sphereIdx) = max(abs(estimatedVariables.tau(blockIdx).values(linkToJointMap(Visualizer.linkNames{sphereIdx}),lenIdx)));
+                color = [min(tauSphere.lenVal(sphereIdx),max_tau)/max_tau, max(max_tau-max(tauSphere.lenVal(sphereIdx)-min_tau,min_tau), 0)/max_tau, 0];
+                set(ball{sphereIdx}, 'XData', X_sphere * radius + pos(1), ...
+                    'YData',Y_sphere * radius + pos(2), ...
+                    'ZData',Z_sphere * radius + pos(3), ...
+                    'FaceColor',color);
+            end
+        end
         
         % record image displayed in the figure
         if opts.videoRecording

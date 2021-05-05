@@ -32,7 +32,7 @@ if opts.task1_SOT
     masterFile = load(fullfile(bucket.pathToRawData,sprintf(('S%02d_%02d.mat'),subjectID,taskID)));
     % Option for computing the estimated Sigma
     opts.Sigma_dgiveny = false;
-
+    
     % Define the template to be used
     if opts.noC7joints
         addpath(genpath('templatesNoC7'));
@@ -42,7 +42,7 @@ if opts.task1_SOT
         addpath(genpath('templates'));
         rmpath('templatesNoC7'); %if exists
     end
-
+    
     %% SUIT struct creation
     if ~exist(fullfile(bucket.pathToProcessedData,'suit.mat'), 'file')
         disp('-------------------------------------------------------------------');
@@ -56,13 +56,13 @@ if opts.task1_SOT
     else
         load(fullfile(bucket.pathToProcessedData,'suit.mat'));
     end
-
+    
     %% IMPORTANT NOTE:
     % The subjects performed the experimental tasks with the drill on the right
     % hand. This code will be modified for taking into account the presence of
     % the drill. URDF/OSIM models and IK computation will be affected
     % by this change.
-
+    
     %% Extract subject parameters from SUIT
     if ~exist(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'), 'file')
         subjectParamsFromData = subjectParamsComputation(suit, masterFile.Subject.Info.Weight);
@@ -70,7 +70,7 @@ if opts.task1_SOT
     else
         load(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'),'subjectParamsFromData');
     end
-
+    
     if opts.EXO && opts.EXO_torqueLevelAnalysis
         % Add manually the mass of the exo (1.8 kg) on the pelvis:
         if ~exist(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'), 'file')
@@ -87,7 +87,7 @@ if opts.task1_SOT
             load(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'),'subjectParamsFromDataEXO');
         end
     end
-
+    
     %% Create URDF model
     if opts.noC7joints
         % model NO exo, with C7 joints FIXED
@@ -128,7 +128,7 @@ if opts.task1_SOT
             end
         end
     end
-
+    
     %% Create OSIM model
     if opts.noC7joints
         % model NO exo, with C7 joints LOCKED
@@ -184,7 +184,7 @@ if opts.task1_SOT
         load(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'));
     end
     % disp('[Warning]: The IK is expressed in current frame and not in fixed frame!');
-
+    
     % External ddq computation
     Sg.samplingTime = 1/suit.properties.frameRate;
     Sg.polinomialOrder = 3;
@@ -193,13 +193,13 @@ if opts.task1_SOT
     [~,~,human_ddq_tmp] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window,human_state_tmp.q,Sg.samplingTime); % in deg
     human_ddq_tmp = human_ddq_tmp * pi/180;      % in rad
     save(fullfile(bucket.pathToProcessedData,'human_ddq_tmp.mat'),'human_ddq_tmp');
-
+    
     %% q, dq, ddq signals filtering
     Sg.samplingTime = 1/(suit.properties.frameRate);
     % because the signal have been downsampled to align the suit signals
     Sg.polinomialOrder = 3;
     Sg.window = 407;
-
+    
     for jntIdx = 1 : length(selectedJoints)
         [human_state_tmp_q_2tbr(jntIdx,:),~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window, ...
             human_state_tmp.q(jntIdx,:),Sg.samplingTime);
@@ -211,20 +211,20 @@ if opts.task1_SOT
     human_state_tmp.q  = human_state_tmp_q_2tbr;
     human_state_tmp.dq = human_state_tmp_dq_2tbr;
     human_ddq_tmp = human_ddq_tmp_2tbr;
-
+    
     % Remove useless quantities
     clearvars human_state_tmp_q_2tbr human_state_tmp_dq_2tbr human_ddq_tmp_2tbr;
-
+    
     %% Raw data handling
     rawDataHandling;
-
+    
     %% Covariance tuning test
     if opts.tuneCovarianceTest
         blockID = 1; %considering only one trial for covariance tuning
     else
         blockID = 1 : block.nrOfBlocks;
     end
-
+    
     if ~opts.tuneCovarianceTest || powerIdx == 1
         %% Save synchroData with the kinematics infos
         fieldsToBeRemoved = {'RightShoe_SF','LeftShoe_SF','FP_SF'};
@@ -233,30 +233,30 @@ if opts.task1_SOT
         if ~opts.tuneCovarianceTest
             save(fullfile(bucket.pathToProcessedData,'synchroKin.mat'),'synchroKin');
         end
-
+        
         %% Transform forces into human forces
         % Preliminary assumption on contact links: 2 contacts only (or both feet
         % with the shoes or both feet with two force plates)
         bucket.contactLink = cell(2,1);
-
+        
         % Define contacts configuration
         bucket.contactLink{1} = 'RightFoot'; % human link in contact with RightShoe
         bucket.contactLink{2} = 'LeftFoot';  % human link in contact with LeftShoe
-
+        
         for blockIdx = blockID
             shoes(blockIdx) = transformShoesWrenches(synchroData(blockIdx), subjectParamsFromData);
         end
-
+        
         % ------ balance term test
         % balance_test_and_plots;
         % ------------------------
-
+        
         %% Shoes signal filtering
         Sg.samplingTime = 1/(suit.properties.frameRate);
         % because the signals of the shoes have been downsampled to align the suit signals
         Sg.polinomialOrder = 3;
         Sg.window = 407;
-
+        
         for blockIdx = blockID
             for elemIdx = 1 : 6
                 [shoes2tbr(blockIdx).Left_HF(elemIdx,:),~,~] = SgolayFilterAndDifferentiation(Sg.polinomialOrder,Sg.window, ...
@@ -272,7 +272,7 @@ if opts.task1_SOT
         end
         % Remove useless quantities
         clearvars shoes2tbr;
-
+        
         %% Removal of C7 joints kinematics quantities
         if opts.noC7joints
             if ~exist(fullfile(bucket.pathToProcessedData,'selectedJointsReduced.mat'), 'file')
@@ -285,14 +285,14 @@ if opts.task1_SOT
                     end
                 end
                 selectedJoints(jRshoC7Rotx_idx,:) = [];
-
+                
                 for sjIdx = 1 : size(selectedJoints,1)
                     if (strcmp(selectedJoints{sjIdx,1},'jLeftC7Shoulder_rotx'))
                         jLshoC7Rotx_idx = sjIdx;
                     end
                 end
                 selectedJoints(jLshoC7Rotx_idx,:) = [];
-
+                
                 selectedJointsReduced = selectedJoints;
                 for blockIdx = blockID
                     synchroKinReduced(blockIdx).q(jRshoC7Rotx_idx,:) = [];
@@ -310,7 +310,7 @@ if opts.task1_SOT
                 load(fullfile(bucket.pathToProcessedData,'selectedJointsReduced.mat'));
                 load(fullfile(bucket.pathToProcessedData,'synchroKinReduced.mat'));
             end
-
+            
             % Overwrite old variables with the new reduced variables
             selectedJoints = selectedJointsReduced;
             save(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'),'selectedJoints');
@@ -319,7 +319,7 @@ if opts.task1_SOT
             % Remove useless quantities
             clearvars selectedJointsReduced synchroKinReduced;
         end
-
+        
         %% ------------------------RUNTIME PROCEDURE-------------------------------
         %% Load URDF model with sensors
         disp('-------------------------------------------------------------------');
@@ -331,24 +331,24 @@ if opts.task1_SOT
             % here the model loads the same order of selectedJoints.
             fprintf('Something wrong with the model loading.')
         end
-
+        
         humanModel = humanModelLoader.model();
         human_kinDynComp = iDynTree.KinDynComputations();
         human_kinDynComp.loadRobotModel(humanModel);
-
+        
         bucket.base = 'Pelvis'; % floating base
-
+        
         % Sensors
         humanSensors = humanModelLoader.sensors();
         humanSensors.removeAllSensorsOfType(iDynTree.GYROSCOPE_SENSOR);
         % humanSensors.removeAllSensorsOfType(iDynTree.ACCELEROMETER_SENSOR);
         % humanSensors.removeAllSensorsOfType(iDynTree.THREE_AXIS_ANGULAR_ACCELEROMETER_SENSOR);
-
+        
         %% Initialize berdy
         disp('Initializing berdy for the URDF model...');
         % Specify berdy options
         berdyOptions = iDynTree.BerdyOptions;
-
+        
         berdyOptions.baseLink = bucket.base;
         berdyOptions.includeAllNetExternalWrenchesAsSensors          = true;
         berdyOptions.includeAllNetExternalWrenchesAsDynamicVariables = true;
@@ -357,7 +357,7 @@ if opts.task1_SOT
         berdyOptions.includeCoMAccelerometerAsSensorInTask1          = true;
         berdyOptions.includeCoMAccelerometerAsSensorInTask2          = false;
         berdyOptions.stackOfTasksMAP                                 = true;
-
+        
         % Option useful for the new measurement equation
         %      X_{COMconstrainedLinks} * fˆx_{COMconstrainedLinks} = m * ddx_COM
         % where COMconstrainedLinks is a vector containing link names.
@@ -367,17 +367,17 @@ if opts.task1_SOT
         COMconstrainedLinks.push_back('LeftHand');
         COMconstrainedLinks.push_back('RightHand');
         berdyOptions.comConstraintLinkNamesVector = COMconstrainedLinks;
-
+        
         berdyOptions.berdyVariant = iDynTree.BERDY_FLOATING_BASE;
         berdyOptions.includeFixedBaseExternalWrench = false;
-
+        
         % Load berdy
         berdy = iDynTree.BerdyHelper;
         berdy.init(humanModel, humanSensors, berdyOptions);
-
+        
         % Get the current traversal
         traversal = berdy.dynamicTraversal;
-
+        
         % Floating base settings
         currentBase = berdy.model().getLinkName(traversal.getBaseLink().getIndex());
         disp(strcat('Current base is < ', currentBase,'>.'));
@@ -387,7 +387,7 @@ if opts.task1_SOT
         if currentBase ~= baseKinDynModel
             error(strcat('[ERROR] The berdy model base (',currentBerdyBase,') and the kinDyn model base (',baseKinDynModel,') do not match!'));
         end
-
+        
         % Get the tree is visited IS the order of variables in vector d
         dVectorOrder = cell(traversal.getNrOfVisitedLinks(), 1); %for each link in the traversal get the name
         dJointOrder = cell(traversal.getNrOfVisitedLinks()-1, 1);
@@ -403,11 +403,11 @@ if opts.task1_SOT
         % CHECK: print the order of variables in d vector
         % printBerdyDynVariables_floating(berdy, opts.stackOfTaskMAP);
         % ---------------------------------------------------
-
+        
         %% Add link angular acceleration sensors
         % iDynTree.THREE_AXIS_ANGULAR_ACCELEROMETER_SENSOR is not supported by the
         % URDF model.  It requires to be added differently.
-
+        
         % Angular Acceleration struct
         disp('-------------------------------------------------------------------');
         disp('[Start] Computing the link angular acceleration...');
@@ -419,11 +419,11 @@ if opts.task1_SOT
                 angAcc_sensor(angAccSensIdx).attachedLink = suit.sensors{angAccSensIdx, 1}.label;
                 angAcc_sensor(angAccSensIdx).iDynModelIdx = humanModel.getLinkIndex(suit.links{angAccSensIdx, 1}.label);
                 angAcc_sensor(angAccSensIdx).sensorName   = strcat(angAcc_sensor(angAccSensIdx).attachedLink, '_angAcc');
-
+                
                 angAcc_sensor(angAccSensIdx).S_R_L        = iDynTree.Rotation().RPY(suit.sensors{angAccSensIdx, 1}.RPY(1), ...
                     suit.sensors{angAccSensIdx, 1}.RPY(2), suit.sensors{angAccSensIdx, 1}.RPY(3)).toMatlab;
                 angAcc_sensor(angAccSensIdx).pos_SwrtL    = suit.sensors{angAccSensIdx, 1}.position;
-
+                
                 for suitLinkIdx = 1 : length(suit.links)
                     if strcmp(suit.sensors{angAccSensIdx, 1}.label,suit.links{suitLinkIdx, 1}.label)
                         sampleToMatch = suitLinkIdx;
@@ -445,7 +445,7 @@ if opts.task1_SOT
                 save(fullfile(bucket.pathToProcessedData,'angAcc_sensor.mat'),'angAcc_sensor');
             end
         end
-
+        
         % Create new angular accelerometer sensor in berdy sensor
         for newSensIdx = 1 : length(suit.sensors)
             humanSensors = addAccAngSensorInBerdySensors(humanSensors,angAcc_sensor(newSensIdx).sensorName, ...
@@ -453,7 +453,7 @@ if opts.task1_SOT
                 angAcc_sensor(newSensIdx).S_R_L, angAcc_sensor(newSensIdx).pos_SwrtL);
         end
         disp('[End] Computing the link angular acceleration.');
-
+        
         %% Compute the transformation of the base w.r.t. the global suit frame G
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Computing the <',currentBase,'> iDynTree transform w.r.t. the global frame G...'));
@@ -466,14 +466,14 @@ if opts.task1_SOT
             end
             break
         end
-
+        
         for blockIdx = blockID
             tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
             bucket.basePosition(blockIdx).basePos_wrtG  = basePos_tot(:,tmp.cutRange{blockIdx});
             bucket.orientation(blockIdx).baseOrientation = baseOrientation_tot(:,tmp.cutRange{blockIdx});
         end
         clearvars basePos_tot baseOrientation_tot;
-
+        
         for blockIdx = blockID
             G_T_base(blockIdx).block = block.labels(blockIdx);
             G_T_base(blockIdx).G_T_b = computeTransformBaseToGlobalFrame(human_kinDynComp, ...
@@ -482,7 +482,7 @@ if opts.task1_SOT
                 bucket.basePosition(blockIdx).basePos_wrtG);
         end
         disp(strcat('[End] Computing the <',currentBase,'> iDynTree transform w.r.t. the global frame G'));
-
+        
         %% Contact pattern definition
         % Trials are performed with both the feet attached to the ground (i.e.,
         % doubleSupport).  No single support is assumed for this analysis.
@@ -493,7 +493,7 @@ if opts.task1_SOT
                 contactPattern(blockIdx).contactPattern{tmpIdx} = 'doubleSupport';
             end
         end
-
+        
         %% Velocity of the currentBase
         % Code to handle the info of the velocity of the base.
         % This value is mandatorily required in the floating-base formalism.
@@ -511,7 +511,7 @@ if opts.task1_SOT
             save(fullfile(bucket.pathToProcessedData,'baseVel.mat'),'baseVel');
         end
         disp(strcat('[End] Computing the <',currentBase,'> velocity'));
-
+        
         %% Compute the rate of change of centroidal momentum w.r.t. the base
         disp('-------------------------------------------------------------------');
         disp(strcat('[Start] Computing the rate of change of centroidal momentum w.r.t. the <',currentBase,'>...'));
@@ -545,20 +545,20 @@ if opts.EXO && opts.task1_SOT
     if ~opts.tuneCovarianceTest
         save(fullfile(bucket.pathToProcessedData_EXO,'CoC.mat'),'CoC');
     end
-
+    
     % Extraction and round of the shoulder angle vectors
     for blockIdx = blockID
         % -------Right shoulder
         EXO.tmp.qToCompare_right = (- CoC(blockIdx).Rsho_qFirst(1,:) + 90)'; % operation to compare the angles: change sign and then +90 deg
         EXO.rightRoundedTable(blockIdx).block = block.labels(blockIdx);
         EXO.rightRoundedTable(blockIdx).qToCompare_right_round = round(EXO.tmp.qToCompare_right);
-
+        
         % -------Left shoulder
         EXO.tmp.qToCompare_left = (CoC(blockIdx).Lsho_qFirst(1,:) + 90)'; % operation to compare the angles: +90 deg
         EXO.leftRoundedTable(blockIdx).block = block.labels(blockIdx);
         EXO.leftRoundedTable(blockIdx).qToCompare_left_round = round(EXO.tmp.qToCompare_left);
     end
-
+    
     % Extraction from table of values accordingly to the shoulder angle vectors (rounded_q)
     for blockIdx = blockID
         % -------Right
@@ -590,7 +590,7 @@ if opts.EXO && opts.task1_SOT
             end
         end
     end
-
+    
     % Transform forces from the EXO into human forces
     disp('-------------------------------------------------------------------');
     disp('[Start] Transforming EXO force in human frames...');
@@ -621,7 +621,7 @@ for blockIdx = blockID
         bucket.contactLink, ...
         priors, ...
         opts.stackOfTaskMAP);
-
+    
     if opts.EXO
         % Find links where EXO forces are acting
         lenCheck = length(data(blockIdx).data);
@@ -647,7 +647,7 @@ for blockIdx = blockID
         data(blockIdx).data(tmp.RUAIdx).meas = EXOfext(blockIdx).RUA;
         data(blockIdx).data(tmp.RUAIdx).var  = priors.exo_fext;
     end
-
+    
     if ~opts.task1_SOT %Task2
         estimatedFextFromSOTtask1 = load(fullfile(bucket.pathToProcessedData_SOTtask1,'estimatedVariables.mat'));
         for linkIdx = 1 : length(estimatedFextFromSOTtask1.estimatedVariables.Fext(blockIdx).label)
@@ -659,17 +659,17 @@ for blockIdx = blockID
             end
         end
     end
-
+    
     % y vector as input for MAP
     [data(blockIdx).y, data(blockIdx).Sigmay] = berdyMeasurementsWrapping(berdy, ...
         data(blockIdx).data, ...
         opts.stackOfTaskMAP);
-
+    
     if opts.task1_SOT
         % modify variances for the external forces at the hands
         range_leftHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'LeftHand',opts.stackOfTaskMAP);
         data(blockIdx).Sigmay(range_leftHand:range_leftHand+5,range_leftHand:range_leftHand+5) = diag(priors.fext_hands);
-
+        
         range_rightHand = rangeOfSensorMeasurement(berdy, iDynTree.NET_EXT_WRENCH_SENSOR, 'RightHand',opts.stackOfTaskMAP);
         data(blockIdx).Sigmay(range_rightHand:range_rightHand+5,range_rightHand:range_rightHand+5) = diag(priors.fext_hands);
     end

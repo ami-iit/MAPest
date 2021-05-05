@@ -82,7 +82,6 @@ if opts.task1_SOT
                 ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(1))^2);
             subjectParamsFromDataEXO.pelvisIzz  = (subjectParamsFromDataEXO.pelvisMass/12) * ...
                 ((subjectParamsFromData.pelvisBox(3))^2 + (subjectParamsFromData.pelvisBox(2))^2);
-
             save(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'),'subjectParamsFromDataEXO');
         else
             load(fullfile(bucket.pathToSubject,'subjectParamsFromDataEXO.mat'),'subjectParamsFromDataEXO');
@@ -243,9 +242,14 @@ if opts.task1_SOT
         % Define contacts configuration
         bucket.contactLink{1} = 'RightFoot'; % human link in contact with RightShoe
         bucket.contactLink{2} = 'LeftFoot';  % human link in contact with LeftShoe
+
         for blockIdx = blockID
             shoes(blockIdx) = transformShoesWrenches(synchroData(blockIdx), subjectParamsFromData);
         end
+
+        % ------ balance term test
+        % balance_test_and_plots;
+        % ------------------------
 
         %% Shoes signal filtering
         Sg.samplingTime = 1/(suit.properties.frameRate);

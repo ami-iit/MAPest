@@ -1,20 +1,5 @@
 
 %% Preliminaries
-
-% no exo
-bucket.tmp = load(fullfile(pwd,'/dataJSI/S01/Task1/processed/processed_SOTtask2/estimatedVariables.mat'));
-max_tau_noexo = max(max(bucket.tmp.estimatedVariables.tau(1).values)); % Nm
-% exo
-bucket.tmp = load(fullfile(pwd,'/dataJSI/S01/Task0/processed/processed_SOTtask2/estimatedVariables.mat'));
-max_tau_exo = max(max(bucket.tmp.estimatedVariables.tau(1).values)); % Nm
-
-% max_tau = max(max_tau_noexo, max_tau_exo);
-max_tau = mean([max_tau_noexo max_tau_exo]);
-
-clc;
-clearvars -except tau_exo tau_noexo max_tau
-
-%% Task-specific code
 subjectID = 1;
 taskID    = 0;
 % bucket.base = 'Pelvis'; % floating base
@@ -35,17 +20,9 @@ bucket.pathToProcessedData = fullfile(bucket.pathToTask,'processed');
 masterFile = load(fullfile(bucket.pathToRawData,sprintf(('S%02d_%02d.mat'),subjectID,taskID)));
 load(fullfile(bucket.pathToProcessedData,'suit.mat'));
 load(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'));
-% load(fullfile(bucket.pathToProcessedData,'human_state_tmp.mat'));
 load(fullfile(bucket.pathToProcessedData,'synchroKin.mat'));
 load(fullfile(bucket.pathToProcessedData,'processed_SOTtask2/estimatedVariables.mat'));
-if subjectID ==1
-    if taskID ==0
-        tau_exo = load(fullfile(bucket.pathToProcessedData,'processed_SOTtask2/estimatedVariables.mat'));
-    else
-        tau_noexo = load(fullfile(bucket.pathToProcessedData,'processed_SOTtask2/estimatedVariables.mat'));
-    end
-end
-bucket.filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj0%d_%ddof.urdf', subjectID, nrOfDoFs));
+filenameURDF = fullfile(bucket.pathToSubject, sprintf('XSensURDF_subj0%d_%ddof.urdf', subjectID, nrOfDoFs));
  
 %% Load URDF model with sensors and create human kinDyn
 disp('-------------------------------------------------------------------');
@@ -86,6 +63,17 @@ linkToJointMap('RightFoot')     = [36, 37, 38];
  
 %% Prepare visualization
 for blockIdx = 1
+    % Max definition
+    if subjectID == 1
+        if taskID == 0
+            tau_exo = load(fullfile(bucket.pathToProcessedData,'processed_SOTtask2/estimatedVariables.mat'));
+            max_tau = max(max(tau_exo.estimatedVariables.tau(blockIdx).values));
+        else
+            tau_noexo = load(fullfile(bucket.pathToProcessedData,'processed_SOTtask2/estimatedVariables.mat'));
+            max_tau = max(max(tau_noexo.estimatedVariables.tau(blockIdx).values));
+        end
+    end
+    
     [Visualizer,Objects] = iDynTreeWrappers.prepareVisualization(human_kinDynComp_forViz, meshFilePrefix);
     figNrLinks = length(Visualizer.linkNames);
     fprintf('------- Visualization of Subject_%02d, Trial_%02d , Block_%02d -------\n ',subjectID,taskID, blockIdx);
@@ -99,8 +87,6 @@ for blockIdx = 1
     %  end
     [X_sphere,Y_sphere,Z_sphere] = sphere;
     min_tau = 0; % Nm
-    %     max_tau = max(max(estimatedVariables.tau(blockIdx).values)); % Nm
-%     max_tau = 27;
     radius  = 0.05;
 
     if opts.videoRecording
@@ -121,31 +107,7 @@ for blockIdx = 1
                 0, 1, 0, 0;
                 0, 0, 1, 0;
                 0, 0, 0, 1];
-%     %--------Computation of the suit base orientation and position w.r.t. G
-%     for suitLinksIdx = 1 : size(suit.links,1)
-%         if strcmp(suit.links{suitLinksIdx, 1}.label, bucket.base)
-%             basePos_tot         = suit.links{suitLinksIdx, 1}.meas.position;
-%             baseOrientation_tot = suit.links{suitLinksIdx, 1}.meas.orientation;
-%             break
-%         end
-%         break
-%     end
-%     tmp.cutRange{blockIdx} = (tmp.blockRange(blockIdx).first : tmp.blockRange(blockIdx).last);
-%     bucket.basePosition(blockIdx).basePos_wrtG  = basePos_tot(:,tmp.cutRange{blockIdx});
-%     bucket.orientation(blockIdx).baseOrientation = baseOrientation_tot(:,tmp.cutRange{blockIdx});
-%     clearvars basePos_tot baseOrientation_tot;
-%     
-%   G_T_base(blockIdx).block = block.labels(blockIdx);
-%     G_T_base(blockIdx).G_T_b = computeTransformBaseToGlobalFrame(human_kinDynComp_forViz.kinDynComp, ...
-%         synchroKin(blockIdx),...
-%         bucket.orientation(blockIdx).baseOrientation, ...
-%         bucket.basePosition(blockIdx).basePos_wrtG);
-%        
-%     G_T_base_whole = computeTransformBaseToGlobalFrame(human_kinDynComp_forViz.kinDynComp, ...
-%         human_state_tmp,...
-%         baseOrientation_tot, ...
-%         basePos_tot);
-    
+            
     %% Initialiaze (prepare) dynamics
     for sphereIdx = 1 : figNrLinks
         if(linkToJointMap.isKey(Visualizer.linkNames{sphereIdx}))
@@ -160,7 +122,7 @@ for blockIdx = 1
     
     %% Update kinematics and dynamics visualization
     view(45,3) % set camera view
-    for lenIdx = 650 : length(synchroKin(blockIdx).masterTime)
+    for lenIdx = 1 : length(synchroKin(blockIdx).masterTime)
         %         title1 = title(sprintf('Subject %02d, Trial %02d , Block %02d, len %02d',subjectID,taskID, blockIdx, lenIdx));
         if taskID == 1
             title1 = title('NE');

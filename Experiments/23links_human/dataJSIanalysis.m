@@ -336,6 +336,92 @@ if saveON
     save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauMean'),fig,600);
 end
 
+%% Plot mean abs
+% % % fig = figure('Name', 'Intersubje overall tau mean','NumberTitle','off');
+% % % axes1 = axes('Parent',fig,'FontSize',16);
+% % % box(axes1,'on');
+% % % hold(axes1,'on');
+% % % grid on;
+% % % for blockIdx = 1 : block.nrOfBlocks
+% % %     subplot (5,1,blockIdx)
+% % %     % NE
+% % %     plot1 = plot(abs(interSubj(blockIdx).torqueMeanNE),'color',orangeAnDycolor,'lineWidth',4);
+% % %     axis tight;
+% % %     ax = gca;
+% % %     ax.FontSize = 27;
+% % %     hold on
+% % %     % WE
+% % %     plot2 = plot(abs(interSubj(blockIdx).torqueMeanWE),'color',greenAnDycolor,'lineWidth',4);
+% % %     hold on
+% % %     title(sprintf('Block %s', num2str(blockIdx)),'FontSize',23);
+% % %     ylabel('$|\bar\tau^{wb}|$ [Nm]','HorizontalAlignment','center',...
+% % %         'FontSize',35,'interpreter','latex');
+% % %     if blockIdx == 5
+% % %         xlabel('samples','FontSize',30);
+% % %     end
+% % %     grid on;
+% % %     %legend
+% % %     leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
+% % %     set(leg,'Interpreter','latex','FontSize',33);
+% % %     % axis tight
+% % %     %     ylim([-1.8, 0.7]);
+% % %     ylim([-0.3, 2]);
+% % %     yticks([-1 0 1])
+% % % end
+% % % % align_Ylabels(gcf)
+% % % % subplotsqueeze(gcf, 1.12);
+% % % tightfig();
+% % % % save
+% % % if saveON
+% % %     save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauMean'),fig,600);
+% % % end
+
+%% Plot normalized mean abs
+fig = figure('Name', 'Intersubje overall tau normalized mean','NumberTitle','off');
+axes1 = axes('Parent',fig,'FontSize',16);
+box(axes1,'on');
+hold(axes1,'on');
+grid on;
+for blockIdx = 1 : block.nrOfBlocks
+    subplot (5,1,blockIdx)
+    % NE
+    NE_vect = abs(interSubj(blockIdx).torqueMeanNE);
+    NE_vect_min = min(NE_vect);
+    NE_vect_max = max(NE_vect);
+    plot1 = plot((NE_vect-NE_vect_min)/(NE_vect_max-NE_vect_min),'color',orangeAnDycolor,'lineWidth',4);
+    axis tight;
+    ax = gca;
+    ax.FontSize = 27;
+    hold on
+    % WE
+    WE_vect = abs(interSubj(blockIdx).torqueMeanWE);
+    WE_vect_min = min(WE_vect);
+    WE_vect_max = max(WE_vect);
+    plot2 = plot((WE_vect-WE_vect_min)/(WE_vect_max-WE_vect_min),'color',greenAnDycolor,'lineWidth',4);
+    hold on
+    title(sprintf('Block %s', num2str(blockIdx)),'FontSize',23);
+    ylabel('$|\bar\tau^{wb}|$ [Nm]','HorizontalAlignment','center',...
+        'FontSize',35,'interpreter','latex');
+    if blockIdx == 5
+        xlabel('samples','FontSize',30);
+    end
+    grid on;
+    %legend
+    leg = legend([plot1,plot2],{'NE','WE'},'Location','northeast');
+    set(leg,'Interpreter','latex','FontSize',33);
+    % axis tight
+    %     ylim([-1.8, 0.7]);
+    ylim([-0.3, 2]);
+    yticks([0 1])
+end
+% align_Ylabels(gcf)
+% subplotsqueeze(gcf, 1.12);
+tightfig();
+% save
+if saveON
+    save2pdf(fullfile(bucket.pathToPlots,'intersubj_overallTauNormalizedMean'),fig,600);
+end
+
 %% Bar plot single joints
 fig = figure();
 axes1 = axes('Parent',fig, ...

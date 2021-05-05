@@ -16,8 +16,8 @@ for blockIdx = 1 : block.nrOfBlocks
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotx.torqueMeanNE = mean(tmp.cluster(blockIdx).clusterJointsNE);
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotx.torqueMeanWE = mean(tmp.cluster(blockIdx).clusterJointsWE);
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotx.torqueMeanNE = mean(abs(tmp.cluster(blockIdx).clusterJointsNE));
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotx.torqueMeanWE = mean(abs(tmp.cluster(blockIdx).clusterJointsWE));
     % mean of mean
     singleJointsTau.rightLeg.tableRightLegMean.hip_rotx(blockIdx,1) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotx.torqueMeanNE);
     singleJointsTau.rightLeg.tableRightLegMean.hip_rotx(blockIdx,2) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotx.torqueMeanWE);
@@ -42,8 +42,8 @@ for blockIdx = 1 : block.nrOfBlocks
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_roty.torqueMeanNE = mean(tmp.cluster(blockIdx).clusterJointsNE);
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_roty.torqueMeanWE = mean(tmp.cluster(blockIdx).clusterJointsWE);
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_roty.torqueMeanNE = mean(abs(tmp.cluster(blockIdx).clusterJointsNE));
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_roty.torqueMeanWE = mean(abs(tmp.cluster(blockIdx).clusterJointsWE));
     % mean of mean
     singleJointsTau.rightLeg.tableRightLegMean.hip_roty(blockIdx,1) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_roty.torqueMeanNE);
     singleJointsTau.rightLeg.tableRightLegMean.hip_roty(blockIdx,2) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_roty.torqueMeanWE);
@@ -68,8 +68,8 @@ for blockIdx = 1 : block.nrOfBlocks
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotz.torqueMeanNE = mean(tmp.cluster(blockIdx).clusterJointsNE);
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotz.torqueMeanWE = mean(tmp.cluster(blockIdx).clusterJointsWE);
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotz.torqueMeanNE = mean(abs(tmp.cluster(blockIdx).clusterJointsNE));
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotz.torqueMeanWE = mean(abs(tmp.cluster(blockIdx).clusterJointsWE));
     % mean of mean
     singleJointsTau.rightLeg.tableRightLegMean.hip_rotz(blockIdx,1) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotz.torqueMeanNE);
     singleJointsTau.rightLeg.tableRightLegMean.hip_rotz(blockIdx,2) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).hip_rotz.torqueMeanWE);
@@ -95,8 +95,8 @@ for blockIdx = 1 : block.nrOfBlocks
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_roty.torqueMeanNE = mean(tmp.cluster(blockIdx).clusterJointsNE);
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_roty.torqueMeanWE = mean(tmp.cluster(blockIdx).clusterJointsWE);
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_roty.torqueMeanNE = mean(abs(tmp.cluster(blockIdx).clusterJointsNE));
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_roty.torqueMeanWE = mean(abs(tmp.cluster(blockIdx).clusterJointsWE));
     % mean of mean
     singleJointsTau.rightLeg.tableRightLegMean.knee_roty(blockIdx,1) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_roty.torqueMeanNE);
     singleJointsTau.rightLeg.tableRightLegMean.knee_roty(blockIdx,2) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_roty.torqueMeanWE);
@@ -121,8 +121,8 @@ for blockIdx = 1 : block.nrOfBlocks
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_rotz.torqueMeanNE = mean(tmp.cluster(blockIdx).clusterJointsNE);
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_rotz.torqueMeanWE = mean(tmp.cluster(blockIdx).clusterJointsWE);
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_rotz.torqueMeanNE = mean(abs(tmp.cluster(blockIdx).clusterJointsNE));
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_rotz.torqueMeanWE = mean(abs(tmp.cluster(blockIdx).clusterJointsWE));
     % mean of mean
     singleJointsTau.rightLeg.tableRightLegMean.knee_rotz(blockIdx,1) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_rotz.torqueMeanNE);
     singleJointsTau.rightLeg.tableRightLegMean.knee_rotz(blockIdx,2) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).knee_rotz.torqueMeanWE);
@@ -148,8 +148,8 @@ for blockIdx = 1 : block.nrOfBlocks
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotx.torqueMeanNE = mean(tmp.cluster(blockIdx).clusterJointsNE);
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotx.torqueMeanWE = mean(tmp.cluster(blockIdx).clusterJointsWE);
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotx.torqueMeanNE = mean(abs(tmp.cluster(blockIdx).clusterJointsNE));
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotx.torqueMeanWE = mean(abs(tmp.cluster(blockIdx).clusterJointsWE));
     % mean of mean
     singleJointsTau.rightLeg.tableRightLegMean.ankle_rotx(blockIdx,1) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotx.torqueMeanNE);
     singleJointsTau.rightLeg.tableRightLegMean.ankle_rotx(blockIdx,2) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotx.torqueMeanWE);
@@ -174,8 +174,8 @@ for blockIdx = 1 : block.nrOfBlocks
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_roty.torqueMeanNE = mean(tmp.cluster(blockIdx).clusterJointsNE);
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_roty.torqueMeanWE = mean(tmp.cluster(blockIdx).clusterJointsWE);
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_roty.torqueMeanNE = mean(abs(tmp.cluster(blockIdx).clusterJointsNE));
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_roty.torqueMeanWE = mean(abs(tmp.cluster(blockIdx).clusterJointsWE));
     % mean of mean
     singleJointsTau.rightLeg.tableRightLegMean.ankle_roty(blockIdx,1) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_roty.torqueMeanNE);
     singleJointsTau.rightLeg.tableRightLegMean.ankle_roty(blockIdx,2) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_roty.torqueMeanWE);
@@ -200,8 +200,8 @@ for blockIdx = 1 : block.nrOfBlocks
             intraSubj(subjIdx).WE.estimatedVariables.tau(blockIdx).values(tmp.range,1:interSubj(blockIdx).lenghtOfIntersubjNormWE)];
     end
     % mean vector
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotz.torqueMeanNE = mean(tmp.cluster(blockIdx).clusterJointsNE);
-    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotz.torqueMeanWE = mean(tmp.cluster(blockIdx).clusterJointsWE);
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotz.torqueMeanNE = mean(abs(tmp.cluster(blockIdx).clusterJointsNE));
+    singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotz.torqueMeanWE = mean(abs(tmp.cluster(blockIdx).clusterJointsWE));
     % mean of mean
     singleJointsTau.rightLeg.tableRightLegMean.ankle_rotz(blockIdx,1) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotz.torqueMeanNE);
     singleJointsTau.rightLeg.tableRightLegMean.ankle_rotz(blockIdx,2) = mean(singleJointsTau.rightLeg.jointsPerArea(blockIdx).ankle_rotz.torqueMeanWE);

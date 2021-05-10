@@ -1,4 +1,4 @@
-function plotCoPinForcePlates_v2(typeOfTask,subjectID,signalLength, CoPdata_right, CoPdata_left, bucket)
+function plotCoPinForcePlates(typeOfTask,subjectID,signalLength, CoPdata_right, CoPdata_left, bucket)
 % PLOTCOPINFORCEPLATES graphically shows how the CoP varies in both the
 % plates w.r.t. time.
 

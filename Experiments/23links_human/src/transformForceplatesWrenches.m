@@ -29,9 +29,9 @@ FPwrench_L = forceplates_SF.fp.interpolated_left';
 %% Transform FPwrench_R from forceplates frames into human frames
 % We want: rightFoot_f_FPR starting from FPR_f_FPR
 rightFoot_T_FPRrot = iDynTree.Rotation();
-rightFoot_T_FPRrot.fromMatlab ([ 0.0, 1.0,  0.0; ...
-                                 1.0, 0.0,  0.0; ...
-                                 0.0, 0.0, -1.0]);
+rightFoot_T_FPRrot.fromMatlab ([ 1.0,  0.0,  0.0; ...
+                                 0.0, -1.0,  0.0; ...
+                                 0.0,  0.0, -1.0]);
 rightFoot_T_FPRpos = iDynTree.Position();
 % Assumption on the foot position: the position of the foot is given by the
 % mean of the CoP.
@@ -40,7 +40,7 @@ rightFoot_y = mean(forceplates_SF.CoP.interpolated.Right.CoPy) * 1e-3; % in [m]
 z_foot      = abs(subjectParamsFromData.pRightPivotFoot(3));
 z_heightFP  = 0.05; % in [m]
 rightFoot_z = z_heightFP/2 + z_foot; % in [m]
-FPRSeenFromRightFoot = -[rightFoot_y; rightFoot_x ; rightFoot_z]; % in [m]
+FPRSeenFromRightFoot = -[rightFoot_x; rightFoot_y ; rightFoot_z]; % in [m]
 rightFoot_T_FPRpos.fromMatlab(FPRSeenFromRightFoot);
 
 rightFoot_T_FPR = iDynTree.Transform(rightFoot_T_FPRrot, rightFoot_T_FPRpos);
@@ -51,8 +51,8 @@ forceplates_HF.humanRightFootWrench = ...
 %% Transform FPwrench_L from forceplates frames into human frames
 % We want: leftFoot_f_FPL starting from FPL_f_FPL
 leftFoot_T_FPLrot = iDynTree.Rotation();
-leftFoot_T_FPLrot.fromMatlab ([ 0.0, 1.0,  0.0; ...
-                                 1.0, 0.0,  0.0; ...
+leftFoot_T_FPLrot.fromMatlab ([ -1.0, 0.0,  0.0; ...
+                                 0.0, 1.0,  0.0; ...
                                  0.0, 0.0, -1.0]);
 leftFoot_T_FPLpos = iDynTree.Position();
 % Assumption on the foot position: the position of the foot is given by the
@@ -62,7 +62,7 @@ leftFoot_y = mean(forceplates_SF.CoP.interpolated.Left.CoPy) * 1e-3; % in [m]
 z_foot     = abs(subjectParamsFromData.pLeftPivotFoot(3));
 z_heightFP = 0.05; % in [m]
 leftFoot_z = z_heightFP/2 + z_foot; % in [m]
-FPLSeenFromLeftFoot = -[leftFoot_y; leftFoot_x ; leftFoot_z]; % in [m]
+FPLSeenFromLeftFoot = [-leftFoot_x; leftFoot_y ; -leftFoot_z]; % in [m]
 leftFoot_T_FPLpos.fromMatlab(FPLSeenFromLeftFoot);
 
 leftFoot_T_FPL = iDynTree.Transform(leftFoot_T_FPLrot, leftFoot_T_FPLpos);

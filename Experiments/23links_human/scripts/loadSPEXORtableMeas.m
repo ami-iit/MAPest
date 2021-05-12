@@ -33,15 +33,15 @@ tmp.beam28.newArray = [EXO.betaInRad, tmp.beam28.newArray];
 
 for beamIdx = 1 : tmp.numberOfBeams
     EXO.extractedTable(beamIdx).labels = tmp.beamLabels{beamIdx};
-    EXO.extractedTable(beamIdx).betaInRad = EXO.betaInRad;
+    EXO.extractedTable(beamIdx).betaInRad = EXO.betaInRad; % beta
     if beamIdx == 1
-        EXO.extractedTable(beamIdx).beamHeight     = tmp.beam28.newArray(:,2);
-        EXO.extractedTable(beamIdx).beamDeviation  = tmp.beam28.newArray(:,3);
-        EXO.extractedTable(beamIdx).beamLength     = tmp.beam28.newArray(:,4);
-        EXO.extractedTable(beamIdx).beamDeflection = tmp.beam28.newArray(:,5);
-        EXO.extractedTable(beamIdx).force          = tmp.beam28.newArray(:,6);
+        EXO.extractedTable(beamIdx).beamHeight     = tmp.beam28.newArray(:,2); % L-delta_x
+        EXO.extractedTable(beamIdx).beamDeviation  = tmp.beam28.newArray(:,3); % delta_y
+        EXO.extractedTable(beamIdx).beamLength     = tmp.beam28.newArray(:,4); % L
+        EXO.extractedTable(beamIdx).beamDeflection = tmp.beam28.newArray(:,5); % phi(L)
+        EXO.extractedTable(beamIdx).force          = tmp.beam28.newArray(:,6); % F
         EXO.extractedTable(beamIdx).beamBaseMoment = tmp.beam28.newArray(:,7);
-        % Definition of alpha angle in [rad] --> (90deg - beta)
-        EXO.extractedTable(beamIdx).alpha          = 1.508 - EXO.betaInRad;
+        % Definition of alpha angle in [rad]
+        EXO.extractedTable(beamIdx).alpha          = 1.508 - EXO.betaInRad; % alfa = (90deg - beta)
     end
 end

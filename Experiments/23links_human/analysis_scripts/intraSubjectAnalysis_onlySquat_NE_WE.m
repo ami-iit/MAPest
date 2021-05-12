@@ -10,8 +10,8 @@ close all;
 
 % NE color
 orangeAnDycolor = [0.952941176470588   0.592156862745098   0.172549019607843];
-% % WE color
-% greenAnDycolor  = [0.282352941176471   0.486274509803922   0.427450980392157];
+% WE color
+greenAnDycolor  = [0.282352941176471   0.486274509803922   0.427450980392157];
 
 subjectID = 21;
 mass = 90; % in kg
@@ -21,8 +21,8 @@ height = 1.80; % in m
 % bucket.pathToSubjectRawData = fullfile(bucket.pathToSubject,'data');
 
 % New plot label for motion tasks
-motionTasksPlotLabel = {'squat'};
-% motionTasksPlotLabel_exo = {'squat_EXO'};
+motionTasksPlotLabel     = {'squat'};
+motionTasksPlotLabel_exo = {'squat_EXO'};
 
 %% Extraction data squat
 % NE
@@ -31,11 +31,11 @@ bucket.pathToProcessedData   = fullfile(bucket.pathToTask,'processed');
 estimatedVariables_squat     = load(fullfile(bucket.pathToProcessedData,'processed_SOTtask2/estimatedVariables.mat'));
 synchrokin_squat             = load(fullfile(bucket.pathToProcessedData,'synchrokin.mat'));
 
-% % WE
-% bucket.pathToTask   = fullfile(bucket.pathToSubjectRawData,'squat_EXO');
-% bucket.pathToProcessedData  = fullfile(bucket.pathToTask,'processed');
-% estimatedVariables_squatEXO = load(fullfile(bucket.pathToProcessedData,'processed_SOTtask2/estimatedVariables.mat'));
-% synchrokin_squatEXO         = load(fullfile(bucket.pathToProcessedData,'synchrokin.mat'));
+% WE
+bucket.pathToTask   = fullfile(bucket.pathToSubjectRawData,'squat_EXO');
+bucket.pathToProcessedData  = fullfile(bucket.pathToTask,'processed');
+estimatedVariables_squatEXO = load(fullfile(bucket.pathToProcessedData,'processed_SOTtask2/estimatedVariables.mat'));
+synchrokin_squatEXO         = load(fullfile(bucket.pathToProcessedData,'synchrokin.mat'));
 
 selectedJoints           = load(fullfile(bucket.pathToProcessedData,'selectedJoints.mat'));
 
@@ -61,17 +61,17 @@ plot1 = plot((estimatedVariables_squat.estimatedVariables.tau.values(jointIndex,
 axis tight;
 ax = gca;
 ax.FontSize = 15;
-% hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
-% hold on
+hold on
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
+hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{L5S1}_{x}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,2,3) %-------------squat kinematics
@@ -82,15 +82,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
-% xlabel('samples','FontSize',25);
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
+xlabel('samples','FontSize',25);
 ylabel('$q^{L5S1}_{x}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3,plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 % subplot (3,1,3) %-------------exo forces w.r.t. T8 link
@@ -118,16 +118,16 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
 hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{L5S1}_{y}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,2,4) %-------------squat kinematics
@@ -138,15 +138,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
 xlabel('samples','FontSize',25);
 ylabel('$q^{L5S1}_{y}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 % 
 % subplot (3,1,3) %-------------exo forces w.r.t. T8 link
@@ -183,16 +183,16 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
-% hold on
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
+hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{T9T8}_{x}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,3,4) %-------------squat kinematics
@@ -203,15 +203,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
-% xlabel('samples','FontSize',25);
-% ylabel('$q^{T9T8}_{x}$','HorizontalAlignment','center',...
-%     'FontSize',40,'interpreter','latex');
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
+xlabel('samples','FontSize',25);
+ylabel('$q^{T9T8}_{x}$','HorizontalAlignment','center',...
+    'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 %% ----------- roty
@@ -229,16 +229,16 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
-% hold on
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
+hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{T9T8}_{y}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,3,5) %-------------squat kinematics
@@ -249,15 +249,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
 xlabel('samples','FontSize',25);
 ylabel('$q^{T9T8}_{y}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 %% ----------- rotz
@@ -275,16 +275,16 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
-% hold on
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
+hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{T9T8}_{z}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,3,6) %-------------squat kinematics
@@ -295,15 +295,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
 xlabel('samples','FontSize',25);
 ylabel('$q^{T9T8}_{z}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 %% ========================================================================
@@ -328,17 +328,17 @@ plot1 = plot((estimatedVariables_squat.estimatedVariables.tau.values(jointIndex,
 axis tight;
 ax = gca;
 ax.FontSize = 15;
-% hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
-% hold on
+hold on
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
+hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{rKnee}_{y}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,2,3) %-------------squat kinematics
@@ -349,15 +349,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
-% xlabel('samples','FontSize',25);
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
+xlabel('samples','FontSize',25);
 ylabel('$q^{rKnee}_{y}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 % subplot (3,1,3) %-------------exo forces w.r.t. T8 link
@@ -385,16 +385,16 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
 hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{rKnee}_{z}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,2,4) %-------------squat kinematics
@@ -405,15 +405,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
 xlabel('samples','FontSize',25);
 ylabel('$q^{rKnee}_{z}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 % 
 % subplot (3,1,3) %-------------exo forces w.r.t. T8 link
@@ -450,16 +450,16 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
-% hold on
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
+hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{rAnkle}_{x}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,3,4) %-------------squat kinematics
@@ -470,15 +470,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
-% xlabel('samples','FontSize',25);
-% ylabel('$q^{T9T8}_{x}$','HorizontalAlignment','center',...
-%     'FontSize',40,'interpreter','latex');
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
+xlabel('samples','FontSize',25);
+ylabel('$q^{T9T8}_{x}$','HorizontalAlignment','center',...
+    'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 %% ----------- roty
@@ -496,16 +496,16 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
-% hold on
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
+hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{rAnkle}_{y}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,3,5) %-------------squat kinematics
@@ -516,15 +516,15 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
 xlabel('samples','FontSize',25);
 ylabel('$q^{rAnkle}_{y}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 %% ----------- rotz
@@ -542,16 +542,16 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
-%     'color',greenAnDycolor,'lineWidth',4);
+% WE
+plot2 = plot((estimatedVariables_squatEXO.estimatedVariables.tau.values(jointIndex,:)), ...
+    'color',greenAnDycolor,'lineWidth',4);
 % hold on
 title(sprintf('Task  < %s >', 'squat'),'FontSize',22);
 ylabel('$\tau^{rAnkle}_{z}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot1],{'NE'},'Location','northeast');
+leg = legend([plot1,plot2],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
 
 subplot (2,3,6) %-------------squat kinematics
@@ -562,14 +562,13 @@ axis tight;
 ax = gca;
 ax.FontSize = 15;
 hold on
-% % WE
-% plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
-%     'color',greenAnDycolor,'lineWidth',2);
+% WE
+plot4 = plot((synchrokin_squatEXO.synchroKin.q(jointIndex,:)*180/pi), ...
+    'color',greenAnDycolor,'lineWidth',4);
 xlabel('samples','FontSize',25);
 ylabel('$q^{rAnkle}_{z}$','HorizontalAlignment','center',...
     'FontSize',40,'interpreter','latex');
 grid on;
 %legend
-leg = legend([plot3],{'NE'},'Location','northeast');
+leg = legend([plot3, plot4],{'NE', 'WE'},'Location','northeast');
 set(leg,'Interpreter','latex','FontSize',25);
-

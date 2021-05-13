@@ -16,8 +16,8 @@ for lenIdx = 1 : len
     % T8
     EXO.exoForces.fT8_table_SPEXOR(1,lenIdx) = - EXO.roundedTable.force(lenIdx) ...
         * sin(EXO.roundedTable.alpha(lenIdx)); % fx
-    EXO.exoForces.fT8_table_SPEXOR(2,lenIdx) = - EXO.roundedTable.force(lenIdx) ...
-        * cos(EXO.roundedTable.alpha(lenIdx)); % fy
+    EXO.exoForces.fT8_table_SPEXOR(3,lenIdx) = - EXO.roundedTable.force(lenIdx) ...
+        * cos(EXO.roundedTable.alpha(lenIdx)); % fz
     
     % % %     % Pelvis
     % % %     EXO.exoForces.fPelvis_table_SPEXOR(1,lenIdx) = - EXO.exoForces.fT8_table_SPEXOR(1,lenIdx); % fx
@@ -25,10 +25,10 @@ for lenIdx = 1 : len
 
     % Right Upper Leg --> RUL
     EXO.exoForces.fRUL_table_SPEXOR(1,lenIdx) = 1/2 * (EXO.exoForces.fT8_table_SPEXOR(1,lenIdx)); % fx, hp: equal
-    EXO.exoForces.fRUL_table_SPEXOR(2,lenIdx) = 1/2 * (EXO.exoForces.fT8_table_SPEXOR(2,lenIdx)); % fz, hp: equal
+    EXO.exoForces.fRUL_table_SPEXOR(3,lenIdx) = 1/2 * (EXO.exoForces.fT8_table_SPEXOR(3,lenIdx)); % fz, hp: equal
     % Left Upper Leg --> LUL
     EXO.exoForces.fLUL_table_SPEXOR(1,lenIdx) = 1/2 * (EXO.exoForces.fT8_table_SPEXOR(1,lenIdx)); % fx, hp: equal
-    EXO.exoForces.fLUL_table_SPEXOR(2,lenIdx) = 1/2 * (EXO.exoForces.fT8_table_SPEXOR(2,lenIdx)); % fz, hp: equal
+    EXO.exoForces.fLUL_table_SPEXOR(3,lenIdx) = 1/2 * (EXO.exoForces.fT8_table_SPEXOR(3,lenIdx)); % fz, hp: equal
 end
 % no moments
 
@@ -38,6 +38,9 @@ end
 EXO.T8_R_T8table = [ 0.0,   1.0,   0.0; ...
                      0.0,   0.0,  -1.0; ...
                     -1.0,   0.0,   0.0];
+% EXO.T8_R_T8table = [ 1.0,  0.0,  0.0; ...
+%     0.0,   1.0,   0.0; ...
+%     0.0,   0.0,   1.0];
 EXO.tmp.exoT8distance = subjectParamsFromData.T8Box(1)/2;
 EXO.tmp.T8exoSeenFromT8 = [-EXO.tmp.exoT8distance; 0; 0];
 

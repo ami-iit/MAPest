@@ -523,16 +523,16 @@ for barIdx = 1 : 8
     if bar1.YData(barIdx) < 0
         bar1.FaceColor = 'flat';
         bar1.CData(barIdx,:) = noBenefit_color_red;
-        text_custom = text(bar1.XData(barIdx),bar1.YData(barIdx),'1', ...
-            'HorizontalAlignment','center','VerticalAlignment','top');
-        set(text_custom,'FontSize',14);
+%         text_custom = text(bar1.XData(barIdx),bar1.YData(barIdx),'1', ...
+%             'HorizontalAlignment','center','VerticalAlignment','top');
+%         set(text_custom,'FontSize',14);
     else
-        text_custom = text(bar1.XData(barIdx),bar1.YData(barIdx),'1', ...
-            'HorizontalAlignment','center','VerticalAlignment','bottom');
-        set(text_custom,'FontSize',14);
+        bar1.CData(barIdx,:) = benefit_color_green;
+%         text_custom = text(bar1.XData(barIdx),bar1.YData(barIdx),'1', ...
+%             'HorizontalAlignment','center','VerticalAlignment','bottom');
+%         set(text_custom,'FontSize',14);
     end
 end
-
 
 % Legend and title
 % Note: this legend is tuned on the bar plot

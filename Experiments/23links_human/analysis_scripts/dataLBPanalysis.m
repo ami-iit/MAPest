@@ -249,7 +249,7 @@ if saveON
 end
 
 %% Stats and boxplot norm
-% stats_tauNorm_wb_anova2;
+stats_tauNorm_wb_anova2;
 
 %% ========================================================================
 %%                         WHOLE-BODY MEAN

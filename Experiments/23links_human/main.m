@@ -65,6 +65,18 @@ if opts.task1_SOT
     %% Extract subject parameters from SUIT
     if ~exist(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'), 'file')
         subjectParamsFromData = subjectParamsComputation(suit, suit.properties.mass);
+        %  ----------------- Adding load at the hands ---------------------
+        % Mass and inertia - Right hand
+        subjectParamsFromData.rightHandMass = (0.006 * suit.properties.mass) + loadWeight/2;
+        subjectParamsFromData.rightHandIxx  = (subjectParamsFromData.rightHandMass/12) * (subjectParamsFromData.rightHandBox(2)^2 + subjectParamsFromData.rightHandBox(3)^2);
+        subjectParamsFromData.rightHandIyy  = (subjectParamsFromData.rightHandMass/12) * (subjectParamsFromData.rightHandBox(1)^2 + subjectParamsFromData.rightHandBox(3)^2);
+        subjectParamsFromData.rightHandIzz  = (subjectParamsFromData.rightHandMass/12) * (subjectParamsFromData.rightHandBox(1)^2 + subjectParamsFromData.rightHandBox(2)^2);
+        % Mass and inertia - Leftt hand
+        subjectParamsFromData.leftHandMass  = subjectParamsFromData.rightHandMass;
+        subjectParamsFromData.leftHandIxx   = (subjectParamsFromData.leftHandMass/12) * (subjectParamsFromData.leftHandBox(2)^2 + subjectParamsFromData.leftHandBox(3)^2);
+        subjectParamsFromData.leftHandIyy   = (subjectParamsFromData.leftHandMass/12) * (subjectParamsFromData.leftHandBox(1)^2 + subjectParamsFromData.leftHandBox(3)^2);
+        subjectParamsFromData.leftHandIzz   = (subjectParamsFromData.leftHandMass/12) * (subjectParamsFromData.leftHandBox(1)^2 + subjectParamsFromData.leftHandBox(2)^2);
+        %  ----------------------------------------------------------------
         save(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'),'subjectParamsFromData');
     else
         load(fullfile(bucket.pathToSubject,'subjectParamsFromData.mat'),'subjectParamsFromData');

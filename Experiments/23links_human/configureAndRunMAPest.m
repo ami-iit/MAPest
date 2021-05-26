@@ -88,7 +88,7 @@ for tasksIdx = 1 : length(listOfTasks)
 
         %% Launch the analysis script
         clearvars -except bucket opts subjectID listOfTasks tasksIdx ...
-            mass height covarianceSelectedValue powerIdx;
+            mass height loadWeight covarianceSelectedValue powerIdx;
 
         %% Run config file
         disp(' ');

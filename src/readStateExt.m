@@ -4,7 +4,7 @@
 % This software may be modified and distributed under the terms of the
 % GNU Lesser General Public License v2.1 or any later version.
 
-function [q, dq, d2q, m, dm, d2m, time] = readStateExt(n, filename)
+function [q, dq, d2q, time, m, dm, d2m] = readStateExt(n, filename)
 % READSTATEEXT reads data from robot acqisizion. 
 %
 % Inputs 

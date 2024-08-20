@@ -1,9 +1,6 @@
 
-% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
-% All rights reserved.
-%
-% This software may be modified and distributed under the terms of the
-% GNU Lesser General Public License v2.1 or any later version.
+% SPDX-FileCopyrightText: Fondazione Istituto Italiano di Tecnologia (IIT)
+% SPDX-License-Identifier: BSD-3-Clause
 
 function y_simulated = sim_y_floating(berdy, human_state, traversal, baseAngVel, mu_dgiveny)
 %SIMYFLOATING is useful (mandatoty) to compare the measurements in the y vector

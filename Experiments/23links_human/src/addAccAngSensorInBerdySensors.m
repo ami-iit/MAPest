@@ -1,9 +1,6 @@
 
-% Copyright (C) 2019 Istituto Italiano di Tecnologia (IIT)
-% All rights reserved.
-%
-% This software may be modified and distributed under the terms of the
-% GNU Lesser General Public License v2.1 or any later version.
+% SPDX-FileCopyrightText: Fondazione Istituto Italiano di Tecnologia (IIT)
+% SPDX-License-Identifier: BSD-3-Clause
 
 function [humanSensors] = addAccAngSensorInBerdySensors(humanSensors, name,parentLink, linkIndex, S_R_L, posSwrtL)
 %ADDACCANGSENSORINBERDYSENSORS adds the angular accelerometer sensors to
